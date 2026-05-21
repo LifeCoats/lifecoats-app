@@ -1,0 +1,138 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { createClient } = require('@supabase/supabase-js');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+
+const JWT_SECRET = process.env.JWT_SECRET || 'lifecoats-secret-key';
+
+// Auth middleware
+function auth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+function adminOnly(req, res, next) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
+// LOGIN
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  const { data: users } = await supabase
+    .from('users')
+    .select('*')
+    .eq('username', username)
+    .single();
+  if (!users || users.password !== password) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+  const token = jwt.sign(
+    { id: users.id, username: users.username, role: users.role },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+  res.json({ token, role: users.role, username: users.username });
+});
+
+// MATERIALS
+app.get('/api/materials', auth, async (req, res) => {
+  const { data } = await supabase.from('materials').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/materials', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('materials').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('materials').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+
+// BASES
+app.get('/api/bases', auth, async (req, res) => {
+  const { data } = await supabase.from('bases').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/bases', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('bases').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/bases/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('bases').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+
+// PACKAGING
+app.get('/api/packaging', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging').select('*');
+  res.json(data || []);
+});
+app.put('/api/packaging/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+
+// FORMULATIONS
+app.get('/api/formulations', auth, async (req, res) => {
+  const { data } = await supabase.from('formulations').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/formulations', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('formulations').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('formulations').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+app.delete('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+  await supabase.from('formulations').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
+
+// ORDERS
+app.get('/api/orders', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  res.json(data || []);
+});
+app.post('/api/orders', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/orders/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+
+// BASE LOGS
+app.post('/api/base-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('base_logs').insert(req.body).select().single();
+  res.json(data);
+});
+
+// Serve app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Life Coats app running on port ${PORT}`));
