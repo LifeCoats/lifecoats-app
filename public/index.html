@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Coats — ProducTrack</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0f4f7;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-wrap{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:2.5rem;width:360px;max-width:95%}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo h1{font-size:22px;font-weight:500;color:#5B8FA8}
+.login-logo p{font-size:12px;color:#888;margin-top:3px}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:#333}
+.fg input{width:100%;font-size:14px;padding:9px 12px;border-radius:8px;border:0.5px solid #ccc;font-family:inherit}
+.fg input:focus{outline:none;border-color:#5B8FA8}
+.btn{width:100%;padding:10px;background:#5B8FA8;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:500}
+.btn:hover{background:#4a7a93}
+.error{background:#FCEBEB;color:#A32D2D;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:1rem;display:none}
+.loading{text-align:center;font-size:13px;color:#888;margin-top:0.75rem;display:none}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-logo">
+    <h1>Life Coats</h1>
+    <p>ProducTrack — Production Management</p>
+  </div>
+  <div class="error" id="err">Invalid username or password</div>
+  <div class="fg">
+    <label>Username</label>
+    <input type="text" id="un" placeholder="Enter username" autocomplete="username">
+  </div>
+  <div class="fg">
+    <label>Password</label>
+    <input type="password" id="pw" placeholder="Enter password" autocomplete="current-password">
+  </div>
+  <button class="btn" onclick="login()">Log in</button>
+  <div class="loading" id="ld">Logging in...</div>
+</div>
+<script>
+document.addEventListener('keydown', function(e){ if(e.key==='Enter') login(); });
+async function login(){
+  var un=document.getElementById('un').value.trim();
+  var pw=document.getElementById('pw').value.trim();
+  if(!un||!pw){document.getElementById('err').style.display='block';return;}
+  document.getElementById('ld').style.display='block';
+  document.getElementById('err').style.display='none';
+  try{
+    var res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:un,password:pw})});
+    var data=await res.json();
+    if(data.token){
+      localStorage.setItem('lc_token',data.token);
+      localStorage.setItem('lc_role',data.role);
+      localStorage.setItem('lc_username',data.username);
+      window.location.href='/app.html';
+    } else {
+      document.getElementById('err').style.display='block';
+      document.getElementById('ld').style.display='none';
+    }
+  } catch(e){
+    document.getElementById('err').textContent='Connection error — please try again';
+    document.getElementById('err').style.display='block';
+    document.getElementById('ld').style.display='none';
+  }
+}
+</script>
+</body>
+</html>
