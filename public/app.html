@@ -943,13 +943,14 @@ function addIngRow(name,qty,unit,isStone){
   row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';
   var opts=mOpts(true);
   var stoneChecked=isStone?'checked':'';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+opts+'</select></div>'+
+  var stoneCheckedBool=isStone||false;
+row.innerHTML='<div class="fg" style="margin:0">'+(stoneCheckedBool?'<input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px"><input type="hidden" class="ing-name-val" value="__stone__">':'<select>'+opts+'</select>')+'</div>'+
     '<div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0" placeholder="Qty"></div>'+
     '<div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div>'+
-    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" '+stoneChecked+' style="width:auto;margin:0 auto;display:block"></div>'+
+    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" '+(stoneCheckedBool?'checked':'')+' onchange="toggleStoneRow(this)" style="width:auto;margin:0 auto;display:block"></div>'+
     '<button class="btn btns" onclick="this.parentElement.remove()" style="margin-bottom:0"><i class="ti ti-x"></i></button>';
   document.getElementById('f-ing-list').appendChild(row);
-  if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}
+  if(!stoneCheckedBool&&name){var sel=row.querySelector('select');if(sel)sel.value=name;}
 }
 
 function addTintRow(name,y,s){
@@ -999,17 +1000,32 @@ function oEF(id){
   updateSubcatSuggestions();
   oM('m-af');
 }
-
+function toggleStoneRow(cb){
+  var row=cb.parentElement.parentElement;
+  var firstCell=row.children[0];
+  var opts=mOpts(true);
+  if(cb.checked){
+    firstCell.innerHTML='<input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px;width:100%"><input type="hidden" class="ing-name-val" value="__stone__">';
+  }else{
+    firstCell.innerHTML='<select>'+opts+'</select>';
+  }
+}
 function getIngredients(){
   var ings=[];
   document.querySelectorAll('#f-ing-list > div').forEach(function(row){
-    var sels=row.querySelectorAll('select');
-    var ins=row.querySelectorAll('input');
     var cb=row.querySelector('input[type="checkbox"]');
-    var name=sels[0]?sels[0].value:'';
-    var qty=ins[0]?parseFloat(ins[0].value)||0:0;
-    var unit=sels[1]?sels[1].value:'L';
     var isStone=cb?cb.checked:false;
+    var name='';
+    if(isStone){
+      name='__stone__';
+    }else{
+      var sel=row.querySelector('select');
+      name=sel?sel.value:'';
+    }
+    var ins=row.querySelectorAll('input[type="number"]');
+    var unitSel=row.querySelectorAll('select')[1];
+    var qty=ins[0]?parseFloat(ins[0].value)||0:0;
+    var unit=unitSel?unitSel.value:'kg';
     if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});
   });
   return ings;
