@@ -400,6 +400,8 @@ tr:hover td{background:#f8f9fa}
   <div class="fg"><label>Alert below</label><input type="number" id="eal"></div></div>
   <div class="fg"><label>Description</label><textarea id="ede" rows="2"></textarea></div>
   <div class="fg"><label>Supplier</label><input type="text" id="esu"></div>
+  <div class="fr"><div class="fg"><label>Pack unit name (e.g. drum, bag, bucket)</label><input type="text" id="epu" placeholder="e.g. drum"></div>
+  <div class="fg"><label>Pack size (litres or kg per pack)</label><input type="number" id="epq" step="0.01" min="0" placeholder="e.g. 25"></div></div>
   <div class="fe"><button class="btn" onclick="cM('m-em')">Cancel</button><button class="btn btnp" onclick="saveMat()">Save</button></div>
 </div></div>
 
@@ -617,7 +619,26 @@ function mOpts(includeBase){
   return opts;
 }
 function tOpts(){return mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option>'+m.name+'</option>';}).join('');}
+
 function todayRev(){return orders.filter(function(o){return o.status==='done';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
+function dspStock(m){
+  if(m.pack_unit&&m.pack_qty>0){
+    var packs=m.stock/m.pack_qty;
+    return packs.toFixed(1)+' '+m.pack_unit+(packs!==1?'s':'');
+  }
+  return m.stock.toFixed(1);
+}
+function dspUnit(m){
+  if(m.pack_unit&&m.pack_qty>0)return m.pack_unit+'s';
+  return m.unit;
+}
+function dspAlert(m){
+  if(m.pack_unit&&m.pack_qty>0){
+    var packs=m.alert_level/m.pack_qty;
+    return packs.toFixed(1)+' '+m.pack_unit+(packs!==1?'s':'');
+  }
+  return m.alert_level;
+}
 function showSucc(k,msg){var e=document.getElementById('s'+k),m=document.getElementById('s'+k+'m');if(e&&m){m.textContent=msg;e.style.display='flex';setTimeout(function(){e.style.display='none';},3000);}}
 function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').textContent=title;document.getElementById('conf-msg').textContent=msg;var btn=document.getElementById('conf-yes');btn.textContent=label||'Yes';btn.className='btn '+(cls||'btnd');confCB=cb;oM('m-conf');}
 function doConf(){cM('m-conf');if(confCB)confCB();}
@@ -695,7 +716,7 @@ function rDash(){
       var ms=mats.filter(function(m){return m.category===cat;});if(!ms.length)return;
       var col=CC[cat]||'#888';
       h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';
-      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span class="bcv">'+m.stock.toFixed(1)+' '+m.unit+'</span>'+bdg(m.stock,m.alert_level)+'</div>';});
+      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span class="bcv">'+dspStock(m)+'</span>'+bdg(m.stock,m.alert_level)+'</div>';});
     });
     h+='</div>';
   }
@@ -728,15 +749,33 @@ function rMats(){
       '<td style="font-size:11px;color:#888">'+m.supplier+'</td>'+
       '<td style="font-size:11px;color:#888">'+m.pack_size+'</td>'+
       '<td style="font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.description||'')+'</td>'+
-      '<td><div style="display:flex;align-items:center;gap:5px"><div class="pw"><div class="pb '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span style="font-size:11px;min-width:45px">'+m.stock.toFixed(1)+'</span></div></td>'+
-      '<td>'+m.unit+'</td><td>'+m.alert_level+'</td><td>'+bdg(m.stock,m.alert_level)+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:5px"><div class="pw"><div class="pb '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span style="font-size:11px;min-width:60px">'+dspStock(m)+'</span></div></td>'+
+      '<td>'+dspUnit(m)+'</td><td>'+dspAlert(m)+'</td><td>'+bdg(m.stock,m.alert_level)+'</td>'+
       '<td><button class="btn btns" onclick="oEM('+m.id+')"><i class="ti ti-edit"></i></button></td></tr>';
   }).join('')||'<tr><td colspan="10" style="text-align:center;padding:1.5rem;color:#aaa">No materials</td></tr>';
 }
-function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';oM('m-em');}
+function oEM(id){
+  var m=mats.find(function(x){return x.id===id;});if(!m)return;
+  document.getElementById('eid').value=id;
+  document.getElementById('emt').textContent='Edit: '+m.name;
+  document.getElementById('est').value=m.stock;
+  document.getElementById('eal').value=m.alert_level;
+  document.getElementById('ede').value=m.description||'';
+  document.getElementById('esu').value=m.supplier||'';
+  document.getElementById('epu').value=m.pack_unit||'';
+  document.getElementById('epq').value=m.pack_qty||0;
+  oM('m-em');
+}
 async function saveMat(){
   var id=parseInt(document.getElementById('eid').value);
-  var data={stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value};
+  var data={
+    stock:parseFloat(document.getElementById('est').value)||0,
+    alert_level:parseFloat(document.getElementById('eal').value)||0,
+    description:document.getElementById('ede').value,
+    supplier:document.getElementById('esu').value,
+    pack_unit:document.getElementById('epu').value||'',
+    pack_qty:parseFloat(document.getElementById('epq').value)||0
+  };
   await api('PUT','/materials/'+id,data);
   var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);
   cM('m-em');rMats();showSucc('m','Updated successfully');
