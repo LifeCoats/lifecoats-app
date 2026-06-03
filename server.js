@@ -67,6 +67,47 @@ app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
   res.json(data);
 });
 
+// MANUFACTURED STOCK
+app.get('/api/manufactured-stock', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/manufactured-stock', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/manufactured-stock/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+
+// BATCH RECIPES
+app.get('/api/batch-recipes', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/batch-recipes', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/batch-recipes/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+app.delete('/api/batch-recipes/:id', auth, async (req, res) => {
+  await supabase.from('batch_recipes').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
+
+// BATCH LOGS
+app.post('/api/batch-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_logs').insert(req.body).select().single();
+  res.json(data);
+});
+app.get('/api/batch-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_logs').select('*').order('created_at', { ascending: false }).limit(20);
+  res.json(data || []);
+});
 // BASES
 app.get('/api/bases', auth, async (req, res) => {
   const { data } = await supabase.from('bases').select('*').order('id');
