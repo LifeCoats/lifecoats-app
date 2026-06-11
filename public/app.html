@@ -1,388 +1,200 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Coats — ProducTrack</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:#f0f4f7}
-.app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:215px;min-width:215px;background:#f8f9fa;border-right:0.5px solid #e0e0e0;display:flex;flex-direction:column;padding:0.75rem 0;overflow-y:auto}
-.sidebar.hidden{width:0;min-width:0;overflow:hidden;padding:0}
-.logo{padding:0 1rem 0.75rem;border-bottom:0.5px solid #e0e0e0;margin-bottom:0.5rem}
-.logo h2{font-size:14px;font-weight:500;color:#5B8FA8}
-.logo p{font-size:11px;color:#888}
-.ni{display:flex;align-items:center;gap:7px;padding:7px 1rem;cursor:pointer;font-size:13px;color:#666;border-left:2px solid transparent;white-space:nowrap}
-.ni:hover{background:#fff;color:#1a1a1a}
-.ni.active{color:#5B8FA8;border-left:2px solid #5B8FA8;background:#fff;font-weight:500}
-.ns{padding:6px 1rem 2px;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;white-space:nowrap}
-.user-info{padding:0.75rem 1rem;border-top:0.5px solid #e0e0e0;margin-top:auto}
-.user-info p{font-size:12px;color:#666}
-.user-info span{font-size:11px;color:#5B8FA8;font-weight:500}
-.logout{font-size:11px;color:#E24B4A;cursor:pointer;margin-top:4px;display:inline-block}
-.main{flex:1;overflow-y:auto;background:#f0f4f7}
-.pg{display:none;padding:1.5rem}
-.pg.active{display:block}
-.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:8px;flex-wrap:wrap}
-.ph h1{font-size:19px;font-weight:500}
-.ph p{font-size:12px;color:#888;margin-top:2px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
-.card{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.15rem;margin-bottom:1rem}
-.card h3{font-size:14px;font-weight:500;margin-bottom:0.9rem}
-.met{background:#f8f9fa;border-radius:8px;padding:0.9rem;border:0.5px solid #e0e0e0;cursor:pointer}
-.met:hover{border-color:#5B8FA8}
-.ml{font-size:11px;color:#888;margin-bottom:3px}
-.mv{font-size:22px;font-weight:500}
-.ms{font-size:11px;color:#888;margin-top:2px}
-.bdg{display:inline-block;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:500}
-.bok{background:#EAF3DE;color:#3B6D11}.blow{background:#FAEEDA;color:#854F0B}.bcrit{background:#FCEBEB;color:#A32D2D}
-.bblu{background:#E6F1FB;color:#185FA5}.bgry{background:#f1f1f1;color:#555}.bteal{background:#E1F5EE;color:#0F6E56}
-.btn{padding:7px 13px;border-radius:8px;font-size:13px;cursor:pointer;border:0.5px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}
-.btn:hover{background:#f8f9fa}
-.btnp{background:#5B8FA8;color:#fff;border-color:#5B8FA8}.btnp:hover{background:#4a7a93}
-.btnd{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1}
-.btnw{background:#E1F5EE;color:#0F6E56;border-color:#5B8FA8}
-.btno{background:#FFF3E0;color:#E65100;border-color:#FFB74D}
-.btns{padding:4px 10px;font-size:12px}
-.fg{margin-bottom:0.85rem}
-.fg label{display:block;font-size:12px;font-weight:500;margin-bottom:3px;color:#444}
-.fg input,.fg select,.fg textarea{width:100%;font-size:13px;padding:7px 10px;border-radius:8px;border:0.5px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}
-.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#5B8FA8}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:#888;border-bottom:0.5px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.04em}
-td{padding:9px 10px;border-bottom:0.5px solid #e0e0e0;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#f8f9fa}
-.pw{height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;flex:1;min-width:50px}
-.pb{height:100%;border-radius:3px}
-.pbok{background:#5B8FA8}.pbow{background:#EF9F27}.pbcr{background:#E24B4A}
-.ab{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:9px 13px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px;color:#854F0B}
-.acr{background:#FCEBEB;border-color:#F7C1C1;color:#A32D2D}
-.sb{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:8px;padding:9px 13px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px;color:#3B6D11}
-.tabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:0.5px solid #e0e0e0;flex-wrap:wrap}
-.tab{padding:7px 13px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:#888;margin-bottom:-1px}
-.tab.active{color:#5B8FA8;border-bottom:2px solid #5B8FA8;font-weight:500}
-.oc{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:0.9rem;margin-bottom:7px;display:flex;align-items:center;gap:10px}
-.oi{flex:1}.oid{font-size:11px;color:#888}.on{font-size:14px;font-weight:500;margin:2px 0}.od{font-size:12px;color:#888}
-.es{text-align:center;padding:2rem;color:#aaa;font-size:13px}
-.ib{background:#f8f9fa;border-radius:8px;padding:10px 13px;font-size:12px;color:#666;margin-bottom:0.85rem}
-.al{display:flex;align-items:center;gap:6px;font-size:11px;color:#854F0B;background:#FAEEDA;border-radius:8px;padding:4px 10px;margin-bottom:1rem}
-.mbg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto}
-.mbg.show{display:flex}
-.mod{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.5rem;width:560px;max-width:96%;position:relative;margin-bottom:30px;max-height:85vh;overflow-y:auto}
-.mod h3{font-size:15px;font-weight:500;margin-bottom:1rem}
-.mc{position:absolute;top:1rem;right:1rem;background:none;border:none;cursor:pointer;font-size:16px;color:#888}
-.fe{display:flex;justify-content:flex-end;gap:8px;margin-top:1rem}
-.fb{display:flex;justify-content:space-between;align-items:center}
-.ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px}
-.ir:last-child{border-bottom:none}
-.il{color:#888}
-.fc{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1rem;margin-bottom:8px}
-.sub-group{margin-bottom:1.25rem}
-.sub-group-header{font-size:12px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.05em;padding:6px 10px;background:#E8F4F9;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.sub-count{background:#5B8FA8;color:#fff;padding:1px 7px;border-radius:10px;font-size:11px}
-.bci{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:12px}
-.bcn{width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
-.bct{flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
-.bcf{height:100%;border-radius:4px}
-.bcv{width:65px;text-align:right;font-size:11px;color:#888}
-.rev{background:linear-gradient(135deg,#E8F4F9,#d4ecf7);border:0.5px solid #5B8FA8;border-radius:12px;padding:1rem;margin-bottom:1rem}
-.rvl{font-size:12px;color:#3a6e87;margin-bottom:4px}
-.rvv{font-size:28px;font-weight:500;color:#3a6e87}
-.blink{width:7px;height:7px;border-radius:50%;background:#5B8FA8;animation:blink 2s infinite;display:inline-block}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.wt{display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:8px;border:0.5px solid #ddd;background:#fff}
-.wt.on{background:#E8F4F9;border-color:#5B8FA8;color:#3a6e87}
-.cpanel{background:#f8f9fa;border-radius:8px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
-.loading-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f4f7;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
-.loading-screen h2{color:#5B8FA8;font-size:18px;font-weight:500}
-.loading-screen p{color:#888;font-size:13px}
-.spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:#5B8FA8;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.slip{font-family:'Courier New',monospace;width:302px;background:#fff;color:#000;padding:8px 10px;border:1px dashed #ccc;margin:0 auto}
-.shr{text-align:center;margin-bottom:6px;padding-bottom:6px;border-top:1px solid #000;border-bottom:1px solid #000}
-.sr{display:flex;justify-content:space-between;padding:2px 0;font-size:10px;line-height:1.4}
-.slb{color:#444;flex:0 0 45%}
-.slv{text-align:right;flex:0 0 53%;font-weight:bold;word-break:break-word}
-.sdv{border:none;border-top:1px dashed #000;margin:4px 0}
-.sft{text-align:center;font-size:8px;color:#666;margin-top:5px;padding-top:4px;border-top:1px dashed #000}
-.ing-section{background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:0.75rem}
-.ing-section-title{font-size:11px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
-.conf-wrap{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.5rem;width:380px;max-width:95%;text-align:center}
-</style>
-</head>
-<body>
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { createClient } = require('@supabase/supabase-js');
 
-<!-- INITIAL LOADING SPINNER -->
-<div class="loading-screen" id="ls">
-  <div class="spinner"></div><h2>Life Coats</h2><p>Loading ProducTrack...</p>
-</div>
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
-<!-- DYNAMIC LOGIN SCREEN OVERLAY -->
-<div class="loading-screen" id="login-screen" style="display:none;">
-  <div class="card" style="width:340px; padding:2rem; box-shadow:0 6px 20px rgba(0,0,0,0.08); border-radius:16px;">
-    <h2 style="color:#5B8FA8; text-align:center; margin-bottom:0.25rem; font-weight:500;">Life Coats</h2>
-    <p style="text-align:center; color:#888; font-size:12px; margin-bottom:1.5rem;">ProducTrack System Sign In</p>
-    <div class="fg"><label>Username</label><input type="text" id="l-user" placeholder="Enter username"></div>
-    <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="Enter password"></div>
-    <button class="btn btnp" style="width:100%; margin-top:1rem; padding:9px;" onclick="executeLogin()">Sign In</button>
-    <p id="l-err" style="color:#A32D2D; font-size:12px; margin-top:0.75rem; text-align:center; display:none; background:#FCEBEB; padding:6px; border-radius:6px;"></p>
-  </div>
-</div>
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
-<!-- MAIN SYSTEM DASHBOARD -->
-<div class="app" id="app" style="display:none">
-<div class="sidebar" id="sb">
-  <div class="logo"><h2>Life Coats</h2><p id="rl">ProducTrack</p></div>
-  <div class="ns">Overview</div>
-  <div class="ni active" onclick="nav('dash',this)" data-r="admin,reception"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
-  <div class="ns">Stock</div>
-  <div class="ni" onclick="nav('mats',this)" data-r="admin"><i class="ti ti-package"></i>Raw Materials</div>
-  <div class="ni" onclick="nav('receive',this)" data-r="admin"><i class="ti ti-truck"></i>Receive Stock</div>
-  <div class="ni" onclick="nav('batches',this)" data-r="admin,reception"><i class="ti ti-flask"></i>Batch Production</div>
-  <div class="ni" onclick="nav('pkg',this)" data-r="admin"><i class="ti ti-bucket"></i>Packaging</div>
-  <div class="ns">Production</div>
-  <div class="ni" onclick="nav('forms',this)" data-r="admin"><i class="ti ti-book"></i>Formulations</div>
-  <div class="ni" onclick="nav('orders',this)" data-r="admin,reception"><i class="ti ti-clipboard-list"></i>Orders</div>
-  <div class="ns">Reports</div>
-  <div class="ni" onclick="nav('rep',this)" data-r="admin"><i class="ti ti-chart-bar"></i>Reports</div>
-  <div class="user-info">
-    <p>Logged in as</p><span id="un-display"></span>
-    <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
-  </div>
-</div>
-<div class="main" id="main">
+const JWT_SECRET = process.env.JWT_SECRET || 'lifecoats-secret-key';
 
-<!-- DASHBOARD VIEW -->
-<div class="pg active" id="pg-dash">
-  <div class="ph">
-    <div><h1>Dashboard</h1><p id="dt"></p></div>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <span class="blink"></span><span style="font-size:11px;color:#888">Live</span>
-      <button class="btn btns" onclick="tCP()"><i class="ti ti-settings"></i> Customise</button>
-      <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="alert('TV Mode rendering active.')"><i class="ti ti-tv"></i> TV Mode</button>
-    </div>
-  </div>
-  <div id="dc">
-     <div class="g4">
-        <div class="card met"><div class="ml">Raw Materials</div><div class="mv" id="dash-mats">0</div></div>
-        <div class="card met"><div class="ml">Active Orders</div><div class="mv" id="dash-orders">0</div></div>
-        <div class="card met"><div class="ml">Completed Today</div><div class="mv">0</div></div>
-        <div class="card met"><div class="ml">System Status</div><div class="mv" style="color:#3B6D11; font-size:16px;">Connected</div></div>
-     </div>
-  </div>
-</div>
-
-<!-- RAW MATERIALS VIEW -->
-<div class="pg" id="pg-mats">
-  <div class="ph"><div><h1>Raw Materials</h1><p>Stock levels and alert thresholds</p></div></div>
-  <div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto">
-    <table><thead><tr><th>Material Name</th><th>Category</th><th>Supplier</th><th>Pack Size</th><th>Current Stock</th><th>Alert Threshold</th></tr></thead>
-    <tbody id="mt"></tbody></table></div></div>
-</div>
-
-<!-- RECEIVE STOCK VIEW -->
-<div class="pg" id="pg-receive">
-  <div class="ph"><div><h1>Receive Stock</h1><p>Log new deliveries from suppliers</p></div></div>
-  <div class="card"><h3>Log a delivery</h3><p style="color:#666; margin-bottom:1rem;">Select raw materials from the view panel to execute database inputs.</p></div>
-</div>
-
-<!-- BATCH PRODUCTION VIEW -->
-<div class="pg" id="pg-batches">
-  <div class="ph"><div><h1>Batch Production</h1><p>Produce batches and manage recipes</p></div></div>
-  <div class="card"><div id="bt-produce">No recipes loaded yet.</div></div>
-</div>
-
-<!-- PACKAGING VIEW -->
-<div class="pg" id="pg-pkg">
-  <div class="ph"><div><h1>Packaging Stock</h1><p>Manage bucket logs and item tracking counts</p></div></div>
-  <div class="card"><div id="pkgc">Loading packaging data configurations...</div></div>
-</div>
-
-<!-- FORMULATIONS VIEW -->
-<div class="pg" id="pg-forms">
-  <div class="ph"><div><h1>Formulations</h1><p>All product color formulas — admin only</p></div></div>
-  <div class="card"><div id="fl"></div></div>
-</div>
-
-<!-- ORDERS VIEW -->
-<div class="pg" id="pg-orders">
-  <div class="ph"><div><h1>Orders Workflow</h1><p>Build client accounts, log order batches, and confirm dispatches</p></div></div>
-  <div class="card"><div id="ot-active">No active production runs logged today.</div></div>
-</div>
-
-<!-- REPORTS VIEW -->
-<div class="pg" id="pg-rep">
-  <div class="ph"><div><h1>Reports & Metrics</h1><p>Company dashboard summaries</p></div></div>
-  <div class="card"><div id="rt-wk">Weekly transactional audit logs safe.</div></div>
-</div>
-
-</div>
-</div>
-
-<!-- ENGINE SCRIPT IMPLEMENTATION -->
-<script>
-// Data store variables
-var mats = [], forms = [], orders = [], pkgData = [];
-var currentRole = '', currentUsername = '';
-
-// Unified Central API routing core matching server.js strictly
-async function api(method, endpoint, body = null) {
-  const headers = { 'Content-Type': 'application/json' };
-  const token = localStorage.getItem('token');
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-
-  // Crucial Auto-fix: Ensure all requests use the required backend '/api' path
-  const urlPath = endpoint.startsWith('/api') ? endpoint : '/api' + endpoint;
-
+// Auth middleware
+function auth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
   try {
-    const config = { method, headers };
-    if (body) config.body = JSON.stringify(body);
-    
-    const response = await fetch(urlPath, config);
-    if (response.status === 401 || response.status === 403) {
-      logout();
-      return null;
-    }
-    if (!response.ok) {
-      const errRes = await response.json().catch(() => ({}));
-      throw new Error(errRes.error || 'Server error occurred');
-    }
-    return await response.json();
-  } catch (err) {
-    console.error('ProducTrack API failure:', err);
-    return null;
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
   }
 }
 
-// Check auth token state on boot
-window.addEventListener('DOMContentLoaded', function() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    document.getElementById('ls').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-  } else {
-    currentRole = localStorage.getItem('role');
-    currentUsername = localStorage.getItem('username');
-    initApplication();
+function adminOnly(req, res, next) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
+// LOGIN
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  const { data: users } = await supabase
+    .from('users')
+    .select('*')
+    .eq('username', username)
+    .single();
+  if (!users || users.password !== password) {
+    return res.status(401).json({ error: 'Invalid username or password' });
   }
+  const token = jwt.sign(
+    { id: users.id, username: users.username, role: users.role },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+  res.json({ token, role: users.role, username: users.username });
 });
 
-// Handle Login Requests
-async function executeLogin() {
-  const userEl = document.getElementById('l-user');
-  const passEl = document.getElementById('l-pass');
-  const errEl = document.getElementById('l-err');
-  
-  errEl.style.display = 'none';
-  if(!userEl.value || !passEl.value) {
-     errEl.textContent = 'Please complete all login fields.';
-     errEl.style.display = 'block';
-     return;
-  }
+// MATERIALS
+app.get('/api/materials', auth, async (req, res) => {
+  const { data } = await supabase.from('materials').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/materials', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('materials').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('materials').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
 
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('ls').style.display = 'flex';
+// BASES
+app.get('/api/bases', auth, async (req, res) => {
+  const { data } = await supabase.from('bases').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/bases', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('bases').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/bases/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('bases').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
 
-  const res = await api('POST', '/login', { username: userEl.value, password: passEl.value });
-  if (res && res.token) {
-    localStorage.setItem('token', res.token);
-    localStorage.setItem('role', res.role);
-    localStorage.setItem('username', res.username);
-    currentRole = res.role;
-    currentUsername = res.username;
-    initApplication();
-  } else {
-    document.getElementById('ls').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    errEl.textContent = 'Invalid credentials. Please verify and retry.';
-    errEl.style.display = 'block';
-  }
-}
+// PACKAGING
+app.get('/api/packaging', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging').select('*');
+  res.json(data || []);
+});
+app.put('/api/packaging/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
 
-function logout() {
-  localStorage.clear();
-  window.location.reload();
-}
+// FORMULATIONS
+app.get('/api/formulations', auth, async (req, res) => {
+  const { data } = await supabase.from('formulations').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/formulations', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('formulations').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('formulations').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+app.delete('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+  await supabase.from('formulations').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
 
-// App Boot and Database Sync Engine
-async function initApplication() {
-  document.getElementById('un-display').textContent = currentUsername;
-  document.getElementById('rl').textContent = currentRole.toUpperCase() + ' Mode';
+// ORDERS
+app.get('/api/orders', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  res.json(data || []);
+});
+app.post('/api/orders', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/orders/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
 
-  // Pull records asynchronously from database
-  mats = await api('GET', '/materials') || [];
-  forms = await api('GET', '/formulations') || [];
-  orders = await api('GET', '/orders') || [];
-  pkgData = await api('GET', '/packaging') || [];
+// MANUFACTURED STOCK
+app.get('/api/manufactured-stock', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/manufactured-stock', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/manufactured-stock/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('manufactured_stock').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
 
-  // Hide loading blocks, reveal UI
-  document.getElementById('ls').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+// BATCH RECIPES
+app.get('/api/batch-recipes', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/batch-recipes', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').insert(req.body).select().single();
+  res.json(data);
+});
+app.put('/api/batch-recipes/:id', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_recipes').update(req.body).eq('id', req.params.id).select().single();
+  res.json(data);
+});
+app.delete('/api/batch-recipes/:id', auth, async (req, res) => {
+  await supabase.from('batch_recipes').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
 
-  // Render arrays into visual DOM cards
-  renderSystemViews();
-}
+// BATCH LOGS
+app.post('/api/batch-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_logs').insert(req.body).select().single();
+  res.json(data);
+});
+app.get('/api/batch-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('batch_logs').select('*').order('created_at', { ascending: false }).limit(20);
+  res.json(data || []);
+});
 
-function renderSystemViews() {
-  // Update dashboard elements
-  document.getElementById('dash-mats').textContent = mats.length;
-  document.getElementById('dash-orders').textContent = orders.filter(o => o.status !== 'done').length;
+// STOCK RECEIPTS
+app.get('/api/stock-receipts', auth, async (req, res) => {
+  const { data } = await supabase.from('stock_receipts').select('*').order('received_at', { ascending: false }).limit(50);
+  res.json(data || []);
+});
+app.post('/api/stock-receipts', auth, async (req, res) => {
+  const { data } = await supabase.from('stock_receipts').insert(req.body).select().single();
+  res.json(data);
+});
 
-  // Render Materials Data table rows
-  const mtBody = document.getElementById('mt');
-  if (mtBody) {
-    if(mats.length === 0) {
-      mtBody.innerHTML = '<tr><td colspan="6" class="es">No material profiles configured inside the Supabase tables yet.</td></tr>';
-    } else {
-      mtBody.innerHTML = mats.map(m => `
-        <tr>
-          <td><b>${m.name}</b></td>
-          <td><span class="bdg bgry">${m.category || 'Other'}</span></td>
-          <td>${m.supplier || 'N/A'}</td>
-          <td>${m.pack_size_desc || m.pack_size || 'Standard pack'}</td>
-          <td><b>${Number(m.stock || 0).toFixed(2)} ${m.unit || 'kg'}</b></td>
-          <td><span class="bdg bblu">${Number(m.alert_level || 0).toFixed(0)}</span></td>
-        </tr>
-      `).join('');
-    }
-  }
+// PACKAGING BOOKOUTS
+app.get('/api/packaging-bookouts', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging_bookouts').select('*').order('created_at', { ascending: false }).limit(50);
+  res.json(data || []);
+});
+app.post('/api/packaging-bookouts', auth, async (req, res) => {
+  const { data } = await supabase.from('packaging_bookouts').insert(req.body).select().single();
+  res.json(data);
+});
 
-  // Render Formulations list
-  const flBox = document.getElementById('fl');
-  if (flBox) {
-     flBox.innerHTML = forms.length === 0 ? '<div class="es">No formulations configured.</div>' : 
-     '<table><thead><tr><th>Formula Name</th><th>Category Tag</th><th>Selling Base Price</th></tr></thead><tbody>' + 
-     forms.map(f => `<tr><td><b>${f.name}</b></td><td>${f.type}</td><td><b>R ${Number(f.price || 0).toFixed(2)}</b></td></tr>`).join('') + '</tbody></table>';
-  }
-}
+// BASE LOGS
+app.post('/api/base-logs', auth, async (req, res) => {
+  const { data } = await supabase.from('base_logs').insert(req.body).select().single();
+  res.json(data);
+});
 
-// Layout view screen switcher
-function nav(pageId, element) {
-  document.querySelectorAll('.ni').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.pg').forEach(el => el.classList.remove('active'));
-  
-  element.classList.add('active');
-  const targetPage = document.getElementById('pg-' + pageId);
-  if(targetPage) targetPage.classList.add('active');
-}
+// Serve app for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
 
-function tCP() {
-  alert('Customization configuration locked by administrative policy layout.');
-}
-
-// Runtime Timestamp Loop setup
-var dateEl = document.getElementById('dt');
-if(dateEl) {
-  dateEl.textContent = new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-}
-</script>
-</body>
-</html>
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Life Coats app running on port ${PORT}`));
