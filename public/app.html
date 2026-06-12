@@ -1,1434 +1,1439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life Coats — ProducTrack</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; color: #1a1a1a; background: #f4f6f8; }
-        
-        .app { display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Sidebar Styling */
-        .sidebar { width: 220px; min-width: 220px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 1rem 0; overflow-y: auto; transition: width 0.3s; }
-        .sidebar.hidden { width: 0; min-width: 0; overflow: hidden; padding: 0; border: none; }
-        .logo { padding: 0 1.25rem 1rem; border-bottom: 1px solid #edf2f7; margin-bottom: 0.75rem; }
-        .logo h2 { font-size: 15px; font-weight: 600; color: #5B8FA8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .logo p { font-size: 11px; color: #718096; margin-top: 2px; }
-        
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; color: #4a5568; text-decoration: none; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        .nav-item:hover { background: #f7fafc; color: #5B8FA8; }
-        .nav-item.active { background: #edf2f7; color: #5B8FA8; border-left: 4px solid #5B8FA8; padding-left: calc(1.25rem - 4px); }
-        .nav-item i { font-size: 18px; }
-        
-        /* Main Layout */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .header { height: 55px; background: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
-        .toggle-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #4a5568; }
-        .view-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-        .user-profile { display: flex; align-items: center; gap: 0.75rem; }
-        .role-badge { background: #e2e8f0; color: #4a5568; font-size: 11px; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
-        .logout-btn { background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 0.25rem; }
-        
-        .content { flex: 1; padding: 1.5rem; overflow-y: auto; display: none; }
-        .content.active { display: block; }
-        
-        /* UI Elements & Cards */
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: #ffffff; padding: 1.25rem; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
-        .stat-info h3 { font-size: 12px; color: #718096; text-transform: uppercase; margin-bottom: 0.25rem; }
-        .stat-info p { font-size: 22px; font-weight: 700; color: #1a202c; }
-        .stat-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .icon-blue { background: #ebf8ff; color: #3182ce; }
-        .icon-green { background: #f0fff4; color: #38a169; }
-        .icon-orange { background: #fffaf0; color: #dd6b20; }
-        .icon-red { background: #fff5f5; color: #e53e3e; }
-        
-        .card { background: #ffffff; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; overflow: hidden; }
-        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #edf2f7; display: flex; align-items: center; justify-content: space-between; background: #fafafa; }
-        .card-header h3 { font-size: 14px; font-weight: 600; color: #2d3748; }
-        .card-body { padding: 1.25rem; }
-        
-        /* Table Styling */
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { padding: 0.75rem 1rem; background: #f7fafc; color: #4a5568; font-weight: 600; font-size: 12px; border-bottom: 2px solid #edf2f7; text-transform: uppercase; }
-        td { padding: 0.85rem 1rem; border-bottom: 1px solid #edf2f7; color: #2d3748; vertical-align: middle; }
-        tr:hover td { background: #fafdff; }
-        
-        .status-pill { display: inline-block; padding: 0.2rem 0.5rem; font-size: 11px; font-weight: 600; border-radius: 4px; text-transform: uppercase; }
-        .status-good { background: #c6f6d5; color: #22543d; }
-        .status-low { background: #feebc8; color: #744210; }
-        .status-empty { background: #fed7d7; color: #742a2a; }
-        
-        /* Actions & Inputs */
-        .actions-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; }
-        .search-input { padding: 0.5rem 0.75rem; border: 1px solid #cbd5e0; border-radius: 4px; width: 250px; font-size: 13px; }
-        .btn { padding: 0.5rem 1rem; border-radius: 4px; border: none; font-weight: 500; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 0.35rem; transition: background 0.2s; }
-        .btn-primary { background: #5B8FA8; color: white; }
-        .btn-primary:hover { background: #467389; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; }
-        .btn-secondary:hover { background: #cbd5e0; }
-        .btn-danger { background: #e53e3e; color: white; }
-        .btn-danger:hover { background: #c53030; }
-        .btn-sm { padding: 0.25rem 0.5rem; font-size: 12px; border-radius: 3px; }
-        
-        /* Modals layout */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-        .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        .modal-container { background: #ffffff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 100%; max-width: 550px; max-height: 90vh; display: flex; flex-direction: column; transform: translateY(-20px); transition: transform 0.2s; }
-        .modal-overlay.show .modal-container { transform: translateY(0); }
-        .modal-header { padding: 1rem 1.25rem; border-bottom: 1px solid #edf2f7; display: flex; align-items: center; justify-content: space-between; }
-        .modal-header h4 { font-size: 15px; font-weight: 600; color: #2d3748; }
-        .modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
-        .modal-footer { padding: 0.75rem 1.25rem; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end; gap: 0.5rem; background: #fafafa; }
-        
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 0.35rem; text-transform: uppercase; }
-        .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px; color: #2d3748; }
-        .form-control:focus { outline: none; border-color: #5B8FA8; box-shadow: 0 0 0 2px rgba(91,143,168,0.15); }
-        
-        .row-inputs { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
-        
-        /* Auth Screen Cover */
-        #auth-screen { position: fixed; top:0; left:0; right:0; bottom:0; background:#f4f6f8; display:flex; align-items:center; justify-content:center; z-index:9999; }
-        .auth-card { background: white; padding: 2rem; border-radius: 8px; border: 1px solid #e2e8f0; width: 100%; max-width: 380px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .auth-logo { text-align: center; margin-bottom: 1.5rem; }
-        .auth-logo h1 { font-size: 20px; color: #5B8FA8; font-weight: 700; }
-        
-        /* History logs tabs setup */
-        .sub-tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
-        .sub-tab { padding: 0.35rem 0.75rem; cursor: pointer; border-radius: 4px; color: #718096; font-weight: 500; font-size: 13px; }
-        .sub-tab.active { background: #5B8FA8; color: white; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Coats — ProducTrack</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:transparent}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:210px;min-width:210px;background:#f8f9fa;border-right:0.5px solid #e0e0e0;display:flex;flex-direction:column;padding:0.75rem 0;overflow-y:auto;transition:width 0.3s}
+.sidebar.hidden{width:0;min-width:0;overflow:hidden;padding:0}
+.logo{padding:0 1rem 0.75rem;border-bottom:0.5px solid #e0e0e0;margin-bottom:0.5rem}
+.logo h2{font-size:14px;font-weight:500;color:#5B8FA8}
+.logo p{font-size:11px;color:#888}
+.ni{display:flex;align-items:center;gap:7px;padding:7px 1rem;cursor:pointer;font-size:13px;color:#666;border-left:2px solid transparent;white-space:nowrap}
+.ni:hover{background:#fff;color:#1a1a1a}
+.ni.active{color:#5B8FA8;border-left:2px solid #5B8FA8;background:#fff;font-weight:500}
+.ns{padding:6px 1rem 2px;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;white-space:nowrap}
+.user-info{padding:0.75rem 1rem;border-top:0.5px solid #e0e0e0;margin-top:auto}
+.user-info p{font-size:12px;color:#666}
+.user-info span{font-size:11px;color:#5B8FA8;font-weight:500}
+.logout{font-size:11px;color:#E24B4A;cursor:pointer;margin-top:4px;display:inline-block}
+.main{flex:1;overflow-y:auto;background:#f0f4f7}
+.pg{display:none;padding:1.5rem}
+.pg.active{display:block}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;gap:8px;flex-wrap:wrap}
+.ph h1{font-size:19px;font-weight:500}
+.ph p{font-size:12px;color:#888;margin-top:2px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.card{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.15rem;margin-bottom:1rem}
+.card h3{font-size:14px;font-weight:500;margin-bottom:0.9rem}
+.met{background:#f8f9fa;border-radius:8px;padding:0.9rem;border:0.5px solid #e0e0e0;cursor:pointer}
+.met:hover{border-color:#5B8FA8}
+.ml{font-size:11px;color:#888;margin-bottom:3px}
+.mv{font-size:22px;font-weight:500}
+.ms{font-size:11px;color:#888;margin-top:2px}
+.bdg{display:inline-block;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:500}
+.bok{background:#EAF3DE;color:#3B6D11}.blow{background:#FAEEDA;color:#854F0B}.bcrit{background:#FCEBEB;color:#A32D2D}
+.bblu{background:#E6F1FB;color:#185FA5}.bgry{background:#f1f1f1;color:#555}.bteal{background:#E1F5EE;color:#0F6E56}
+.btn{padding:7px 13px;border-radius:8px;font-size:13px;cursor:pointer;border:0.5px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}
+.btn:hover{background:#f8f9fa}
+.btnp{background:#5B8FA8;color:#fff;border-color:#5B8FA8}.btnp:hover{background:#4a7a93}
+.btnd{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1}
+.btnw{background:#E1F5EE;color:#0F6E56;border-color:#5B8FA8}
+.btns{padding:4px 10px;font-size:12px}
+.fg{margin-bottom:0.85rem}
+.fg label{display:block;font-size:12px;font-weight:500;margin-bottom:3px;color:#444}
+.fg input,.fg select,.fg textarea{width:100%;font-size:13px;padding:7px 10px;border-radius:8px;border:0.5px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#5B8FA8}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;font-size:11px;font-weight:500;color:#888;border-bottom:0.5px solid #e0e0e0;text-transform:uppercase;letter-spacing:0.04em}
+td{padding:9px 10px;border-bottom:0.5px solid #e0e0e0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8f9fa}
+.pw{height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;flex:1;min-width:50px}
+.pb{height:100%;border-radius:3px}
+.pbok{background:#5B8FA8}.pbow{background:#EF9F27}.pbcr{background:#E24B4A}
+.ab{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:9px 13px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px;color:#854F0B}
+.acr{background:#FCEBEB;border-color:#F7C1C1;color:#A32D2D}
+.sb{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:8px;padding:9px 13px;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;font-size:13px;color:#3B6D11}
+.tabs{display:flex;gap:2px;margin-bottom:1.25rem;border-bottom:0.5px solid #e0e0e0;flex-wrap:wrap}
+.tab{padding:7px 13px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:#888;margin-bottom:-1px}
+.tab.active{color:#5B8FA8;border-bottom:2px solid #5B8FA8;font-weight:500}
+.oc{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:0.9rem;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.oi{flex:1}.oid{font-size:11px;color:#888}.on{font-size:14px;font-weight:500;margin:2px 0}.od{font-size:12px;color:#888}
+.es{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+.ib{background:#f8f9fa;border-radius:8px;padding:10px 13px;font-size:12px;color:#666;margin-bottom:0.85rem}
+.al{display:flex;align-items:center;gap:6px;font-size:11px;color:#854F0B;background:#FAEEDA;border-radius:8px;padding:4px 10px;margin-bottom:1rem}
+.mbg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto}
+.mbg.show{display:flex}
+.mod{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.5rem;width:560px;max-width:96%;position:relative;margin-bottom:30px;max-height:85vh;overflow-y:auto}
+.mod h3{font-size:15px;font-weight:500;margin-bottom:1rem}
+.mc{position:absolute;top:1rem;right:1rem;background:none;border:none;cursor:pointer;font-size:16px;color:#888}
+.fe{display:flex;justify-content:flex-end;gap:8px;margin-top:1rem}
+.fb{display:flex;justify-content:space-between;align-items:center}
+.ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px}
+.ir:last-child{border-bottom:none}
+.il{color:#888}
+.fc{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1rem;margin-bottom:8px}
+.sub-group{margin-bottom:1.25rem}
+.sub-group-header{font-size:12px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.05em;padding:6px 10px;background:#E8F4F9;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.sub-count{background:#5B8FA8;color:#fff;padding:1px 7px;border-radius:10px;font-size:11px}
+.bci{display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:12px}
+.bcn{width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.bct{flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.bcf{height:100%;border-radius:4px}
+.bcv{width:65px;text-align:right;font-size:11px;color:#888}
+.rev{background:linear-gradient(135deg,#E8F4F9,#d4ecf7);border:0.5px solid #5B8FA8;border-radius:12px;padding:1rem;margin-bottom:1rem}
+.rvl{font-size:12px;color:#3a6e87;margin-bottom:4px}
+.rvv{font-size:28px;font-weight:500;color:#3a6e87}
+.blink{width:7px;height:7px;border-radius:50%;background:#5B8FA8;animation:blink 2s infinite;display:inline-block}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.wt{display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:8px;border:0.5px solid #ddd;background:#fff}
+.wt.on{background:#E8F4F9;border-color:#5B8FA8;color:#3a6e87}
+.cpanel{background:#f8f9fa;border-radius:8px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.loading-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f4f7;display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
+.loading-screen h2{color:#5B8FA8;font-size:18px;font-weight:500}
+.loading-screen p{color:#888;font-size:13px}
+.spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:#5B8FA8;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.slip{font-family:'Courier New',monospace;width:302px;background:#fff;color:#000;padding:8px 10px;border:1px dashed #ccc;margin:0 auto}
+.shr{text-align:center;margin-bottom:6px;padding-bottom:6px;border-top:1px solid #000;border-bottom:1px solid #000}
+.sr{display:flex;justify-content:space-between;padding:2px 0;font-size:10px;line-height:1.4}
+.slb{color:#444;flex:0 0 45%}
+.slv{text-align:right;flex:0 0 53%;font-weight:bold;word-break:break-word}
+.sdv{border:none;border-top:1px dashed #000;margin:4px 0}
+.sft{text-align:center;font-size:8px;color:#666;margin-top:5px;padding-top:4px;border-top:1px dashed #000}
+.ing-row{display:grid;grid-template-columns:1fr 100px 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
+.tint-row{display:grid;grid-template-columns:1fr 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
+.stone-row{display:grid;grid-template-columns:1fr 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
+.ing-section{background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:0.75rem}
+.ing-section-title{font-size:11px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
+.conf-wrap{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.5rem;width:380px;max-width:95%;text-align:center}
+.conf-wrap h3{font-size:16px;font-weight:500;margin-bottom:0.5rem}
+.conf-wrap p{font-size:13px;color:#666;margin-bottom:1.25rem}
+.datalist-wrap{position:relative}
+</style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="auth-logo">
-                <h1>Life Coats</h1>
-                <p style="color: #718096; font-size: 12px; margin-top: 4px;">ProducTrack System Management</p>
-            </div>
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="login-username" class="form-control" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="login-password" class="form-control" required autocomplete="current-password">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">Sign In</button>
-                <p id="login-error" style="color: #e53e3e; font-size: 12px; text-align: center; margin-top: 0.75rem; display: none;"></p>
-            </form>
-        </div>
+<div class="loading-screen" id="ls">
+  <div class="spinner"></div>
+  <h2>Life Coats</h2>
+  <p>Loading ProducTrack...</p>
+</div>
+
+<div class="app" id="app" style="display:none">
+<div class="sidebar" id="sb">
+  <div class="logo"><h2>Life Coats</h2><p id="rl">ProducTrack</p></div>
+  <div class="ns">Overview</div>
+  <div class="ni active" onclick="nav('dash',this)" data-r="admin,reception"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+  <div class="ns">Stock</div>
+  <div class="ni" onclick="nav('mats',this)" data-r="admin"><i class="ti ti-package"></i>Raw Materials</div>
+  <div class="ni" onclick="nav('bases',this)" data-r="admin"><i class="ti ti-flask"></i>Base Production</div>
+  <div class="ni" onclick="nav('pkg',this)" data-r="admin"><i class="ti ti-bucket"></i>Packaging</div>
+  <div class="ns">Production</div>
+  <div class="ni" onclick="nav('forms',this)" data-r="admin"><i class="ti ti-book"></i>Formulations</div>
+  <div class="ni" onclick="nav('orders',this)" data-r="admin,reception"><i class="ti ti-clipboard-list"></i>Orders</div>
+  <div class="ns">Reports</div>
+  <div class="ni" onclick="nav('rep',this)" data-r="admin"><i class="ti ti-chart-bar"></i>Reports</div>
+  <div class="user-info">
+    <p>Logged in as</p>
+    <span id="un-display"></span>
+    <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
+  </div>
+</div>
+
+<div class="main" id="main">
+
+<!-- DASHBOARD -->
+<div class="pg active" id="pg-dash">
+  <div class="ph">
+    <div><h1>Dashboard</h1><p id="dt"></p></div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span class="blink"></span><span style="font-size:11px;color:#888">Live</span>
+      <button class="btn btns" onclick="tCP()"><i class="ti ti-settings"></i> Customise</button>
+      <select onchange="loadPreset(this.value)" style="font-size:12px;padding:4px 8px;border-radius:8px;border:0.5px solid #ddd">
+        <option value="">Presets...</option>
+        <option value="stock">Stock focus</option>
+        <option value="prod">Production focus</option>
+        <option value="full">Full view</option>
+      </select>
+      <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-tv"></i> TV Mode</button>
     </div>
+  </div>
+  <div id="cp" style="display:none" class="cpanel">
+    <span style="font-size:12px;color:#888;align-self:center">Widgets:</span>
+    <span class="wt on" id="wt-al" onclick="tW('al')"><i class="ti ti-alert-triangle"></i>Alerts</span>
+    <span class="wt on" id="wt-me" onclick="tW('me')"><i class="ti ti-chart-bar"></i>Metrics</span>
+    <span class="wt on" id="wt-rv" onclick="tW('rv')"><i class="ti ti-currency-dollar"></i>Revenue</span>
+    <span class="wt on" id="wt-st" onclick="tW('st')"><i class="ti ti-package"></i>Stock</span>
+    <span class="wt on" id="wt-ba" onclick="tW('ba')"><i class="ti ti-flask"></i>Bases</span>
+    <span class="wt on" id="wt-or" onclick="tW('or')"><i class="ti ti-clipboard-list"></i>Orders</span>
+    <span class="wt on" id="wt-pk" onclick="tW('pk')"><i class="ti ti-bucket"></i>Packaging</span>
+  </div>
+  <div id="dc"></div>
+</div>
 
-    <div class="app">
-        <div class="sidebar" id="app-sidebar">
-            <div class="logo">
-                <h2>Life Coats</h2>
-                <p>ProducTrack v3.0</p>
-            </div>
-            <div class="nav-item active" onclick="switchTab('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-            <div class="nav-item" onclick="switchTab('materials')"><i class="ti ti-flask"></i> Raw Materials</div>
-            <div class="nav-item" onclick="switchTab('manufactured')"><i class="ti ti-building-factory-2"></i> Finished Products</div>
-            <div class="nav-item" onclick="switchTab('recipes')"><i class="ti ti-receipt"></i> Formulations</div>
-            <div class="nav-item" onclick="switchTab('orders')"><i class="ti ti-shopping-cart"></i> Orders</div>
-            <div class="nav-item" onclick="switchTab('packaging')"><i class="ti ti-box"></i> Packaging</div>
-            <div class="nav-item" onclick="switchTab('history')"><i class="ti ti-history"></i> Logs &amp; History</div>
-        </div>
+<!-- RAW MATERIALS -->
+<div class="pg" id="pg-mats">
+  <div class="ph"><div><h1>Raw Materials</h1><p>Stock levels, suppliers and alert thresholds</p></div>
+    <button class="btn btnp btns" onclick="oM('m-am')"><i class="ti ti-plus"></i> Add material</button></div>
+  <select id="mf" onchange="rMats()" style="font-size:12px;padding:5px 8px;border-radius:8px;border:0.5px solid #ddd;margin-bottom:0.75rem">
+    <option value="all">All categories</option><option value="resin">Resins</option><option value="chemical">Chemicals</option>
+    <option value="sand">Sand</option><option value="stone">Stone</option><option value="granite">Granite</option>
+    <option value="tint">Tints</option><option value="other">Other</option>
+  </select>
+  <div id="sm" style="display:none" class="sb"><i class="ti ti-circle-check"></i><span id="smm"></span></div>
+  <div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto">
+    <table><thead><tr><th>Material</th><th>Cat</th><th>Supplier</th><th>Pack</th><th>Description</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th><th></th></tr></thead>
+    <tbody id="mt"></tbody></table></div></div>
+</div>
 
-        <div class="main">
-            <div class="header">
-                <div class="header-left">
-                    <button class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
-                    <span class="view-title" id="current-view-title">Dashboard</span>
-                </div>
-                <div class="user-profile">
-                    <span id="user-display-name" style="font-weight: 500; color: #4a5568;">User</span>
-                    <span class="role-badge" id="user-role-badge">Role</span>
-                    <button class="logout-btn" onclick="handleLogout()"><i class="ti ti-logout"></i> Logout</button>
-                </div>
-            </div>
-
-            <div id="view-dashboard" class="content active">
-                <div class="grid-stats">
-                    <div class="stat-card">
-                        <div class="stat-info"><h3>Low Materials</h3><p id="stat-low-mat">0</p></div>
-                        <div class="stat-icon icon-red"><i class="ti ti-alert-triangle"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info"><h3>Low Products</h3><p id="stat-low-mfg">0</p></div>
-                        <div class="stat-icon icon-orange"><i class="ti ti-building-store"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info"><h3>Pending Orders</h3><p id="stat-orders">0</p></div>
-                        <div class="stat-icon icon-blue"><i class="ti ti-clock"></i></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-info"><h3>Total Formulations</h3><p id="stat-recipes">0</p></div>
-                        <div class="stat-icon icon-green"><i class="ti ti-database"></i></div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <div class="card">
-                        <div class="card-header"><h3>Critical Stock Alerts</h3></div>
-                        <div class="card-body" style="padding:0;"><table id="table-dash-alerts"></table></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><h3>Recent System Activity</h3></div>
-                        <div class="card-body" style="padding:0;"><table id="table-dash-activity"></table></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="view-materials" class="content">
-                <div class="actions-bar">
-                    <input type="text" placeholder="Search raw materials..." class="search-input" id="search-mat" oninput="renderMaterials()">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary" onclick="oM('m-pdf')"><i class="ti ti-printer"></i> Print Status</button>
-                        <button class="btn btn-primary admin-only" onclick="openMaterialModal()"><i class="ti ti-plus"></i> Add Material</button>
-                    </div>
-                </div>
-                <div class="card">
-                    <table id="table-materials"></table>
-                </div>
-            </div>
-
-            <div id="view-manufactured" class="content">
-                <div class="actions-bar">
-                    <input type="text" placeholder="Search products..." class="search-input" id="search-mfg" oninput="renderManufactured()">
-                    <button class="btn btn-primary admin-only" onclick="openMfgModal()"><i class="ti ti-plus"></i> Add Product</button>
-                </div>
-                <div class="card">
-                    <table id="table-manufactured"></table>
-                </div>
-            </div>
-
-            <div id="view-recipes" class="content">
-                <div class="actions-bar">
-                    <input type="text" placeholder="Search recipes..." class="search-input" id="search-recipes" oninput="renderRecipes()">
-                    <button class="btn btn-primary admin-only" onclick="openRecipeModal()"><i class="ti ti-plus"></i> Add Formulation</button>
-                </div>
-                <div class="card">
-                    <table id="table-recipes"></table>
-                </div>
-            </div>
-
-            <div id="view-orders" class="content">
-                <div class="actions-bar">
-                    <input type="text" placeholder="Search orders..." class="search-input" id="search-orders" oninput="renderOrders()">
-                    <button class="btn btn-primary" onclick="openOrderModal()"><i class="ti ti-plus"></i> Create New Order</button>
-                </div>
-                <div class="card">
-                    <table id="table-orders"></table>
-                </div>
-            </div>
-
-            <div id="view-packaging" class="content">
-                <div class="actions-bar">
-                    <div></div>
-                    <button class="btn btn-primary admin-only" onclick="openPkgModal()"><i class="ti ti-plus"></i> Add Packaging Item</button>
-                </div>
-                <div class="card">
-                    <table id="table-packaging"></table>
-                </div>
-            </div>
-
-            <div id="view-history" class="content">
-                <div class="sub-tabs">
-                    <div class="sub-tab active" id="tab-log-batch" onclick="switchSubLog('batch')">Batch Runs</div>
-                    <div class="sub-tab" id="tab-log-receipt" onclick="switchSubLog('receipt')">Material Receipts</div>
-                    <div class="sub-tab" id="tab-log-bookout" onclick="switchSubLog('bookout')">Packaging Bookouts</div>
-                </div>
-                <div class="card">
-                    <table id="table-history-logs"></table>
-                </div>
-            </div>
-        </div>
+<!-- BASE PRODUCTION -->
+<div class="pg" id="pg-bases">
+  <div class="ph"><div><h1>Base Production</h1><p>Log batches and track base stock — click any card to update stock</p></div>
+    <button class="btn btnp btns" onclick="oM('m-nb')"><i class="ti ti-plus"></i> Add base type</button></div>
+  <div class="al"><i class="ti ti-lock"></i> Base formulas are admin-only</div>
+  <div class="g4" id="bsc"></div>
+  <div class="g2">
+    <div class="card"><h3>Log a batch</h3>
+      <div class="fg"><label>Base type</label><select id="bt" onchange="sBF()"></select></div>
+      <div class="fg"><label>Litres to produce</label><input type="number" id="bl" value="200" min="1" oninput="sBF()"></div>
+      <div id="bfp" class="ib" style="font-size:11px;min-height:30px"></div>
+      <button class="btn btnp btns" onclick="lBase()"><i class="ti ti-plus"></i> Log batch &amp; deduct materials</button>
     </div>
+    <div class="card"><h3>Recent batches</h3><div id="blog"></div></div>
+  </div>
+  <div class="card">
+    <div class="fb"><h3>Base formulas</h3><button class="btn btns" onclick="oBaseEdit()"><i class="ti ti-edit"></i> Edit formulas</button></div>
+    <div id="bfd" style="margin-top:0.75rem"></div>
+  </div>
+</div>
 
-    <div class="modal-overlay" id="m-material">
-        <div class="modal-container">
-            <div class="modal-header"><h4 id="mat-modal-title">Add Material</h4><button onclick="cM('m-material')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-material" onsubmit="saveMaterial(event)">
-                <input type="hidden" id="mat-id">
-                <div class="modal-body">
-                    <div class="form-group"><label>Material Name</label><input type="text" id="mat-name" class="form-control" required></div>
-                    <div class="form-group"><label>Alert Level Threshold (Units)</label><input type="number" step="any" id="mat-alert" class="form-control" required></div>
-                    <div class="form-group"><label>Pack Unit Type</label><input type="text" id="mat-unit" placeholder="e.g. Bag, Drum, Bucket" class="form-control" required></div>
-                    <div class="form-group"><label>Pack Size Quantity (L or Kg)</label><input type="number" step="any" id="mat-qty" class="form-control" required></div>
-                    <div class="form-group" id="mat-stock-group"><label>Current Stock Level</label><input type="number" step="any" id="mat-stock" class="form-control" value="0"></div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-material')">Cancel</button><button type="submit" class="btn btn-primary">Save Changes</button></div>
-            </form>
-        </div>
+<!-- PACKAGING -->
+<div class="pg" id="pg-pkg">
+  <div class="ph"><div><h1>Packaging</h1><p>Click any card to edit stock or alert threshold</p></div></div>
+  <div class="g3" id="pkgc"></div>
+  <div class="card"><h3>Add stock</h3>
+    <div class="fr">
+      <div class="fg"><label>Item</label><select id="pi">
+        <option value="pr20">20L Printed Buckets</option>
+        <option value="ti20">20L Titan Black Buckets</option>
+        <option value="ti20l">20L Titan Black Lids</option>
+        <option value="sl20">20L Secure Lock Buckets</option>
+        <option value="sl20l">20L Secure Lock Lids</option>
+        <option value="sl5">5L Secure Lock Buckets</option>
+        <option value="sl5l">5L Secure Lock Lids</option>
+        <option value="bags">Plastic Bags</option>
+        <option value="trs">Steel Trowels</option>
+        <option value="trp">Plastic Floats</option>
+        <option value="t36">Masking Tape 36mm (box)</option>
+        <option value="t18">Masking Tape 18mm (box)</option>
+      </select></div>
+      <div class="fg"><label>Quantity to add</label><input type="number" id="pq" placeholder="Units" min="1"></div>
     </div>
+    <button class="btn btnp btns" onclick="addPkg()"><i class="ti ti-plus"></i> Add stock</button>
+  </div>
+</div>
 
-    <div class="modal-overlay" id="m-receipt">
-        <div class="modal-container">
-            <div class="modal-header"><h4>Record Stock Receipt</h4><button onclick="cM('m-receipt')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-receipt" onsubmit="saveStockReceipt(event)">
-                <input type="hidden" id="receipt-mat-id">
-                <div class="modal-body">
-                    <p style="margin-bottom: 1rem; color: #4a5568;">Receiving stock tracking updates for: <strong id="receipt-mat-name">Material</strong></p>
-                    <div class="form-group"><label>Quantity Received (Number of Units/Packs)</label><input type="number" step="any" id="receipt-qty" class="form-control" required></div>
-                    <div class="form-group"><label>Supplier Invoice / Reference</label><input type="text" id="receipt-ref" class="form-control" placeholder="Optional"></div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-receipt')">Cancel</button><button type="submit" class="btn btn-primary">Process Receipt</button></div>
-            </form>
+<!-- FORMULATIONS -->
+<div class="pg" id="pg-forms">
+  <div class="ph"><div><h1>Formulations</h1><p>All product formulas — admin only</p></div>
+    <button class="btn btnp btns" onclick="oAddForm()"><i class="ti ti-plus"></i> Add formulation</button></div>
+  <div class="al"><i class="ti ti-lock"></i> Company confidential — admin only</div>
+  <div class="tabs" id="ftabs">
+    <div class="tab active" onclick="sFT('gamazine',this)">Gamazine</div>
+    <div class="tab" onclick="sFT('granite',this)">Granite</div>
+    <div class="tab" onclick="sFT('undercoat',this)">Undercoat</div>
+    <div class="tab" onclick="sFT('cps',this)">CPS</div>
+    <div class="tab" onclick="sFT('clearcoat',this)">Clearcoat</div>
+    <div class="tab" onclick="sFT('waterproofing',this)">Waterproofing</div>
+    <div class="tab" onclick="sFT('fiberseal',this)">Fiber Seal</div>
+  </div>
+  <div id="fl"></div>
+</div>
+
+<!-- ORDERS -->
+<div class="pg" id="pg-orders">
+  <div class="ph"><div><h1>Orders</h1><p>Build orders, print slips and mark complete</p></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="sOT('new',this)">New order</div>
+    <div class="tab" onclick="sOT('active',this)">Active <span id="active-count" class="bdg bblu" style="font-size:10px;margin-left:3px"></span></div>
+    <div class="tab" onclick="sOT('done',this)">Completed</div>
+  </div>
+  <div id="ot-new">
+    <div id="rec-stock" style="display:none" class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Stock overview</h3><div id="rsc"></div></div>
+    <div class="card"><h3>Build an order</h3>
+      <div class="fr">
+        <div class="fg"><label>Client name</label><input type="text" id="oc" placeholder="Client name"></div>
+        <div class="fg"><label>Product type</label>
+          <select id="opt" onchange="oPTC()">
+            <option value="gamazine">Gamazine</option>
+            <option value="granite">Granite Coat</option>
+            <option value="undercoat">Undercoat</option>
+            <option value="cps">CPS</option>
+            <option value="clearcoat">Clearcoat</option>
+            <option value="waterproofing">Waterproofing</option>
+            <option value="fiberseal">Fiber Seal</option>
+            <option value="cm">Colour Match</option>
+          </select>
         </div>
-    </div>
-
-    <div class="modal-overlay" id="m-mfg">
-        <div class="modal-container">
-            <div class="modal-header"><h4 id="mfg-modal-title">Add Finished Product</h4><button onclick="cM('m-mfg')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-mfg" onsubmit="saveMfgProduct(event)">
-                <input type="hidden" id="mfg-id">
-                <div class="modal-body">
-                    <div class="form-group"><label>Product Name</label><input type="text" id="mfg-name" class="form-control" required></div>
-                    <div class="form-group"><label>Alert Level Threshold (L)</label><input type="number" step="any" id="mfg-alert" class="form-control" required></div>
-                    <div class="form-group" id="mfg-stock-group"><label>Current Initial Stock (L)</label><input type="number" step="any" id="mfg-stock" class="form-control" value="0"></div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-mfg')">Cancel</button><button type="submit" class="btn btn-primary">Save Product</button></div>
-            </form>
+      </div>
+      <div id="or-std">
+        <div class="fr">
+          <div class="fg"><label>Formulation / colour</label><select id="orec" onchange="onFormSelect()"></select></div>
+          <div class="fg"><label>Quantity (buckets)</label><input type="number" id="oqty" value="1" min="1"></div>
         </div>
-    </div>
-
-    <div class="modal-overlay" id="m-recipe">
-        <div class="modal-container" style="max-width: 650px;">
-            <div class="modal-header"><h4 id="recipe-modal-title">Create Formulation Template</h4><button onclick="cM('m-recipe')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-recipe" onsubmit="saveRecipe(event)">
-                <input type="hidden" id="recipe-id">
-                <div class="modal-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
-                        <div><label style="display:block; font-size:11px; font-weight:600; margin-bottom:0.25rem;">FORMULATION NAME</label><input type="text" id="recipe-name" class="form-control" required></div>
-                        <div><label style="display:block; font-size:11px; font-weight:600; margin-bottom:0.25rem;">SUB CATEGORY / GROUPING</label><input type="text" id="recipe-cat" placeholder="e.g. Granite, Texture, Primer" class="form-control" required></div>
-                    </div>
-                    
-                    <h5 style="margin: 1rem 0 0.5rem; font-size:12px; color:#4a5568; font-weight:600; text-transform:uppercase; border-bottom:1px dashed #cbd5e0; padding-bottom:0.25rem;">Standard Raw Material Ingredients</h5>
-                    <div id="recipe-ingredients-container"></div>
-                    <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom:1rem;" onclick="addIngredientRow()"><i class="ti ti-plus"></i> Add Raw Ingredient</button>
-
-                    <h5 style="margin: 0.5rem 0 0.5rem; font-size:12px; color:#4a5568; font-weight:600; text-transform:uppercase; border-bottom:1px dashed #cbd5e0; padding-bottom:0.25rem;">Granite Extras (Optional)</h5>
-                    <div id="recipe-granite-container"></div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="addGraniteRow()"><i class="ti ti-plus"></i> Add Granite Extra Ingredient</button>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-recipe')">Cancel</button><button type="submit" class="btn btn-primary">Save Template</button></div>
-            </form>
+      </div>
+      <!-- Stone size choice for gamazine — reception chooses per order -->
+      <div id="or-stone" style="display:none" class="fg">
+        <label>Stone size (client choice)</label>
+        <select id="oss">
+          <option value="Stone 0.4mm">0.4mm</option>
+          <option value="Stone 0.8mm">0.8mm</option>
+          <option value="Stone 1.1mm" selected>1.1mm (most common)</option>
+          <option value="Stone 1-2mm">1-2mm</option>
+        </select>
+      </div>
+      <!-- Bucket type -->
+      <div id="or-bkt" style="display:none" class="fg">
+        <label>Bucket type</label>
+        <select id="obk">
+          <option value="20L Printed">20L Printed</option>
+          <option value="20L Titan Black">20L Titan Black</option>
+        </select>
+      </div>
+      <!-- Secure lock -->
+      <div id="or-sec" style="display:none" class="fr">
+        <div class="fg"><label>Bucket size</label>
+          <select id="osec"><option value="20">20L Secure Lock</option><option value="5">5L Secure Lock</option></select>
         </div>
-    </div>
-
-    <div class="modal-overlay" id="m-produce">
-        <div class="modal-container">
-            <div class="modal-header"><h4>Run Production Batch</h4><button onclick="cM('m-produce')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-produce" onsubmit="executeBatchRun(event)">
-                <input type="hidden" id="produce-recipe-id">
-                <div class="modal-body">
-                    <p style="margin-bottom:0.75rem;">Formulation: <strong id="produce-recipe-name">Template Name</strong></p>
-                    <div class="form-group"><label>Target Production Batch Size (Liters)</label><input type="number" step="any" id="produce-size" class="form-control" oninput="calculateRequiredIngredients()" required></div>
-                    
-                    <div class="form-group"><label>Link Out to Finished Product Target</label>
-                        <select id="produce-mfg-target" class="form-control" required></select>
-                    </div>
-
-                    <div class="form-group"><label>Automatically Book Out Packaging Item</label>
-                        <div style="display:flex; gap:0.5rem;">
-                            <select id="produce-pkg-id" class="form-control" style="flex:2;" oninput="calculateRequiredIngredients()"><option value="">-- Do Not Deduct Packaging --</option></select>
-                            <input type="number" id="produce-pkg-qty" class="form-control" style="flex:1;" placeholder="Count">
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 1rem;">
-                        <h5 style="font-size:12px; font-weight:600; color:#4a5568; margin-bottom:0.5rem; text-transform:uppercase;">Required Ingredients Stock Status Preview</h5>
-                        <div id="produce-preview" style="background:#f7fafc; padding:0.75rem; border-radius:4px; max-height:180px; overflow-y:auto; border:1px solid #cbd5e0; font-size:12px;"></div>
-                    </div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-produce')">Cancel</button><button type="submit" id="btn-submit-produce" class="btn btn-primary">Confirm &amp; Run Batch</button></div>
-            </form>
+        <div class="fg"><label>Quantity</label><input type="number" id="oqsec" value="1" min="1"></div>
+      </div>
+      <!-- Clearcoat size -->
+      <div id="or-cls" style="display:none" class="fg">
+        <label>Clearcoat size</label>
+        <select id="ocls"><option value="20">20L</option><option value="10">10L</option><option value="5">5L</option></select>
+      </div>
+      <!-- Colour match -->
+      <div id="or-cm" style="display:none">
+        <div class="ib"><i class="ti ti-palette"></i> Colour match — enter tints used per bucket. Stock deducted on completion.</div>
+        <div class="fr">
+          <div class="fg"><label>Colour name / ref</label><input type="text" id="cmn" placeholder="e.g. Client Ref 007"></div>
+          <div class="fg"><label>Quantity (buckets)</label><input type="number" id="cmq" value="1" min="1"></div>
         </div>
-    </div>
-
-    <div class="modal-overlay" id="m-packaging">
-        <div class="modal-container">
-            <div class="modal-header"><h4 id="pkg-modal-title">Add Packaging</h4><button onclick="cM('m-packaging')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-packaging" onsubmit="savePackaging(event)">
-                <input type="hidden" id="pkg-id">
-                <div class="modal-body">
-                    <div class="form-group"><label>Item Description / Size</label><input type="text" id="pkg-name" placeholder="e.g. 20L Bucket, 5L Bucket" class="form-control" required></div>
-                    <div class="form-group"><label>Alert Level Threshold (Count)</label><input type="number" id="pkg-alert" class="form-control" required></div>
-                    <div class="form-group" id="pkg-stock-group"><label>Current Physical Stock Count</label><input type="number" id="pkg-stock" class="form-control" value="0"></div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-packaging')">Cancel</button><button type="submit" class="btn btn-primary">Save Item</button></div>
-            </form>
+        <div class="fr">
+          <div class="fg"><label>Stone size</label>
+            <select id="cms"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm">1.1mm</option><option value="Stone 1-2mm">1-2mm</option></select>
+          </div>
+          <div class="fg"><label>Bucket type</label>
+            <select id="cmb"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select>
+          </div>
         </div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:6px">Tints per bucket (shots &amp; Y):</div>
+        <div id="cmt"></div>
+        <button class="btn btns" onclick="addCMT()" style="margin-bottom:0.75rem"><i class="ti ti-plus"></i> Add tint</button>
+      </div>
+      <div class="fg"><label>Delivery method</label>
+        <select id="odl" onchange="tLN()"><option value="collection">Collection</option><option value="courier">Courier (lids included)</option></select>
+      </div>
+      <div id="ln" style="display:none" class="ib"><i class="ti ti-info-circle"></i> Lids will be included for courier delivery</div>
+      <div class="fg"><label>Order notes</label><input type="text" id="onn" placeholder="Optional notes for the factory"></div>
+      <button class="btn btnp" onclick="bOrder()"><i class="ti ti-clipboard-check"></i> Build order &amp; generate slip</button>
     </div>
-
-    <div class="modal-overlay" id="m-bookout">
-        <div class="modal-container">
-            <div class="modal-header"><h4>Deduct Packaging Stock</h4><button onclick="cM('m-bookout')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-bookout" onsubmit="savePackagingBookout(event)">
-                <input type="hidden" id="bookout-pkg-id">
-                <div class="modal-body">
-                    <p style="margin-bottom:1rem; color:#4a5568;">Recording deduction for: <strong id="bookout-pkg-name">Item</strong></p>
-                    <div class="form-group"><label>Quantity Issued / Booked Out</label><input type="number" id="bookout-qty" class="form-control" required></div>
-                    <div class="form-group"><label>Reason / Job Reference</label><input type="text" id="bookout-reason" class="form-control" required placeholder="e.g. Damaged, Manual order mix"></div>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-bookout')">Cancel</button><button type="submit" class="btn btn-primary">Deduct Stock</button></div>
-            </form>
+    <div id="sarea" style="display:none">
+      <div class="card"><h3>Order slip — ready to print</h3>
+        <div id="sc"></div>
+        <div style="display:flex;gap:8px;margin-top:0.75rem;justify-content:flex-end">
+          <button class="btn btns" onclick="window.print()"><i class="ti ti-printer"></i> Print slip</button>
+          <button class="btn btns btnp" onclick="cOC()"><i class="ti ti-circle-check"></i> Confirm &amp; send to factory</button>
         </div>
+      </div>
     </div>
+  </div>
+  <div id="ot-active" style="display:none"><div id="aol"></div></div>
+  <div id="ot-done" style="display:none"><div id="dol"></div></div>
+</div>
 
-    <div class="modal-overlay" id="m-order">
-        <div class="modal-container" style="max-width: 600px;">
-            <div class="modal-header"><h4>Create Customer Order</h4><button onclick="cM('m-order')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <form id="form-order" onsubmit="saveOrder(event)">
-                <div class="modal-body">
-                    <div class="form-group"><label>Customer Name</label><input type="text" id="order-customer" class="form-control" required></div>
-                    
-                    <h5 style="margin: 1rem 0 0.5rem; font-size:12px; font-weight:600; text-transform:uppercase; border-bottom:1px dashed #cbd5e0; padding-bottom:0.25rem;">Order Product Line Items</h5>
-                    <div id="order-items-container"></div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="addOrderItemRow()"><i class="ti ti-plus"></i> Add Item Line</button>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-order')">Cancel</button><button type="submit" class="btn btn-primary">Place Order</button></div>
-            </form>
-        </div>
+<!-- REPORTS -->
+<div class="pg" id="pg-rep">
+  <div class="ph"><div><h1>Reports</h1><p>Weekly and monthly production and stock reports</p></div></div>
+  <div class="al"><i class="ti ti-lock"></i> Revenue and prices are admin-only</div>
+  <div class="tabs">
+    <div class="tab active" onclick="sRT('wk',this)">Weekly</div>
+    <div class="tab" onclick="sRT('mo',this)">Monthly</div>
+    <div class="tab" onclick="sRT('pr',this)">Selling prices</div>
+  </div>
+  <div id="rt-wk"></div>
+  <div id="rt-mo" style="display:none"></div>
+  <div id="rt-pr" style="display:none"></div>
+</div>
+
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="mbg" id="m-am" onclick="cBG(event,'m-am')"><div class="mod">
+  <button class="mc" onclick="cM('m-am')"><i class="ti ti-x"></i></button><h3>Add raw material</h3>
+  <div class="fr"><div class="fg"><label>Name</label><input type="text" id="mn"></div>
+  <div class="fg"><label>Category</label><select id="mc2"><option value="resin">Resin</option><option value="chemical">Chemical</option><option value="sand">Sand</option><option value="stone">Stone</option><option value="granite">Granite</option><option value="tint">Tint</option><option value="other">Other</option></select></div></div>
+  <div class="fr"><div class="fg"><label>Supplier</label><input type="text" id="msu"></div><div class="fg"><label>Pack size</label><input type="text" id="mp"></div></div>
+  <div class="fg"><label>Description</label><textarea id="md" rows="2"></textarea></div>
+  <div class="fr3"><div class="fg"><label>Stock</label><input type="number" id="mst" value="0" step="0.01"></div>
+  <div class="fg"><label>Unit</label><select id="mu"><option>L</option><option>kg</option><option>units</option><option>g</option></select></div>
+  <div class="fg"><label>Alert below</label><input type="number" id="ma" value="0"></div></div>
+  <div class="fe"><button class="btn" onclick="cM('m-am')">Cancel</button><button class="btn btnp" onclick="addMat()">Add</button></div>
+</div></div>
+
+<div class="mbg" id="m-em" onclick="cBG(event,'m-em')"><div class="mod">
+  <button class="mc" onclick="cM('m-em')"><i class="ti ti-x"></i></button><h3 id="emt">Edit material</h3>
+  <input type="hidden" id="eid">
+  <div class="fr"><div class="fg"><label>Current stock</label><input type="number" id="est" step="0.01"></div>
+  <div class="fg"><label>Alert below</label><input type="number" id="eal"></div></div>
+  <div class="fg"><label>Description</label><textarea id="ede" rows="2"></textarea></div>
+  <div class="fg"><label>Supplier</label><input type="text" id="esu"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-em')">Cancel</button><button class="btn btnp" onclick="saveMat()">Save</button></div>
+</div></div>
+
+<div class="mbg" id="m-nb" onclick="cBG(event,'m-nb')"><div class="mod">
+  <button class="mc" onclick="cM('m-nb')"><i class="ti ti-x"></i></button><h3>Add new base type</h3>
+  <div class="fr"><div class="fg"><label>Base name</label><input type="text" id="nbn"></div>
+  <div class="fg"><label>Batch size (L)</label><input type="number" id="nbb" value="200"></div></div>
+  <div class="fr"><div class="fg"><label>Initial stock (L)</label><input type="number" id="nbs" value="0"></div>
+  <div class="fg"><label>Alert below (L)</label><input type="number" id="nba" value="50"></div></div>
+  <div style="font-size:12px;font-weight:500;margin-bottom:5px">Formula ingredients:</div>
+  <div id="nbil"></div>
+  <button class="btn btns" onclick="addNBI()"><i class="ti ti-plus"></i> Add ingredient</button>
+  <div class="fe"><button class="btn" onclick="cM('m-nb')">Cancel</button><button class="btn btnp" onclick="saveNB()">Add base</button></div>
+</div></div>
+
+<div class="mbg" id="m-eb" onclick="cBG(event,'m-eb')"><div class="mod">
+  <button class="mc" onclick="cM('m-eb')"><i class="ti ti-x"></i></button><h3>Edit base formula</h3>
+  <div class="fr"><div class="fg"><label>Base</label><select id="ebs" onchange="lBE()"></select></div>
+  <div class="fg"><label>Alert below (L)</label><input type="number" id="eba"></div></div>
+  <div class="fg"><label>Current stock (L) — manual override</label><input type="number" id="ebs-stock" step="0.1" min="0"></div>
+  <div id="ber"></div>
+  <button class="btn btns" onclick="addBER()" style="margin-bottom:0.5rem"><i class="ti ti-plus"></i> Add ingredient</button>
+  <div class="fe"><button class="btn" onclick="cM('m-eb')">Cancel</button><button class="btn btnp" onclick="saveBE()">Save</button></div>
+</div></div>
+
+<div class="mbg" id="m-ep" onclick="cBG(event,'m-ep')"><div class="mod" style="width:360px">
+  <button class="mc" onclick="cM('m-ep')"><i class="ti ti-x"></i></button><h3 id="ept">Edit packaging</h3>
+  <input type="hidden" id="epk">
+  <div class="fr"><div class="fg"><label>Stock</label><input type="number" id="eps"></div>
+  <div class="fg"><label>Alert below</label><input type="number" id="epa"></div></div>
+  <div class="fe"><button class="btn" onclick="cM('m-ep')">Cancel</button><button class="btn btnp" onclick="savePkg()">Save</button></div>
+</div></div>
+
+<!-- FORMULATION MODAL — fully free ingredient system -->
+<div class="mbg" id="m-af" onclick="cBG(event,'m-af')"><div class="mod">
+  <button class="mc" onclick="cM('m-af')"><i class="ti ti-x"></i></button>
+  <h3 id="fmtitle">Add formulation</h3>
+  <input type="hidden" id="feid">
+  <div class="fr">
+    <div class="fg"><label>Colour / product name</label><input type="text" id="fn" placeholder="e.g. Green Valley"></div>
+    <div class="fg"><label>Product type</label>
+      <select id="ftype" onchange="onFTypeChange()">
+        <option value="gamazine">Gamazine</option>
+        <option value="granite">Granite Coat</option>
+        <option value="undercoat">Undercoat</option>
+        <option value="cps">CPS</option>
+        <option value="clearcoat">Clearcoat</option>
+        <option value="waterproofing">Waterproofing</option>
+        <option value="fiberseal">Fiber Seal</option>
+      </select>
     </div>
-
-    <div class="modal-overlay" id="m-pdf">
-        <div class="modal-container">
-            <div class="modal-header"><h4>Print Stock Report Configuration</h4><button onclick="cM('m-pdf')" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button></div>
-            <div class="modal-body">
-                <p style="margin-bottom:1rem; color:#4a5568;">Select which dynamic system inventory data blocks to print out on your report summary:</p>
-                <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                    <label style="display:flex; align-items:center; gap:0.5rem; font-size:13px; font-weight:normal; text-transform:none;"><input type="checkbox" id="print-i-mat" checked> Include Raw Materials Inventory Block</label>
-                    <label style="display:flex; align-items:center; gap:0.5rem; font-size:13px; font-weight:normal; text-transform:none;"><input type="checkbox" id="print-i-mfg" checked> Include Manufactured Finished Stock Block</label>
-                    <label style="display:flex; align-items:center; gap:0.5rem; font-size:13px; font-weight:normal; text-transform:none;"><input type="checkbox" id="print-i-pkg" checked> Include Packaging Items Stock Block</label>
-                </div>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="cM('m-pdf')">Close</button><button class="btn btn-primary" onclick="generateStockStatusPdf()"><i class="ti ti-printer"></i> Generate Print Window</button></div>
-        </div>
+  </div>
+  <div class="fr">
+    <div class="fg">
+      <label>Sub-category</label>
+      <input type="text" id="fsubcat" placeholder="e.g. Standard, Essential" list="subcat-suggestions" autocomplete="off">
+      <datalist id="subcat-suggestions"></datalist>
     </div>
-
-    <script>
-        const API_BASE = window.location.origin;
-        let currentUser = null;
-        let activeTab = 'dashboard';
-        let activeLogSubTab = 'batch';
-
-        // State Caches
-        let materials = [];
-        let mfgStock = [];
-        let formulations = [];
-        let orders = [];
-        let packaging = [];
-        let batchLogs = [];
-        let stockReceipts = [];
-        let pkgBookouts = [];
-
-        // App Boot-up System Initializer
-        window.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('token');
-            const cachedUser = localStorage.getItem('user');
-            if (token && cachedUser) {
-                currentUser = JSON.parse(cachedUser);
-                document.getElementById('auth-screen').style.display = 'none';
-                setProfileDisplays();
-                loadApplicationData();
-            }
-        });
-
-        function getHeaders() {
-            return {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            };
-        }
-
-        // Authentication Core Handlers
-        async function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-            const errorEl = document.getElementById('login-error');
-            errorEl.style.display = 'none';
-
-            try {
-                const res = await fetch(`${API_BASE}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Authentication error failed');
-
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                currentUser = data.user;
-                
-                document.getElementById('auth-screen').style.display = 'none';
-                setProfileDisplays();
-                loadApplicationData();
-            } catch (err) {
-                errorEl.textContent = err.message;
-                errorEl.style.display = 'block';
-            }
-        }
-
-        function handleLogout() {
-            localStorage.clear();
-            currentUser = null;
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('login-form').reset();
-        }
-
-        function setProfileDisplays() {
-            document.getElementById('user-display-name').textContent = currentUser.username;
-            document.getElementById('user-role-badge').textContent = currentUser.role;
-            
-            if (currentUser.role === 'admin') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-flex');
-            } else {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-            }
-        }
-
-        // Sidebar Navigation Toggles
-        function toggleSidebar() {
-            document.getElementById('app-sidebar').classList.toggle('hidden');
-        }
-
-        function switchTab(tabId) {
-            activeTab = tabId;
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
-            
-            // Activate current navigation tab element
-            const items = document.querySelectorAll('.nav-item');
-            const targetMap = { dashboard:0, materials:1, manufactured:2, recipes:3, orders:4, packaging:5, history:6 };
-            if(items[targetMap[tabId]]) items[targetMap[tabId]].classList.add('active');
-            
-            document.getElementById(`view-${tabId}`).classList.add('active');
-            document.getElementById('current-view-title').textContent = tabId.charAt(0).toUpperCase() + tabId.slice(1);
-            
-            renderViewData(tabId);
-        }
-
-        function switchSubLog(subType) {
-            activeLogSubTab = subType;
-            document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-log-${subType}`).classList.add('active');
-            renderHistoryLogs();
-        }
-
-        // Modal Component Control Helper Functions
-        function oM(id) { document.getElementById(id).classList.add('show'); }
-        function cM(id) { document.getElementById(id).classList.remove('show'); }
-
-        // Core Data Integration Orchestrator
-        async function loadApplicationData() {
-            try {
-                const [rMat, rMfg, rRec, rOrd, rPkg, rBat, rRecs, rBkt] = await Promise.all([
-                    fetch(`${API_BASE}/api/materials`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/manufactured-stock`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/batch-recipes`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/orders`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/packaging`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/batch-logs`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/stock-receipts`, { headers: getHeaders() }).then(r => r.json()),
-                    fetch(`${API_BASE}/api/packaging-bookouts`, { headers: getHeaders() }).then(r => r.json())
-                ]);
-
-                materials = rMat || [];
-                mfgStock = rMfg || [];
-                formulations = rRec || [];
-                orders = rOrd || [];
-                packaging = rPkg || [];
-                batchLogs = rBat || [];
-                stockReceipts = rRecs || [];
-                pkgBookouts = rBkt || [];
-
-                renderViewData(activeTab);
-                updateDashboardSummaryStats();
-            } catch (err) {
-                console.error("Critical Engine State Synchronizer Failure:", err);
-            }
-        }
-
-        function renderViewData(view) {
-            if (view === 'dashboard') updateDashboardSummaryStats();
-            else if (view === 'materials') renderMaterials();
-            else if (view === 'manufactured') renderManufactured();
-            else if (view === 'recipes') renderRecipes();
-            else if (view === 'orders') renderOrders();
-            else if (view === 'packaging') renderPackaging();
-            else if (view === 'history') renderHistoryLogs();
-        }
-
-        // Stock Calculation Threshold Level Status Indicators Helper
-        function stt(stock, alertLevel) {
-            if (stock <= 0) return 'empty';
-            if (stock <= alertLevel) return 'low';
-            return 'good';
-        }
-
-        // Dashboard Metric Render Blocks
-        function updateDashboardSummaryStats() {
-            const lowMat = materials.filter(m => m.stock <= m.alert_level).length;
-            const lowMfg = mfgStock.filter(p => p.stock <= p.alert_level).length;
-            const pendingOrd = orders.filter(o => o.status === 'Pending').length;
-
-            document.getElementById('stat-low-mat').textContent = lowMat;
-            document.getElementById('stat-low-mfg').textContent = lowMfg;
-            document.getElementById('stat-orders').textContent = pendingOrd;
-            document.getElementById('stat-recipes').textContent = formulations.length;
-
-            // Generate Critical Alerts Panel Context
-            let alertHtml = `<tr><th>Item Type</th><th>Name</th><th>Current Stock</th><th>Alert Target Limit</th><th>Status</th></tr>`;
-            let elementsAdded = 0;
-
-            materials.forEach(m => {
-                if(m.stock <= m.alert_level) {
-                    const status = stt(m.stock, m.alert_level);
-                    alertHtml += `<tr><td>Raw Material</td><td>${m.name}</td><td>${m.stock.toFixed(1)} (${m.pack_unit})</td><td>${m.alert_level}</td><td><span class="status-pill status-${status}">${status}</span></td></tr>`;
-                    elementsAdded++;
-                }
-            });
-            mfgStock.forEach(p => {
-                if(p.stock <= p.alert_level) {
-                    const status = stt(p.stock, p.alert_level);
-                    alertHtml += `<tr><td>Finished Stock</td><td>${p.name}</td><td>${p.stock.toFixed(0)} L</td><td>${p.alert_level} L</td><td><span class="status-pill status-${status}">${status}</span></td></tr>`;
-                    elementsAdded++;
-                }
-            });
-            packaging.forEach(k => {
-                if(k.stock <= k.alert_level) {
-                    const status = stt(k.stock, k.alert_level);
-                    alertHtml += `<tr><td>Packaging</td><td>${k.name}</td><td>${k.stock} units</td><td>${k.alert_level}</td><td><span class="status-pill status-${status}">${status}</span></td></tr>`;
-                    elementsAdded++;
-                }
-            });
-
-            if(elementsAdded === 0) alertHtml += `<tr><td colspan="5" style="text-align:center; color:#718096;">All warehouse stock balances securely above alerts.</td></tr>`;
-            document.getElementById('table-dash-alerts').innerHTML = alertHtml;
-
-            // Recent Logs Timeline Integration Display
-            let activityHtml = `<tr><th>Activity Context</th><th>Timestamp</th></tr>`;
-            const sliceLogs = batchLogs.slice(0, 5);
-            sliceLogs.forEach(l => {
-                const rec = formulations.find(f => f.id === l.formulation_id);
-                activityHtml += `<tr><td>Batch Run Executed: <strong>${rec ? rec.name : 'Unknown Recipe'}</strong> (${l.batch_size}L Manufactured)</td><td>${new Date(l.created_at).toLocaleDateString()}</td></tr>`;
-            });
-            if(sliceLogs.length === 0) activityHtml += `<tr><td colspan="2" style="text-align:center; color:#718096;">No historical logs found.</td></tr>`;
-            document.getElementById('table-dash-activity').innerHTML = activityHtml;
-        }
-
-        // VIEW RENDERING: RAW MATERIALS
-        function renderMaterials() {
-            const query = document.getElementById('search-mat').value.toLowerCase();
-            let html = `<tr><th>Material Spec Details</th><th>Pack Unit Info</th><th>Current Units Count</th><th>Equivalent Volume/Mass Total</th><th>Alert Level Threshold</th><th>Status</th><th>Actions</th></tr>`;
-            
-            const filtered = materials.filter(m => m.name.toLowerCase().includes(query));
-            filtered.forEach(m => {
-                const status = stt(m.stock, m.alert_level);
-                const massTotal = m.stock * m.pack_qty;
-                html += `<tr>
-                    <td><strong>${m.name}</strong></td>
-                    <td>${m.pack_unit} (${m.pack_qty} kg/L)</td>
-                    <td>${m.stock.toFixed(2)} Packs</td>
-                    <td>${massTotal.toFixed(1)} kg/L Total</td>
-                    <td>${m.alert_level} Packs</td>
-                    <td><span class="status-pill status-${status}">${status}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="openReceiptModal(${m.id}, '${m.name.replace(/'/g, "\\'")}')"><i class="ti ti-plus"></i> Receive</button>
-                        <button class="btn btn-secondary btn-sm admin-only" onclick="openMaterialModal(${m.id})"><i class="ti ti-edit"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('table-materials').innerHTML = html;
-            setProfileDisplays();
-        }
-
-        function openMaterialModal(id = null) {
-            const form = document.getElementById('form-material');
-            form.reset();
-            if (id) {
-                document.getElementById('mat-modal-title').textContent = "Edit Material Registry";
-                const m = materials.find(x => x.id === id);
-                document.getElementById('mat-id').value = m.id;
-                document.getElementById('mat-name').value = m.name;
-                document.getElementById('mat-alert').value = m.alert_level;
-                document.getElementById('mat-unit').value = m.pack_unit;
-                document.getElementById('mat-qty').value = m.pack_qty;
-                document.getElementById('mat-stock-group').style.display = 'block';
-                document.getElementById('mat-stock').value = m.stock;
-            } else {
-                document.getElementById('mat-modal-title').textContent = "Add Material Registry";
-                document.getElementById('mat-id').value = "";
-                document.getElementById('mat-stock-group').style.display = 'none';
-                document.getElementById('mat-stock').value = "0";
-            }
-            oM('m-material');
-        }
-
-        async function saveMaterial(e) {
-            e.preventDefault();
-            const id = document.getElementById('mat-id').value;
-            const payload = {
-                name: document.getElementById('mat-name').value,
-                alert_level: parseFloat(document.getElementById('mat-alert').value),
-                pack_unit: document.getElementById('mat-unit').value,
-                pack_qty: parseFloat(document.getElementById('mat-qty').value),
-                stock: parseFloat(document.getElementById('mat-stock').value)
-            };
-
-            const url = id ? `${API_BASE}/api/materials/${id}` : `${API_BASE}/api/materials`;
-            // Using PUT if editing, POST if new item. 
-            // Note: If the backend has no strict put route except posting updates, verify with standard setup routes.
-            const method = id ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if(!res.ok) throw new Error("Could not execute repository adjustment action.");
-                cM('m-material');
-                loadApplicationData();
-            } catch(err) { alert(err.message); }
-        }
-
-        function openReceiptModal(id, name) {
-            document.getElementById('form-receipt').reset();
-            document.getElementById('receipt-mat-id').value = id;
-            document.getElementById('receipt-mat-name').textContent = name;
-            oM('m-receipt');
-        }
-
-        async function saveStockReceipt(e) {
-            e.preventDefault();
-            const matId = parseInt(document.getElementById('receipt-mat-id').value);
-            const qtyReceived = parseFloat(document.getElementById('receipt-qty').value);
-            const ref = document.getElementById('receipt-ref').value;
-
-            const mat = materials.find(m => m.id === matId);
-            if(!mat) return;
-
-            try {
-                // Post into log database records line entry context
-                await fetch(`${API_BASE}/api/stock-receipts`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ material_id: matId, quantity: qtyReceived, reference: ref || 'Warehouse Receipt Adjustment' })
-                });
-
-                // Update material counts tracking metrics total balances
-                await fetch(`${API_BASE}/api/materials/${matId}`, {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ ...mat, stock: mat.stock + qtyReceived })
-                });
-
-                cM('m-receipt');
-                loadApplicationData();
-            } catch(err) { alert("Failed processing inventory receipt logic operation steps."); }
-        }
-
-        // VIEW RENDERING: MANUFACTURED FINISHED PRODUCTS
-        function renderManufactured() {
-            const query = document.getElementById('search-mfg').value.toLowerCase();
-            let html = `<tr><th>Product Item Blueprint Name</th><th>Stock Balance (Liters)</th><th>Alert Limit Threshold</th><th>Status</th><th class="admin-only">Actions</th></tr>`;
-            
-            const filtered = mfgStock.filter(p => p.name.toLowerCase().includes(query));
-            filtered.forEach(p => {
-                const status = stt(p.stock, p.alert_level);
-                html += `<tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td>${p.stock.toFixed(0)} L</td>
-                    <td>${p.alert_level} L</td>
-                    <td><span class="status-pill status-${status}">${status}</span></td>
-                    <td class="admin-only">
-                        <button class="btn btn-secondary btn-sm" onclick="openMfgModal(${p.id})"><i class="ti ti-edit"></i> Edit</button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('table-manufactured').innerHTML = html;
-            setProfileDisplays();
-        }
-
-        function openMfgModal(id = null) {
-            const form = document.getElementById('form-mfg');
-            form.reset();
-            if (id) {
-                document.getElementById('mfg-modal-title').textContent = "Modify Finished Product Setup";
-                const p = mfgStock.find(x => x.id === id);
-                document.getElementById('mfg-id').value = p.id;
-                document.getElementById('mfg-name').value = p.name;
-                document.getElementById('mfg-alert').value = p.alert_level;
-                document.getElementById('mfg-stock-group').style.display = 'block';
-                document.getElementById('mfg-stock').value = p.stock;
-            } else {
-                document.getElementById('mfg-modal-title').textContent = "Add New Product Line";
-                document.getElementById('mfg-id').value = "";
-                document.getElementById('mfg-stock-group').style.display = 'none';
-                document.getElementById('mfg-stock').value = "0";
-            }
-            oM('m-mfg');
-        }
-
-        async function saveMfgProduct(e) {
-            e.preventDefault();
-            const id = document.getElementById('mfg-id').value;
-            const payload = {
-                name: document.getElementById('mfg-name').value,
-                alert_level: parseFloat(document.getElementById('mfg-alert').value),
-                stock: parseFloat(document.getElementById('mfg-stock').value)
-            };
-
-            const url = id ? `${API_BASE}/api/manufactured-stock/${id}` : `${API_BASE}/api/manufactured-stock`;
-            const method = id ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if(!res.ok) throw new Error("Could not update internal production directory entries.");
-                cM('m-mfg');
-                loadApplicationData();
-            } catch(err) { alert(err.message); }
-        }
-
-        // VIEW RENDERING: RECIPES / FORMULATIONS (JSONB POWERED)
-        function renderRecipes() {
-            const query = document.getElementById('search-recipes').value.toLowerCase();
-            let html = `<tr><th>Formulation Profile Details</th><th>Category Classification</th><th>Ingredients Elements Mapping Preview</th><th>Actions</th></tr>`;
-            
-            const filtered = formulations.filter(f => f.name.toLowerCase().includes(query) || (f.sub_category && f.sub_category.toLowerCase().includes(query)));
-            filtered.forEach(f => {
-                let ingPreview = [];
-                const ingArr = Array.isArray(f.ingredients) ? f.ingredients : [];
-                ingArr.forEach(i => {
-                    const m = materials.find(x => x.id == i.material_id);
-                    if(m) ingPreview.push(`${m.name}: ${i.percentage}%`);
-                });
-
-                const graniteArr = Array.isArray(f.granite_ingredients) ? f.granite_ingredients : [];
-                if(graniteArr.length > 0) {
-                    ingPreview.push(`+ ${graniteArr.length} Granite Extras`);
-                }
-
-                html += `<tr>
-                    <td><strong>${f.name}</strong></td>
-                    <td><span class="role-badge">${f.sub_category || 'General Formulation'}</span></td>
-                    <td style="font-size:12px; color:#4a5568; max-width:320px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ingPreview.join(', ')}">${ingPreview.join(', ') || 'No defined items structural schema'}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm" onclick="openProduceModal(${f.id})"><i class="ti ti-hammer"></i> Produce Batch</button>
-                        <button class="btn btn-secondary btn-sm admin-only" onclick="openRecipeModal(${f.id})"><i class="ti ti-edit"></i> Setup</button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('table-recipes').innerHTML = html;
-            setProfileDisplays();
-        }
-
-        // Dynamic Ingredient Row Generator Logic
-        function createIngredientRowHtml(selectedMatId = '', percentageValue = '') {
-            let options = '<option value="">-- Choose Material Component --</option>';
-            materials.forEach(m => {
-                options += `<option value="${m.id}" ${m.id == selectedMatId ? 'selected' : ''}>${m.name}</option>`;
-            });
-
-            return `<div class="row-inputs ingredient-row-entry">
-                <select class="form-control ing-select-id" style="flex: 2;" required>${options}</select>
-                <input type="number" step="any" placeholder="Percentage %" class="form-control ing-input-percent" style="flex: 1;" value="${percentageValue}" required>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 0.5rem;"><i class="ti ti-trash"></i></button>
-            </div>`;
-        }
-
-        function createGraniteRowHtml(selectedMatId = '', fixedQtyValue = '') {
-            let options = '<option value="">-- Choose Extra Component --</option>';
-            materials.forEach(m => {
-                options += `<option value="${m.id}" ${m.id == selectedMatId ? 'selected' : ''}>${m.name}</option>`;
-            });
-
-            return `<div class="row-inputs granite-row-entry">
-                <select class="form-control granite-select-id" style="flex: 2;">${options}</select>
-                <input type="number" step="any" placeholder="Fixed Qty per L" class="form-control granite-input-qty" style="flex: 1;" value="${fixedQtyValue}">
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 0.5rem;"><i class="ti ti-trash"></i></button>
-            </div>`;
-        }
-
-        function addIngredientRow() {
-            document.getElementById('recipe-ingredients-container').insertAdjacentHTML('beforeend', createIngredientRowHtml());
-        }
-
-        function addGraniteRow() {
-            document.getElementById('recipe-granite-container').insertAdjacentHTML('beforeend', createGraniteRowHtml());
-        }
-
-        function openRecipeModal(id = null) {
-            const form = document.getElementById('form-recipe');
-            form.reset();
-            document.getElementById('recipe-ingredients-container').innerHTML = '';
-            document.getElementById('recipe-granite-container').innerHTML = '';
-
-            if (id) {
-                document.getElementById('recipe-modal-title').textContent = "Edit Formulation Parameters";
-                const f = formulations.find(x => x.id === id);
-                document.getElementById('recipe-id').value = f.id;
-                document.getElementById('recipe-name').value = f.name;
-                document.getElementById('recipe-cat').value = f.sub_category || '';
-
-                const ingArr = Array.isArray(f.ingredients) ? f.ingredients : [];
-                ingArr.forEach(i => {
-                    document.getElementById('recipe-ingredients-container').insertAdjacentHTML('beforeend', createIngredientRowHtml(i.material_id, i.percentage));
-                });
-
-                const graniteArr = Array.isArray(f.granite_ingredients) ? f.granite_ingredients : [];
-                graniteArr.forEach(g => {
-                    document.getElementById('recipe-granite-container').insertAdjacentHTML('beforeend', createGraniteRowHtml(g.material_id, g.fixed_qty));
-                });
-            } else {
-                document.getElementById('recipe-modal-title').textContent = "Create Formulation Structural Template";
-                document.getElementById('recipe-id').value = "";
-                // Inject an initial baseline empty configuration container rows block
-                addIngredientRow();
-            }
-            oM('m-recipe');
-        }
-
-        async function saveRecipe(e) {
-            e.preventDefault();
-            const id = document.getElementById('recipe-id').value;
-
-            // Extract values out of dynamic arrays lists elements containers contexts 
-            const ingredients = [];
-            document.querySelectorAll('.ingredient-row-entry').forEach(row => {
-                const matId = row.querySelector('.ing-select-id').value;
-                const percent = row.querySelector('.ing-input-percent').value;
-                if(matId && percent) {
-                    ingredients.push({ material_id: parseInt(matId), percentage: parseFloat(percent) });
-                }
-            });
-
-            const granite_ingredients = [];
-            document.querySelectorAll('.granite-row-entry').forEach(row => {
-                const matId = row.querySelector('.granite-select-id').value;
-                const qty = row.querySelector('.granite-input-qty').value;
-                if(matId && qty) {
-                    granite_ingredients.push({ material_id: parseInt(matId), fixed_qty: parseFloat(qty) });
-                }
-            });
-
-            const payload = {
-                name: document.getElementById('recipe-name').value,
-                sub_category: document.getElementById('recipe-cat').value,
-                ingredients: ingredients,
-                granite_ingredients: granite_ingredients
-            };
-
-            const url = id ? `${API_BASE}/api/formulations/${id}` : `${API_BASE}/api/formulations`;
-            const method = id ? 'PUT' : 'POST';
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if(!res.ok) throw new Error("Could not update formulation database configurations records blocks.");
-                cM('m-recipe');
-                loadApplicationData();
-            } catch(err) { alert(err.message); }
-        }
-
-        // PRODUCTION ENGINE OPERATIONS: LIVE BATCH RUN CODES HANDLERS
-        function openProduceModal(recipeId) {
-            document.getElementById('form-produce').reset();
-            const f = formulations.find(x => x.id === recipeId);
-            if(!f) return;
-
-            document.getElementById('produce-recipe-id').value = f.id;
-            document.getElementById('produce-recipe-name').textContent = f.name;
-            document.getElementById('produce-preview').innerHTML = '<p style="color:#718096">Enter batch target volume size to compute live status check indicators parameters mapping metrics.</p>';
-            
-            // Render selector option links elements targets listing contexts data maps
-            let options = '<option value="">-- Choose Target Finished Product Profile Item --</option>';
-            mfgStock.forEach(p => {
-                options += `<option value="${p.id}">${p.name} (Current: ${p.stock.toFixed(0)}L)</option>`;
-            });
-            document.getElementById('produce-mfg-target').innerHTML = options;
-
-            let pkgOptions = '<option value="">-- Do Not Deduct Packaging --</option>';
-            packaging.forEach(k => {
-                pkgOptions += `<option value="${k.id}">${k.name} (In stock: ${k.stock})</option>`;
-            });
-            document.getElementById('produce-pkg-id').innerHTML = pkgOptions;
-
-            document.getElementById('btn-submit-produce').disabled = false;
-            oM('m-produce');
-        }
-
-        function calculateRequiredIngredients() {
-            const recipeId = parseInt(document.getElementById('produce-recipe-id').value);
-            const batchSize = parseFloat(document.getElementById('produce-size').value);
-            const f = formulations.find(x => x.id === recipeId);
-            if(!f || !batchSize || batchSize <= 0) return;
-
-            let html = '<ul style="list-style:none; padding:0; display:flex; flex-direction:column; gap:0.35rem;">';
-            let allAvailable = true;
-
-            const ingArr = Array.isArray(f.ingredients) ? f.ingredients : [];
-            ingArr.forEach(i => {
-                const m = materials.find(x => x.id == i.material_id);
-                if(m) {
-                    // Compute weight requirement calculation parameters totals configurations metric steps
-                    // formula: batchSize * (percentage/100) = targeted kgs required total
-                    const requiredKg = batchSize * (i.percentage / 100);
-                    // Conversion back to standard raw system unit packs tracking measurements count values metric
-                    const requiredPacks = requiredKg / m.pack_qty;
-                    const isShort = m.stock < requiredPacks;
-                    if(isShort) allAvailable = false;
-
-                    html += `<li style="display:flex; justify-content:space-between; color: ${isShort ? '#e53e3e':'#2f855a'}; font-weight:${isShort?'600':'500'}">
-                        <span>${m.name}: Need ${requiredKg.toFixed(1)}kg (${requiredPacks.toFixed(2)} ${m.pack_unit})</span>
-                        <span>[Wh Stock: ${m.stock.toFixed(2)} / ${isShort ? 'SHORT' : 'OK'}]</span>
-                    </li>`;
-                }
-            });
-
-            const graniteArr = Array.isArray(f.granite_ingredients) ? f.granite_ingredients : [];
-            graniteArr.forEach(g => {
-                const m = materials.find(x => x.id == g.material_id);
-                if(m) {
-                    const requiredKg = batchSize * g.fixed_qty;
-                    const requiredPacks = requiredKg / m.pack_qty;
-                    const isShort = m.stock < requiredPacks;
-                    if(isShort) allAvailable = false;
-
-                    html += `<li style="display:flex; justify-content:space-between; color: ${isShort ? '#e53e3e':'#2f855a'}; font-weight:${isShort?'600':'500'}">
-                        <span>[Extra] ${m.name}: Need ${requiredKg.toFixed(1)}kg (${requiredPacks.toFixed(2)} ${m.pack_unit})</span>
-                        <span>[Wh Stock: ${m.stock.toFixed(2)}]</span>
-                    </li>`;
-                }
-            });
-
-            // Package Verification Container Status Steps Context
-            const pkgId = document.getElementById('produce-pkg-id').value;
-            const pkgQtyInput = document.getElementById('produce-pkg-qty').value;
-            if(pkgId && pkgQtyInput) {
-                const k = packaging.find(x => x.id == pkgId);
-                if(k) {
-                    const reqCount = parseInt(pkgQtyInput);
-                    const isShort = k.stock < reqCount;
-                    if(isShort) allAvailable = false;
-                    html += `<li style="border-top:1px dashed #cbd5e0; margin-top:0.35rem; padding-top:0.35rem; display:flex; justify-content:space-between; color:${isShort?'#e53e3e':'#2f855a'}">
-                        <span>Packaging: ${k.name} (Need ${reqCount})</span>
-                        <span>[Wh Count: ${k.stock}]</span>
-                    </li>`;
-                }
-            }
-
-            html += '</ul>';
-            document.getElementById('produce-preview').innerHTML = html;
-            document.getElementById('btn-submit-produce').disabled = !allAvailable;
-            if(!allAvailable) {
-                document.getElementById('produce-preview').insertAdjacentHTML('beforeend', '<p style="color:#e53e3e; font-weight:600; font-size:11px; margin-top:0.5rem; text-transform:uppercase;">Warning: Insufficient component inventory to satisfy requirement limits.</p>');
-            }
-        }
-
-        async function executeBatchRun(e) {
-            e.preventDefault();
-            const recipeId = parseInt(document.getElementById('produce-recipe-id').value);
-            const batchSize = parseFloat(document.getElementById('produce-size').value);
-            const mfgTargetId = parseInt(document.getElementById('produce-mfg-target').value);
-            const pkgId = document.getElementById('produce-pkg-id').value;
-            const pkgQty = document.getElementById('produce-pkg-qty').value;
-
-            const f = formulations.find(x => x.id === recipeId);
-            const prod = mfgStock.find(p => p.id === mfgTargetId);
-            if(!f || !prod) return;
-
-            try {
-                // 1. Process Raw Materials Stock Deductions Loops Sequence Actions
-                const ingArr = Array.isArray(f.ingredients) ? f.ingredients : [];
-                for(let i of ingArr) {
-                    const m = materials.find(x => x.id == i.material_id);
-                    const reqKg = batchSize * (i.percentage / 100);
-                    const reqPacks = reqKg / m.pack_qty;
-                    
-                    await fetch(`${API_BASE}/api/materials/${m.id}`, {
-                        method: 'PUT',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ ...m, stock: m.stock - reqPacks })
-                    });
-                }
-
-                const graniteArr = Array.isArray(f.granite_ingredients) ? f.granite_ingredients : [];
-                for(let g of graniteArr) {
-                    const m = materials.find(x => x.id == g.material_id);
-                    const reqKg = batchSize * g.fixed_qty;
-                    const reqPacks = reqKg / m.pack_qty;
-
-                    await fetch(`${API_BASE}/api/materials/${m.id}`, {
-                        method: 'PUT',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ ...m, stock: m.stock - reqPacks })
-                    });
-                }
-
-                // 2. Process Packaging Stock Deduction if configured
-                if(pkgId && pkgQty) {
-                    const pItem = packaging.find(k => k.id == pkgId);
-                    const count = parseInt(pkgQty);
-                    
-                    await fetch(`${API_BASE}/api/packaging`, {
-                        method: 'PUT',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ id: pItem.id, name: pItem.name, alert_level: pItem.alert_level, stock: pItem.stock - count })
-                    });
-
-                    await fetch(`${API_BASE}/api/packaging-bookouts`, {
-                        method: 'POST',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ packaging_id: pItem.id, quantity: count, reason: `Automated Batch Production Formulation Run Room Ref: ${f.name}` })
-                    });
-                }
-
-                // 3. Process Finished Target Product Volume Output Increment Actions Step
-                await fetch(`${API_BASE}/api/manufactured-stock/${prod.id}`, {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ ...prod, stock: prod.stock + batchSize })
-                });
-
-                // 4. Create History Log Tracking Entry Database Point Registry Block
-                await fetch(`${API_BASE}/api/batch-logs`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ formulation_id: recipeId, batch_size: batchSize, operator_name: currentUser.username })
-                });
-
-                cM('m-produce');
-                loadApplicationData();
-                alert("Formulation production batch pipeline execution completed successfully.");
-            } catch(err) { alert("An error occurred during transaction processing sequences loops."); }
-        }
-
-        // VIEW RENDERING: PACKAGING
-        function renderPackaging() {
-            let html = `<tr><th>Item Specification / Size Label</th><th>In-House Unit Items Count Stock</th><th>Alert Target Limit</th><th>Status</th><th>Actions</th></tr>`;
-            packaging.forEach(p => {
-                const status = stt(p.stock, p.alert_level);
-                html += `<tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td>${p.stock} units</td>
-                    <td>${p.alert_level}</td>
-                    <td><span class="status-pill status-${status}">${status}</span></td>
-                    <td>
-                        <button class="btn btn-secondary btn-sm" onclick="openBookoutModal(${p.id}, '${p.name.replace(/'/g, "\\'")}')"><i class="ti ti-minus"></i> Bookout</button>
-                        <button class="btn btn-secondary btn-sm admin-only" onclick="openPkgModal(${p.id})"><i class="ti ti-edit"></i></button>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('table-packaging').innerHTML = html;
-            setProfileDisplays();
-        }
-
-        function openPkgModal(id = null) {
-            const form = document.getElementById('form-packaging');
-            form.reset();
-            if(id) {
-                document.getElementById('pkg-modal-title').textContent = "Edit Packaging Details";
-                const p = packaging.find(x => x.id === id);
-                document.getElementById('pkg-id').value = p.id;
-                document.getElementById('pkg-name').value = p.name;
-                document.getElementById('pkg-alert').value = p.alert_level;
-                document.getElementById('pkg-stock-group').style.display = 'block';
-                document.getElementById('pkg-stock').value = p.stock;
-            } else {
-                document.getElementById('pkg-modal-title').textContent = "Add Packaging Specification";
-                document.getElementById('pkg-id').value = "";
-                document.getElementById('pkg-stock-group').style.display = 'none';
-                document.getElementById('pkg-stock').value = "0";
-            }
-            oM('m-packaging');
-        }
-
-        async function savePackaging(e) {
-            e.preventDefault();
-            const id = document.getElementById('pkg-id').value;
-            const payload = {
-                name: document.getElementById('pkg-name').value,
-                alert_level: parseInt(document.getElementById('pkg-alert').value),
-                stock: parseInt(document.getElementById('pkg-stock').value)
-            };
-
-            const url = id ? `${API_BASE}/api/packaging` : `${API_BASE}/api/packaging`; // Endpoint handles put cleanly via unified model arrays filters route mapping structures 
-            // Match server api endpoint route mapping signature definition profile layout configurations
-            const method = 'PUT'; // Backend updates packaging via PUT to /api/packaging
-
-            try {
-                const res = await fetch(url, {
-                    method: method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if(!res.ok) throw new Error("Processing logic database write execution sequence error.");
-                cM('m-packaging');
-                loadApplicationData();
-            } catch(err) { alert(err.message); }
-        }
-
-        function openBookoutModal(id, name) {
-            document.getElementById('form-bookout').reset();
-            document.getElementById('bookout-pkg-id').value = id;
-            document.getElementById('bookout-pkg-name').textContent = name;
-            oM('m-bookout');
-        }
-
-        async function savePackagingBookout(e) {
-            e.preventDefault();
-            const id = parseInt(document.getElementById('bookout-pkg-id').value);
-            const qty = parseInt(document.getElementById('bookout-qty').value);
-            const reason = document.getElementById('bookout-reason').value;
-
-            const pItem = packaging.find(k => k.id === id);
-            if(!pItem) return;
-
-            try {
-                await fetch(`${API_BASE}/api/packaging-bookouts`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ packaging_id: id, quantity: qty, reason: reason })
-                });
-
-                await fetch(`${API_BASE}/api/packaging`, {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ id: pItem.id, name: pItem.name, alert_level: pItem.alert_level, stock: pItem.stock - qty })
-                });
-
-                cM('m-bookout');
-                loadApplicationData();
-            } catch(err) { alert("Failed processing bookout action log trace updates."); }
-        }
-
-        // VIEW RENDERING: CUSTOMER INVOICING / ORDERS ROUTINE
-        function renderOrders() {
-            const query = document.getElementById('search-orders').value.toLowerCase();
-            let html = `<tr><th>Order Ref Code</th><th>Customer Entity Client</th><th>Registered Items Lines Context</th><th>Status Badge</th><th>Timestamp</th><th>Actions</th></tr>`;
-            
-            const filtered = orders.filter(o => o.customer_name.toLowerCase().includes(query));
-            filtered.forEach(o => {
-                let linesDesc = [];
-                const itemsArr = Array.isArray(o.items) ? o.items : [];
-                itemsArr.forEach(ln => {
-                    const p = mfgStock.find(x => x.id == ln.product_id);
-                    if(p) linesDesc.push(`${p.name} (x ${ln.quantity}L)`);
-                });
-
-                html += `<tr>
-                    <td><strong>#ORD-${o.id}</strong></td>
-                    <td>${o.customer_name}</td>
-                    <td style="font-size:12px; color:#4a5568;">${linesDesc.join(', ') || 'No line components items registry entries detected'}</td>
-                    <td><span class="status-pill status-${o.status === 'Completed' ? 'good' : 'low'}">${o.status}</span></td>
-                    <td>${new Date(o.created_at).toLocaleDateString()}</td>
-                    <td>
-                        ${o.status === 'Pending' ? `<button class="btn btn-primary btn-sm" onclick="fulfillCustomerOrder(${o.id})"><i class="ti ti-circle-check"></i> Complete &amp; Dispatched</button>` : `<span style="font-size:11px; color:#718096; font-weight:600;"><i class="ti ti-check"></i> Dispatched Archive</span>`}
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('table-orders').innerHTML = html;
-        }
-
-        function createOrderItemRowHtml() {
-            let options = '<option value="">-- Select Finished Product --</option>';
-            mfgStock.forEach(p => { options += `<option value="${p.id}">${p.name}</option>`; });
-
-            return `<div class="row-inputs order-item-line-row" style="margin-bottom:0.5rem;">
-                <select class="form-control order-ln-prod-id" style="flex:2;" required>${options}</select>
-                <input type="number" placeholder="Liters Qty" class="form-control order-ln-qty" style="flex:1;" required>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding:0.5rem;"><i class="ti ti-trash"></i></button>
-            </div>`;
-        }
-
-        function addOrderItemRow() {
-            document.getElementById('order-items-container').insertAdjacentHTML('beforeend', createOrderItemRowHtml());
-        }
-
-        function openOrderModal() {
-            document.getElementById('form-order').reset();
-            document.getElementById('order-items-container').innerHTML = '';
-            addOrderItemRow();
-            oM('m-order');
-        }
-
-        async function saveOrder(e) {
-            e.preventDefault();
-            const lines = [];
-            document.querySelectorAll('.order-item-line-row').forEach(row => {
-                const pId = row.querySelector('.order-ln-prod-id').value;
-                const qty = row.querySelector('.order-ln-qty').value;
-                if(pId && qty) {
-                    lines.push({ product_id: parseInt(pId), quantity: parseFloat(qty) });
-                }
-            });
-
-            const payload = {
-                customer_name: document.getElementById('order-customer').value,
-                status: 'Pending',
-                items: lines,
-                total_price: 0 // Baseline internal operational metrics system parameters tracking integration skip values placeholder
-            };
-
-            try {
-                await fetch(`${API_BASE}/api/orders`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                cM('m-order');
-                loadApplicationData();
-            } catch(err) { alert("Failed system entry order routing creation operation framework process steps."); }
-        }
-
-        async function fulfillCustomerOrder(orderId) {
-            const o = orders.find(x => x.id === orderId);
-            if(!o) return;
-
-            // Pre-flight check stock availability verification loop
-            let clearToFulfill = true;
-            const itemsArr = Array.isArray(o.items) ? o.items : [];
-            itemsArr.forEach(ln => {
-                const p = mfgStock.find(x => x.id == ln.product_id);
-                if(!p || p.stock < ln.quantity) clearToFulfill = false;
-            });
-
-            if(!clearToFulfill) {
-                alert("Aborting Action: Cannot fulfill order requirements context. Insufficient finished product volume availability matching inventory ledger tracks.");
-                return;
-            }
-
-            if(!confirm("Are you sure you want to deduct finished factory stock lines and complete this transaction dispatch order cycle tracking sequence step?")) return;
-
-            try {
-                // Deduct metrics tracking values components loops
-                for(let ln of itemsArr) {
-                    const p = mfgStock.find(x => x.id == ln.product_id);
-                    await fetch(`${API_BASE}/api/manufactured-stock/${p.id}`, {
-                        method: 'PUT',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ ...p, stock: p.stock - ln.quantity })
-                    });
-                }
-
-                // Complete Order Registry Updates Route Signature Payload Context Call Steps
-                await fetch(`${API_BASE}/api/orders/${orderId}`, {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ ...o, status: 'Completed' })
-                });
-
-                loadApplicationData();
-            } catch(err) { alert("An operational error breakdown loop interrupted fulfillment routing tasks transaction pipelines."); }
-        }
-
-        // VIEW RENDERING: SYSTEM HISTORY TRANSACTION RUN LOGS PANELS
-        function renderHistoryLogs() {
-            let html = '';
-            if(activeLogSubTab === 'batch') {
-                html = `<tr><th>Timestamp Data Ref</th><th>Formulation Profile Item</th><th>Volume Size Manufactured</th><th>Authorized Operator Badge</th></tr>`;
-                batchLogs.forEach(b => {
-                    const f = formulations.find(x => x.id === b.formulation_id);
-                    html += `<tr><td>${new Date(b.created_at).toLocaleString()}</td><td><strong>${f ? f.name : 'Unknown Formulation Profile'}</strong></td><td>${b.batch_size} L Out</td><td>${b.operator_name || 'System Auto Integration Core Engine'}</td></tr>`;
-                });
-            } else if (activeLogSubTab === 'receipt') {
-                html = `<tr><th>Timestamp Data Ref</th><th>Material Target Entry</th><th>Units Packs Count Inflow</th><th>Reference Metadata Inbound Label Track</th></tr>`;
-                stockReceipts.forEach(r => {
-                    const m = materials.find(x => x.id === r.material_id);
-                    html += `<tr><td>${new Date(r.received_at).toLocaleString()}</td><td><strong>${m ? m.name : 'Deleted Asset'}</strong></td><td>+ ${r.quantity} ${m ? m.pack_unit : 'Packs'}</td><td><span class="role-badge" style="background:#edf2f7; border:0.5px solid #cbd5e0;">${r.reference || 'N/A'}</span></td></tr>`;
-                });
-            } else if (activeLogSubTab === 'bookout') {
-                html = `<tr><th>Timestamp Data Ref</th><th>Packaging Material Tracker</th><th>Count Quantity Deducted</th><th>Reasoning Log File Notes Context</th></tr>`;
-                pkgBookouts.forEach(k => {
-                    const p = packaging.find(x => x.id === k.packaging_id);
-                    html += `<tr><td>${new Date(k.created_at).toLocaleString()}</td><td><strong>${p ? p.name : 'Deleted Asset Listing'}</strong></td><td style="color:#e53e3e; font-weight:600;">- ${k.quantity} units</td><td>${k.reason || 'No description notes logged details entries'}</td></tr>`;
-                });
-            }
-            document.getElementById('table-history-logs').innerHTML = html;
-        }
-
-        // PRINT REPORT SYSTEM CODES ENGINE
-        function generateStockStatusPdf() {
-            const iMat = document.getElementById('print-i-mat').checked;
-            const iMfg = document.getElementById('print-i-mfg').checked;
-            const iPkg = document.getElementById('print-i-pkg').checked;
-
-            let h = `<!DOCTYPE html><html><head><title>Life Coats — Stock Report</title>
-            <style>
-                body { font-family:sans-serif; padding:25px; color:#1a1a1a; font-size:12px; }
-                h1 { font-size:18px; color:#5B8FA8; border-bottom:1px solid #e0e0e0; padding-bottom:8px; margin-bottom:15px; text-transform:uppercase; }
-                h2 { font-size:13px; margin:20px 0 8px; color:#2d3748; text-transform:uppercase; background:#f4f6f8; padding:4px 8px; }
-                table { width:100%; border-collapse:collapse; margin-bottom:15px; }
-                th, td { border:1px solid #e0e0e0; padding:6px 10px; text-align:left; }
-                th { background:#fafafa; font-weight:bold; }
-                .empty { color:#e53e3e; font-weight:bold; }
-                .low { color:#dd6b20; font-weight:bold; }
-                .good { color:#38a169; }
-            </style></head><body>`;
-
-            h += `<h1>Life Coats Inventory Status Summary Report</h1>`;
-            h += `<p style="margin-bottom:15px; font-size:11px; color:#4a5568;">Generated Execution Clock Timestamp Date Target: <strong>${new Date().toLocaleString()}</strong> — Operator Context: ${currentUser.username}</p>`;
-
-            if (iMat) {
-                h += `<h2>Raw Materials Stock Matrix</h2>
-                <table><tr><th>Material Name</th><th>Packs Balance Count</th><th>Equivalent Mass Volume Metric Total</th><th>Threshold Alert Target</th><th>Status</th></tr>`;
-                materials.forEach(m => {
-                    const status = stt(m.stock, m.alert_level);
-                    h += `<tr><td>${m.name}</td><td>${m.stock.toFixed(2)} (${m.pack_unit})</td><td>${(m.stock * m.pack_qty).toFixed(1)} kg/L</td><td>${m.alert_level}</td><td class="${status}">${status.toUpperCase()}</td></tr>`;
-                });
-                h += `</table>`;
-            }
-
-            if (iMfg) {
-                h += `<h2>Manufactured Finished Factory Stock</h2>
-                <table><tr><th>Product Target Line</th><th>Volume Stock Balance (L)</th><th>Alert Limit Threshold (L)</th><th>Status</th></tr>`;
-                mfgStock.forEach(p => {
-                    const status = stt(p.stock, p.alert_level);
-                    h += `<tr><td>${p.name}</td><td>${p.stock.toFixed(0)} L</td><td>${p.alert_level} L</td><td class="${status}">${status.toUpperCase()}</td></tr>`;
-                });
-                h += `</table>`;
-            }
-
-            if (iPkg) {
-                h += `<h2>Packaging Assets Balances Logs</h2>
-                <table><tr><th>Item Packaging Details Specs Description</th><th>Physical Count Balance Balance</th><th>Alert Target Threshold Limit</th><th>Status</th></tr>`;
-                packaging.forEach(k => {
-                    const status = stt(k.stock, k.alert_level);
-                    h += `<tr><td>${k.name}</td><td>${k.stock} units</td><td>${k.alert_level}</td><td class="${status}">${status.toUpperCase()}</td></tr>`;
-                });
-                h += `</table>`;
-            }
-
-            h += `</body></html>`;
-
-            const w = window.open('', '_blank');
-            if (w) {
-                w.document.write(h);
-                w.document.close();
-                setTimeout(() => { w.print(); }, 500);
-            }
-            cM('m-pdf');
-        }
-    </script>
+    <div class="fg"><label>Selling price per bucket (R)</label><input type="number" id="fp" placeholder="e.g. 450.00" step="0.01" min="0"></div>
+  </div>
+
+  <!-- INGREDIENTS SECTION -->
+  <div class="ing-section">
+    <div class="ing-section-title"><i class="ti ti-package" style="font-size:11px;margin-right:4px"></i>Ingredients (raw materials, bases, etc.)</div>
+    <div style="font-size:11px;color:#888;margin-bottom:8px">Add any ingredient from your raw materials list. For stone ingredients, tick "Stone?" so reception can choose the size at order time.</div>
+    <div style="display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;margin-bottom:4px">
+      <div style="font-size:10px;color:#888;font-weight:500">INGREDIENT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">QTY</div>
+      <div style="font-size:10px;color:#888;font-weight:500">UNIT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">STONE?</div>
+      <div></div>
+    </div>
+    <div id="f-ing-list"></div>
+    <button class="btn btns" onclick="addIngRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
+  </div>
+
+  <!-- TINTS SECTION -->
+  <div class="ing-section">
+    <div class="ing-section-title"><i class="ti ti-droplet" style="font-size:11px;margin-right:4px"></i>Tints per bucket (shots &amp; Y)</div>
+    <div style="display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;margin-bottom:4px">
+      <div style="font-size:10px;color:#888;font-weight:500">TINT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">Y</div>
+      <div style="font-size:10px;color:#888;font-weight:500">SHOTS</div>
+      <div></div>
+    </div>
+    <div id="f-tint-list"></div>
+    <button class="btn btns" onclick="addTintRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add tint</button>
+  </div>
+
+  <div class="fe">
+    <button class="btn" onclick="cM('m-af')">Cancel</button>
+    <button class="btn btnp" onclick="saveForm()">Save formulation</button>
+  </div>
+</div></div>
+
+<!-- COMPLETE ORDER MODAL -->
+<div class="mbg" id="m-comp" onclick="cBG(event,'m-comp')"><div class="mod">
+  <button class="mc" onclick="cM('m-comp')"><i class="ti ti-x"></i></button>
+  <h3>Mark order as complete</h3>
+  <div id="comp-detail"></div>
+  <div id="comp-deductions" style="margin:0.75rem 0"></div>
+  <div class="ib" style="color:#854F0B;background:#FAEEDA;border-radius:8px"><i class="ti ti-alert-triangle"></i> Stock will be deducted automatically when you confirm.</div>
+  <div class="fe">
+    <button class="btn" onclick="cM('m-comp')">Cancel</button>
+    <button class="btn btnw" onclick="confComplete()"><i class="ti ti-circle-check"></i> Confirm complete &amp; deduct stock</button>
+  </div>
+</div></div>
+
+<!-- CONFIRM DIALOG -->
+<div class="mbg" id="m-conf"><div class="conf-wrap">
+  <h3 id="conf-title">Are you sure?</h3>
+  <p id="conf-msg">This action cannot be undone.</p>
+  <div style="display:flex;gap:10px;justify-content:center">
+    <button class="btn" onclick="cM('m-conf')">No, cancel</button>
+    <button class="btn btnd" id="conf-yes" onclick="doConf()">Yes, continue</button>
+  </div>
+</div></div>
+
+<!-- PDF MODAL -->
+<div class="mbg" id="m-pdf" onclick="cBG(event,'m-pdf')"><div class="mod">
+  <button class="mc" onclick="cM('m-pdf')"><i class="ti ti-x"></i></button><h3>Export PDF report</h3>
+  <div class="ib">Select what to include in the PDF:</div>
+  <div id="pdfo"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-pdf')">Cancel</button><button class="btn btnp" onclick="xPDF()"><i class="ti ti-download"></i> Export PDF</button></div>
+</div></div>
+
+<script>
+var API='/api';
+var token=localStorage.getItem('lc_token');
+var userRole=localStorage.getItem('lc_role');
+var userName=localStorage.getItem('lc_username');
+if(!token){window.location.href='/';throw new Error('No token');}
+
+var CC={resin:'#378ADD',chemical:'#7F77DD',sand:'#E5A823',stone:'#5AAB7B',granite:'#C46B2D',tint:'#D14F7C',other:'#888'};
+var WS={al:true,me:true,rv:true,st:true,ba:true,or:true,pk:true};
+var TV=false,CRT='gamazine',PRT='wk',pdfType='wk',pendingOrderId=null,confCB=null;
+var mats=[],bases={},pkgData={},forms=[],orders=[],collections={},NID=1001;
+
+function H(){return{'Authorization':'Bearer '+token,'Content-Type':'application/json'};}
+async function api(method,path,body){
+  try{
+    var res=await fetch(API+path,{method:method,headers:H(),body:body?JSON.stringify(body):undefined});
+    if(res.status===401){logout();return null;}
+    return res.json();
+  }catch(e){console.error('API error:',e);return null;}
+}
+
+async function loadAll(){
+  try{
+    var results=await Promise.all([
+      api('GET','/materials'),
+      api('GET','/bases'),
+      api('GET','/packaging'),
+      api('GET','/formulations'),
+      api('GET','/orders')
+    ]);
+    mats=results[0]||[];
+    var bs=results[1]||[];bases={};bs.forEach(function(b){bases[b.name]=b;});
+    var ps=results[2]||[];pkgData={};ps.forEach(function(p){pkgData[p.id]=p;});
+    forms=(results[3]||[]).map(function(f){
+      f.ingredients=f.ingredients||[];
+      f.tints=f.tints||[];
+      f.sub_category=f.sub_category||'Standard';
+      return f;
+    });
+    var rawOrders=results[4]||[];
+    orders=rawOrders.map(function(o){
+      return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,
+        bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,
+        nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[]};
+    });
+    if(orders.length){
+      var maxId=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));
+      NID=maxId+1;
+    }
+    // Build collections from existing formulations
+    buildCollections();
+    document.getElementById('ls').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('rl').textContent=userName+' · '+(userRole==='admin'?'Admin':'Reception');
+    document.getElementById('un-display').textContent=userName;
+    applyRole();
+    nav('dash',document.querySelector('.ni[onclick*="dash"]'));
+  }catch(e){
+    console.error(e);
+    document.querySelector('#ls p').textContent='Error loading. Please refresh.';
+  }
+}
+
+function buildCollections(){
+  collections={};
+  var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
+  types.forEach(function(t){collections[t]=[];});
+  forms.forEach(function(f){
+    if(!collections[f.type])collections[f.type]=[];
+    var sub=f.sub_category||'Standard';
+    if(collections[f.type].indexOf(sub)===-1)collections[f.type].push(sub);
+  });
+}
+
+function logout(){localStorage.removeItem('lc_token');localStorage.removeItem('lc_role');localStorage.removeItem('lc_username');window.location.href='/';}
+function applyRole(){document.querySelectorAll('.ni').forEach(function(n){var r=n.getAttribute('data-r');n.style.display=(!r||r.indexOf(userRole)!==-1)?'flex':'none';});}
+
+function ml(s,y){return(s*0.625)+(y*30);}
+function pct(s,a){return Math.min(100,Math.round((s/(Math.max(a,1)*3))*100));}
+function stt(s,a){if(s<=0)return'cr';if(s<=a)return'lw';return'ok';}
+function bdg(s,a){var x=stt(s,a);return x==='cr'?'<span class="bdg bcrit">Critical</span>':x==='lw'?'<span class="bdg blow">Low</span>':'<span class="bdg bok">OK</span>';}
+function bc(s,a){return stt(s,a)==='cr'?'pbcr':stt(s,a)==='lw'?'pbow':'pbok';}
+function ptL(t){return{gamazine:'Gamazine',granite:'Granite Coat',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match'}[t]||t;}
+function fmt(n){return'R'+parseFloat(n||0).toFixed(2);}
+function mOpts(includeBase){
+  var opts='';
+  if(includeBase){Object.keys(bases).forEach(function(b){opts+='<option value="'+b+'">'+b+'</option>';});}
+  mats.forEach(function(m){opts+='<option value="'+m.name+'">'+m.name+' ('+m.unit+')</option>';});
+  return opts;
+}
+function tOpts(){return mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option>'+m.name+'</option>';}).join('');}
+function todayRev(){return orders.filter(function(o){return o.status==='done';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
+function showSucc(k,msg){var e=document.getElementById('s'+k),m=document.getElementById('s'+k+'m');if(e&&m){m.textContent=msg;e.style.display='flex';setTimeout(function(){e.style.display='none';},3000);}}
+function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').textContent=title;document.getElementById('conf-msg').textContent=msg;var btn=document.getElementById('conf-yes');btn.textContent=label||'Yes';btn.className='btn '+(cls||'btnd');confCB=cb;oM('m-conf');}
+function doConf(){cM('m-conf');if(confCB)confCB();}
+
+function nav(id,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('pg-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  var fn={dash:rDash,mats:rMats,bases:function(){rBases();pBS();sBF();},pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep};
+  if(fn[id])fn[id]();
+}
+
+// DASHBOARD
+function tCP(){var p=document.getElementById('cp');p.style.display=p.style.display==='none'?'flex':'none';}
+function tW(k){WS[k]=!WS[k];var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);rDash();}
+function loadPreset(v){if(!v)return;var pr={stock:{al:true,me:true,rv:false,st:true,ba:true,or:false,pk:true},prod:{al:true,me:true,rv:true,st:false,ba:true,or:true,pk:false},full:{al:true,me:true,rv:true,st:true,ba:true,or:true,pk:true}};if(pr[v]){Object.assign(WS,pr[v]);Object.keys(WS).forEach(function(k){var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);});rDash();}}
+
+function tTV(){
+  TV=!TV;
+  document.getElementById('sb').style.display=TV?'none':'flex';
+  if(TV){
+    var lowA=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).map(function(m){return'⚠ '+m.name+': '+m.stock+' '+m.unit;}).join(' | ');
+    var done=orders.filter(function(o){return o.status==='done';});
+    var active=orders.filter(function(o){return o.status==='pending';});
+    var h='<div style="padding:0.75rem 1rem;background:#fff;border-bottom:0.5px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">';
+    h+='<div style="display:flex;align-items:center;gap:8px"><span class="blink"></span><span style="font-size:16px;font-weight:500;color:#5B8FA8">Life Coats — Production Dashboard</span></div>';
+    h+='<div style="display:flex;align-items:center;gap:10px"><div style="background:#5B8FA8;color:#fff;padding:6px 14px;border-radius:8px;text-align:center"><div style="font-size:10px;opacity:0.8">Today\'s revenue</div><div style="font-size:22px;font-weight:500">'+fmt(todayRev())+'</div></div>';
+    h+='<button class="btn btns" onclick="tTV()" style="background:#333;color:#fff;border-color:#333"><i class="ti ti-x"></i> Exit TV</button></div></div>';
+    if(lowA){h+='<div style="background:#FCEBEB;padding:7px 1rem;font-size:11px;color:#A32D2D;overflow:hidden;white-space:nowrap;margin-bottom:0.75rem"><marquee>'+lowA+'</marquee></div>';}
+    h+='<div style="padding:0 1rem"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:0.75rem">';
+    h+=tvM('Active orders',active.length,'#378ADD')+tvM('Completed today',done.length,'#5B8FA8')+tvM('Stock alerts',mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).length,'#E24B4A')+tvM('Formulations',forms.length,'#7F77DD');
+    h+='</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    h+='<div class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Raw material stock</h3>';
+    ['resin','chemical','tint','sand','stone','granite'].forEach(function(cat){
+      var ms=mats.filter(function(m){return m.category===cat;});if(!ms.length)return;
+      var col=CC[cat]||'#888';
+      h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:7px 0 3px">'+cat+'</div>';
+      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%;background:'+col+'"></div></div><span class="bcv">'+m.stock.toFixed(1)+' '+m.unit+'</span></div>';});
+    });
+    h+='</div><div><div class="card" style="margin-bottom:8px"><h3><i class="ti ti-flask" style="font-size:12px;margin-right:4px"></i>Base stock</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+    Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div><div style="font-size:11px;font-weight:500">'+b.name+'</div><div class="bct" style="height:7px;margin:3px 0"><div class="bcf" style="width:'+pct(b.stock,b.alert_level)+'%;background:'+col+'"></div></div><div style="font-size:10px;color:#888">'+b.stock+'L</div></div>';});
+    h+='</div></div><div class="card"><h3><i class="ti ti-clipboard-list" style="font-size:12px;margin-right:4px"></i>Active orders</h3>';
+    h+=active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>';
+    h+='</div></div></div></div>';
+    document.getElementById('dc').innerHTML=h;
+  }else{rDash();}
+}
+function tvM(l,v,col){return'<div class="met" style="cursor:default"><div class="ml">'+l+'</div><div class="mv" style="color:'+col+'">'+v+'</div></div>';}
+
+function rDash(){
+  if(TV)return;
+  var now=new Date();
+  var dtEl=document.getElementById('dt');
+  if(dtEl)dtEl.textContent=now.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var lowM=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';});
+  var lowB=Object.values(bases).filter(function(b){return b.stock<=b.alert_level;});
+  var lowP=Object.values(pkgData).filter(function(p){return p.stock<=p.alert_level;});
+  var allA=lowM.length+lowB.length+lowP.length;
+  var active=orders.filter(function(o){return o.status==='pending';});
+  var done=orders.filter(function(o){return o.status==='done';});
+  var h='';
+  if(WS.al&&allA>0){
+    h+='<div class="card">';
+    lowM.forEach(function(m){h+='<div class="ab '+(stt(m.stock,m.alert_level)==='cr'?'acr':'')+'"><i class="ti ti-alert-triangle"></i><b>'+(stt(m.stock,m.alert_level)==='cr'?'Critical':'Low')+':</b> '+m.name+' — '+m.stock.toFixed(1)+' '+m.unit+' (alert: '+m.alert_level+')</div>';});
+    lowB.forEach(function(b){h+='<div class="ab"><i class="ti ti-flask"></i><b>Base low:</b> '+b.name+' — '+b.stock+'L (alert: '+b.alert_level+'L)</div>';});
+    lowP.forEach(function(p){h+='<div class="ab"><i class="ti ti-bucket"></i><b>Packaging low:</b> '+p.name+' — '+p.stock+' (alert: '+p.alert_level+')</div>';});
+    h+='</div>';
+  }
+  if(WS.me){h+='<div class="g4">'+tvM('Active orders',active.length,'#378ADD')+tvM('Stock alerts',allA,allA>0?'#E24B4A':'#5B8FA8')+tvM('Completed',done.length,'#5B8FA8')+tvM('Formulations',forms.length,'#7F77DD')+'</div>';}
+  if(WS.rv){h+='<div class="rev"><div class="rvl"><i class="ti ti-currency-dollar"></i> Today\'s revenue</div><div class="rvv">'+fmt(todayRev())+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">From '+done.length+' completed order(s)</div></div>';}
+  if(WS.st){
+    h+='<div class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Raw material stock</h3>';
+    ['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){
+      var ms=mats.filter(function(m){return m.category===cat;});if(!ms.length)return;
+      var col=CC[cat]||'#888';
+      h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';
+      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span class="bcv">'+m.stock.toFixed(1)+' '+m.unit+'</span>'+bdg(m.stock,m.alert_level)+'</div>';});
+    });
+    h+='</div>';
+  }
+  if(WS.ba){
+    h+='<div class="card"><h3><i class="ti ti-flask" style="font-size:12px;margin-right:4px"></i>Base stock</h3><div class="g4">';
+    Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div class="met"><div class="ml">'+b.name+'</div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'⚠ Low':'OK')+' · alert: '+b.alert_level+'L</div></div>';});
+    h+='</div></div>';
+  }
+  if(WS.or){
+    h+='<div class="g2"><div class="card"><h3>Active orders</h3>'+(active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>')+'</div>';
+    if(WS.pk){
+      h+='<div class="card"><h3>Packaging</h3>';
+      Object.values(pkgData).forEach(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  document.getElementById('dc').innerHTML=h;
+}
+function oCard(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div><span class="bdg '+(o.status==='pending'?'bblu':'bok')+'">'+o.status+'</span></div>';}
+
+// MATERIALS
+function rMats(){
+  var f=document.getElementById('mf')?document.getElementById('mf').value:'all';
+  var ms=f==='all'?mats:mats.filter(function(m){return m.category===f;});
+  document.getElementById('mt').innerHTML=ms.map(function(m){
+    var col=CC[m.category]||'#888';
+    return'<tr><td><b>'+m.name+'</b></td>'+
+      '<td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col+';margin-right:3px"></span><span class="bdg bgry">'+m.category+'</span></td>'+
+      '<td style="font-size:11px;color:#888">'+m.supplier+'</td>'+
+      '<td style="font-size:11px;color:#888">'+m.pack_size+'</td>'+
+      '<td style="font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.description||'')+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:5px"><div class="pw"><div class="pb '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span style="font-size:11px;min-width:45px">'+m.stock.toFixed(1)+'</span></div></td>'+
+      '<td>'+m.unit+'</td><td>'+m.alert_level+'</td><td>'+bdg(m.stock,m.alert_level)+'</td>'+
+      '<td><button class="btn btns" onclick="oEM('+m.id+')"><i class="ti ti-edit"></i></button></td></tr>';
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:1.5rem;color:#aaa">No materials</td></tr>';
+}
+function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';oM('m-em');}
+async function saveMat(){
+  var id=parseInt(document.getElementById('eid').value);
+  var data={stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value};
+  await api('PUT','/materials/'+id,data);
+  var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);
+  cM('m-em');rMats();showSucc('m','Updated successfully');
+}
+async function addMat(){
+  var n=document.getElementById('mn').value.trim();if(!n){window.alert('Enter name');return;}
+  var data={name:n,category:document.getElementById('mc2').value,supplier:document.getElementById('msu').value||'',pack_size:document.getElementById('mp').value||'',description:document.getElementById('md').value||'',stock:parseFloat(document.getElementById('mst').value)||0,unit:document.getElementById('mu').value,alert_level:parseFloat(document.getElementById('ma').value)||0};
+  var res=await api('POST','/materials',data);
+  if(res){mats.push(res);cM('m-am');['mn','msu','mp','md','mst','ma'].forEach(function(i){document.getElementById(i).value='';});rMats();showSucc('m',n+' added');}
+}
+
+// BASES
+function pBS(){
+  var opts=Object.keys(bases).map(function(b){return'<option>'+b+'</option>';}).join('');
+  ['bt','ebs'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+function sBF(){
+  var type=document.getElementById('bt').value;
+  var l=parseFloat(document.getElementById('bl').value)||200;
+  var b=bases[type];if(!b)return;
+  var f=b.formula||[];var r=l/(b.batch_size||200);
+  document.getElementById('bfp').innerHTML='<b>Formula for '+l+'L:</b> '+f.map(function(x){return'<b>'+x.m+':</b> '+(x.q*r).toFixed(2)+' '+x.u;}).join(' · ');
+}
+function rBases(){
+  var h='';
+  Object.values(bases).forEach(function(b){
+    var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';
+    h+='<div class="met" onclick="editBaseStock(\''+b.name+'\')"><div class="ml">'+b.name+' <i class="ti ti-edit" style="font-size:10px"></i></div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'⚠ Low':'OK')+' · alert: '+b.alert_level+'L</div></div>';
+  });
+  document.getElementById('bsc').innerHTML=h;
+  document.getElementById('bfd').innerHTML=Object.values(bases).map(function(b){
+    var f=b.formula||[];
+    return'<div style="margin-bottom:0.9rem"><div style="font-size:12px;font-weight:500;margin-bottom:3px">'+b.name+' (per '+(b.batch_size||200)+'L batch) · alert: '+b.alert_level+'L</div>'+f.map(function(x){return'<div class="ir"><span>'+x.m+'</span><span class="il">'+x.q+' '+x.u+'</span></div>';}).join('')+'</div>';
+  }).join('');
+  document.getElementById('blog').innerHTML=[];
+}
+function editBaseStock(name){
+  var b=bases[name];if(!b)return;
+  var v=prompt('Update stock for '+name+'\nCurrent: '+b.stock+'L\nEnter new stock level (litres):');
+  if(v!==null&&v!==''&&!isNaN(v)){b.stock=parseFloat(v);api('PUT','/bases/'+b.id,{stock:b.stock}).then(function(){rBases();});}
+}
+async function lBase(){
+  var type=document.getElementById('bt').value;
+  var l=parseFloat(document.getElementById('bl').value);
+  if(!l||l<=0){window.alert('Enter litres to produce');return;}
+  var b=bases[type];if(!b)return;
+  var r=l/(b.batch_size||200);
+  var f=b.formula||[];
+  for(var i=0;i<f.length;i++){
+    var ing=f[i];
+    if(bases[ing.m]){bases[ing.m].stock=Math.max(0,bases[ing.m].stock-(ing.q*r));await api('PUT','/bases/'+bases[ing.m].id,{stock:bases[ing.m].stock});}
+    else{var m=mats.find(function(x){return x.name===ing.m;});if(m){m.stock=Math.max(0,m.stock-(ing.q*r));await api('PUT','/materials/'+m.id,{stock:m.stock});}}
+  }
+  b.stock+=l;
+  await api('PUT','/bases/'+b.id,{stock:b.stock});
+  await api('POST','/base-logs',{base_name:type,litres:l});
+  document.getElementById('bl').value=200;
+  rBases();sBF();
+}
+function oBaseEdit(){pBS();lBE();oM('m-eb');}
+function lBE(){
+  var type=document.getElementById('ebs').value;
+  var b=bases[type];if(!b)return;
+  document.getElementById('eba').value=b.alert_level;
+  document.getElementById('ebs-stock').value=b.stock;
+  var f=b.formula||[];
+  document.getElementById('ber').innerHTML=f.map(function(x){
+    return'<div class="fr3" style="margin-bottom:5px"><div class="fg" style="margin:0"><input type="text" value="'+x.m+'" placeholder="Ingredient"></div><div class="fg" style="margin:0"><input type="number" value="'+x.q+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(x.u==='L'?' selected':'')+'>L</option><option'+(x.u==='kg'?' selected':'')+'>kg</option></select></div></div>';
+  }).join('');
+}
+function addBER(){
+  var row=document.createElement('div');row.className='fr3';row.style.marginBottom='5px';
+  row.innerHTML='<div class="fg" style="margin:0"><select>'+mOpts(true)+'</select></div><div class="fg" style="margin:0"><input type="number" value="0" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option>L</option><option>kg</option></select></div>';
+  document.getElementById('ber').appendChild(row);
+}
+async function saveBE(){
+  var type=document.getElementById('ebs').value;var b=bases[type];if(!b)return;
+  b.alert_level=parseFloat(document.getElementById('eba').value)||0;
+  b.stock=parseFloat(document.getElementById('ebs-stock').value)||0;
+  var rows=document.getElementById('ber').children;var f=[];
+  for(var i=0;i<rows.length;i++){
+    var sels=rows[i].querySelectorAll('select');var ins=rows[i].querySelectorAll('input');
+    var mat=(sels[0]?sels[0].value:'')||(ins[0]?ins[0].value.trim():'');
+    var q=ins[0]?parseFloat(ins[0].value)||0:0;
+    var qu=ins[1]?parseFloat(ins[1].value)||0:0;
+    var u=sels[1]?sels[1].value:'L';
+    if(mat.trim())f.push({m:mat.trim(),q:qu||q,u:u});
+  }
+  b.formula=f;
+  await api('PUT','/bases/'+b.id,{alert_level:b.alert_level,stock:b.stock,formula:f});
+  cM('m-eb');rBases();
+}
+function addNBI(){
+  var c=document.getElementById('nbil');
+  var row=document.createElement('div');row.className='fr3';row.style.marginBottom='5px';
+  row.innerHTML='<div class="fg" style="margin:0"><select>'+mOpts(false)+'</select></div><div class="fg" style="margin:0"><input type="number" value="0" step="0.01" min="0" placeholder="Qty"></div><div class="fg" style="margin:0"><select><option>L</option><option>kg</option><option>g</option></select></div>';
+  c.appendChild(row);
+}
+async function saveNB(){
+  var n=document.getElementById('nbn').value.trim();if(!n){window.alert('Enter name');return;}
+  if(bases[n]){window.alert('Already exists');return;}
+  var rows=document.getElementById('nbil').children;var f=[];
+  for(var i=0;i<rows.length;i++){
+    var sels=rows[i].querySelectorAll('select');var ins=rows[i].querySelectorAll('input');
+    var mat=sels[0]?sels[0].value:'';var q=ins[0]?parseFloat(ins[0].value)||0:0;var u=sels[1]?sels[1].value:'L';
+    if(mat)f.push({m:mat,q:q,u:u});
+  }
+  var data={name:n,stock:parseFloat(document.getElementById('nbs').value)||0,alert_level:parseFloat(document.getElementById('nba').value)||50,batch_size:parseFloat(document.getElementById('nbb').value)||200,formula:f};
+  var res=await api('POST','/bases',data);
+  if(res){bases[n]=res;cM('m-nb');pBS();rBases();sBF();}
+}
+
+// PACKAGING
+function rPkg(){
+  document.getElementById('pkgc').innerHTML=Object.values(pkgData).map(function(p){
+    var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';
+    return'<div class="met" onclick="oPE(\''+p.id+'\')"><div class="ml" style="font-size:11px">'+p.name+'</div><div class="mv" style="color:'+col+'">'+p.stock+'</div><div class="ms">'+(p.stock<=p.alert_level?'⚠ Low':'OK')+' · alert: '+p.alert_level+' <i class="ti ti-edit" style="font-size:10px"></i></div></div>';
+  }).join('');
+}
+function oPE(key){var p=pkgData[key];if(!p)return;document.getElementById('epk').value=key;document.getElementById('ept').textContent='Edit: '+p.name;document.getElementById('eps').value=p.stock;document.getElementById('epa').value=p.alert_level;oM('m-ep');}
+async function savePkg(){var key=document.getElementById('epk').value;var data={stock:parseInt(document.getElementById('eps').value)||0,alert_level:parseInt(document.getElementById('epa').value)||0};await api('PUT','/packaging/'+key,data);Object.assign(pkgData[key],data);cM('m-ep');rPkg();}
+async function addPkg(){var key=document.getElementById('pi').value;var qty=parseInt(document.getElementById('pq').value)||0;if(qty<=0){window.alert('Enter quantity');return;}if(!pkgData[key]){window.alert('Item not found in database');return;}pkgData[key].stock+=qty;await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});document.getElementById('pq').value='';rPkg();}
+
+// FORMULATIONS — fully database-driven
+function sFT(tab,el){
+  CRT=tab;
+  document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});
+  if(el)el.classList.add('active');
+  rForms();
+}
+
+function rForms(){
+  // Update tab counts
+  var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
+  var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
+  document.querySelectorAll('#ftabs .tab').forEach(function(tab,i){
+    var type=types[i];if(!type)return;
+    var count=forms.filter(function(f){return f.type===type;}).length;
+    tab.innerHTML=labels[type]+(count>0?' <span style="font-size:10px;background:#E8F4F9;color:#3a6e87;padding:1px 5px;border-radius:10px;font-weight:500">'+count+'</span>':'');
+  });
+
+  var fs=forms.filter(function(f){return f.type===CRT;});
+  if(!fs.length){document.getElementById('fl').innerHTML='<div class="es card">No formulations for this type yet. Click Add formulation above.</div>';return;}
+
+  // Group by sub-category, sorted alphabetically
+  var groups={};
+  fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});
+  Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});
+  var sortedSubs=Object.keys(groups).sort();
+
+  var h='';
+  sortedSubs.forEach(function(sub){
+    var subForms=groups[sub];
+    h+='<div class="sub-group"><div class="sub-group-header"><span>'+sub+'</span><span class="sub-count">'+subForms.length+'</span></div>';
+    subForms.forEach(function(f){
+      var pr=f.price?'<span class="bdg bteal" style="margin-left:5px">'+fmt(f.price)+'/bucket</span>':'';
+      var ings=(f.ingredients||[]).map(function(ing){
+        return'<div class="ir"><span>'+ing.name+(ing.is_stone?' <span class="bdg bblu" style="font-size:10px">stone</span>':'')+'</span><span class="il">'+ing.qty+' '+ing.unit+'</span></div>';
+      }).join('');
+      var tints=(f.tints||[]).map(function(t){
+        return'<div class="ir"><span>'+t.n+'</span><span class="il">'+t.y+'Y + '+t.s+' shots ('+ml(t.s,t.y).toFixed(2)+'ml)</span></div>';
+      }).join('');
+      h+='<div class="fc"><div class="fb" style="margin-bottom:8px">'+
+        '<div><b>'+f.name+'</b><span class="bdg bgry" style="margin-left:5px">'+ptL(f.type)+'</span>'+pr+'</div>'+
+        '<div style="display:flex;gap:5px">'+
+        '<button class="btn btns" title="Copy formulation" onclick="copyForm('+f.id+')"><i class="ti ti-copy"></i></button>'+
+        '<button class="btn btns" title="Edit formulation" onclick="showConf(\'Edit formulation\',\'Are you sure you want to edit '+f.name.replace(/'/g,"\\'")+' ? Changes will affect future orders.\',\'Yes, edit\',\'btnp\',function(){oEF('+f.id+');})"><i class="ti ti-edit"></i></button>'+
+        '<button class="btn btns btnd" title="Delete formulation" onclick="showConf(\'Delete formulation\',\'Are you sure you want to delete '+f.name.replace(/'/g,"\\'")+' ? This cannot be undone.\',\'Yes, delete\',\'btnd\',function(){dForm('+f.id+');})"><i class="ti ti-trash"></i></button>'+
+        '</div></div>';
+      if(ings)h+=ings;
+      if(tints)h+=tints;
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  document.getElementById('fl').innerHTML=h;
+}
+
+async function dForm(id){
+  await api('DELETE','/formulations/'+id);
+  forms=forms.filter(function(f){return f.id!==id;});
+  buildCollections();rForms();
+}
+
+function copyForm(id){
+  var f=forms.find(function(x){return x.id===id;});if(!f)return;
+  var copy=JSON.parse(JSON.stringify(f));
+  copy.name=f.name+' (copy)';
+  delete copy.id;
+  api('POST','/formulations',copy).then(function(res){
+    if(res){
+      res.ingredients=res.ingredients||[];
+      res.tints=res.tints||[];
+      res.sub_category=res.sub_category||'Standard';
+      forms.push(res);
+      buildCollections();rForms();
+    }
+  });
+}
+
+// Formulation modal — ingredient rows
+function addIngRow(name,qty,unit,isStone){
+  var row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';
+  var opts=mOpts(true);
+  var stoneChecked=isStone?'checked':'';
+  row.innerHTML='<div class="fg" style="margin:0"><select>'+opts+'</select></div>'+
+    '<div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0" placeholder="Qty"></div>'+
+    '<div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div>'+
+    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" '+stoneChecked+' style="width:auto;margin:0 auto;display:block"></div>'+
+    '<button class="btn btns" onclick="this.parentElement.remove()" style="margin-bottom:0"><i class="ti ti-x"></i></button>';
+  document.getElementById('f-ing-list').appendChild(row);
+  if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}
+}
+
+function addTintRow(name,y,s){
+  var row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;align-items:end;margin-bottom:6px';
+  row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div>'+
+    '<div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(y||0)+'" min="0"></div>'+
+    '<div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(s||0)+'" min="0"></div>'+
+    '<button class="btn btns" onclick="this.parentElement.remove()" style="margin-bottom:0"><i class="ti ti-x"></i></button>';
+  document.getElementById('f-tint-list').appendChild(row);
+  if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}
+}
+
+function updateSubcatSuggestions(){
+  var type=document.getElementById('ftype').value;
+  var subs=collections[type]||[];
+  document.getElementById('subcat-suggestions').innerHTML=subs.map(function(s){return'<option value="'+s+'">'+s+'</option>';}).join('');
+}
+
+function onFTypeChange(){updateSubcatSuggestions();}
+
+function oAddForm(){
+  document.getElementById('feid').value='';
+  document.getElementById('fmtitle').textContent='Add formulation';
+  document.getElementById('fn').value='';
+  document.getElementById('fp').value='';
+  document.getElementById('fsubcat').value='Standard';
+  document.getElementById('f-ing-list').innerHTML='';
+  document.getElementById('f-tint-list').innerHTML='';
+  document.getElementById('ftype').value=CRT;
+  updateSubcatSuggestions();
+  oM('m-af');
+}
+
+function oEF(id){
+  var f=forms.find(function(x){return x.id===id;});if(!f)return;
+  document.getElementById('feid').value=id;
+  document.getElementById('fmtitle').textContent='Edit: '+f.name;
+  document.getElementById('fn').value=f.name;
+  document.getElementById('fp').value=f.price||'';
+  document.getElementById('ftype').value=f.type;
+  document.getElementById('fsubcat').value=f.sub_category||'Standard';
+  document.getElementById('f-ing-list').innerHTML='';
+  document.getElementById('f-tint-list').innerHTML='';
+  (f.ingredients||[]).forEach(function(ing){addIngRow(ing.name,ing.qty,ing.unit,ing.is_stone);});
+  (f.tints||[]).forEach(function(t){addTintRow(t.n,t.y,t.s);});
+  updateSubcatSuggestions();
+  oM('m-af');
+}
+
+function getIngredients(){
+  var ings=[];
+  document.querySelectorAll('#f-ing-list > div').forEach(function(row){
+    var sels=row.querySelectorAll('select');
+    var ins=row.querySelectorAll('input');
+    var cb=row.querySelector('input[type="checkbox"]');
+    var name=sels[0]?sels[0].value:'';
+    var qty=ins[0]?parseFloat(ins[0].value)||0:0;
+    var unit=sels[1]?sels[1].value:'L';
+    var isStone=cb?cb.checked:false;
+    if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});
+  });
+  return ings;
+}
+
+function getTints(){
+  var tints=[];
+  document.querySelectorAll('#f-tint-list > div').forEach(function(row){
+    var sels=row.querySelectorAll('select');
+    var ins=row.querySelectorAll('input');
+    if(sels[0])tints.push({n:sels[0].value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});
+  });
+  return tints;
+}
+
+async function saveForm(){
+  var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a formulation name');return;}
+  var sub=document.getElementById('fsubcat').value.trim()||'Standard';
+  var data={
+    name:n,
+    type:document.getElementById('ftype').value,
+    sub_category:sub,
+    price:parseFloat(document.getElementById('fp').value)||0,
+    ingredients:getIngredients(),
+    tints:getTints(),
+    // Keep old fields for backward compatibility
+    other_ingredients:[],
+    cps_ingredients:{},
+    granite_ingredients:{},
+    base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0
+  };
+  var eid=document.getElementById('feid').value;
+  if(eid){
+    var res=await api('PUT','/formulations/'+eid,data);
+    if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}
+  }else{
+    var res2=await api('POST','/formulations',data);
+    if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}
+  }
+  cM('m-af');buildCollections();rForms();
+}
+
+// ORDERS
+function rRecStock(){
+  var show=userRole==='reception';
+  document.getElementById('rec-stock').style.display=show?'block':'none';
+  if(!show)return;
+  var h='<div class="fr">';
+  h+='<div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Bases</div>';
+  Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+b.name+'</span><span style="font-weight:500;color:'+col+'">'+b.stock+'L</span></div>';});
+  h+='</div><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Packaging</div>';
+  ['pr20','ti20','sl20','sl5','bags'].forEach(function(k){var p=pkgData[k];if(!p)return;var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});
+  h+='</div></div>';
+  document.getElementById('rsc').innerHTML=h;
+}
+
+function oPTC(){
+  var t=document.getElementById('opt').value;
+  var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
+  var isGam=t==='gamazine';
+  var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+  var isCM=t==='cm';
+
+  document.getElementById('or-std').style.display=(!isCM)?'block':'none';
+  document.getElementById('or-stone').style.display=isGam?'block':'none';
+  document.getElementById('or-bkt').style.display=(isBkt&&!isCM)?'block':'none';
+  document.getElementById('or-sec').style.display=(isSec&&!isCM)?'grid':'none';
+  document.getElementById('or-cls').style.display=(t==='clearcoat'&&!isCM)?'block':'none';
+  document.getElementById('or-cm').style.display=isCM?'block':'none';
+
+  if(!isCM){
+    // Build grouped dropdown for formulations
+    var fs=forms.filter(function(f){return f.type===t;});
+    var groups={};
+    fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});
+    Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});
+    var sortedSubs=Object.keys(groups).sort();
+    var opts='';
+    if(sortedSubs.length===0){opts='<option value="">No formulations yet</option>';}
+    else if(sortedSubs.length===1&&sortedSubs[0]==='Standard'){
+      // Single group — no optgroup needed
+      groups['Standard'].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});
+    }else{
+      sortedSubs.forEach(function(sub){
+        opts+='<optgroup label="'+sub+'">';
+        groups[sub].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});
+        opts+='</optgroup>';
+      });
+    }
+    document.getElementById('orec').innerHTML=opts;
+    onFormSelect();
+  }
+}
+
+function onFormSelect(){
+  // Check if selected formulation has a stone ingredient — show stone size selector
+  var t=document.getElementById('opt').value;
+  if(t!=='gamazine')return;
+  // Gamazine always shows stone size selector
+  document.getElementById('or-stone').style.display='block';
+}
+
+function tLN(){document.getElementById('ln').style.display=document.getElementById('odl').value==='courier'?'block':'none';}
+
+function addCMT(){
+  var row=document.createElement('div');
+  row.style.cssText='display:grid;grid-template-columns:1fr 70px 70px;gap:6px;margin-bottom:5px';
+  row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="0" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="0" min="0"></div>';
+  document.getElementById('cmt').appendChild(row);
+}
+
+async function bOrder(){
+  var t=document.getElementById('opt').value;
+  var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}
+  var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;
+  var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
+  var isCM=t==='cm';var isGam=t==='gamazine';
+  var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+  var oN,qty,bkt='',fid=null,cmTi=[],stK='';
+
+  if(isCM){
+    oN=document.getElementById('cmn').value.trim()||'Colour Match';
+    qty=parseInt(document.getElementById('cmq').value)||1;
+    stK=document.getElementById('cms').value;
+    bkt=document.getElementById('cmb').value;
+    document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});
+  }else if(isSec){
+    var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);
+    qty=parseInt(document.getElementById('oqsec').value)||1;
+    bkt=sz===5?'5L Secure Lock':'20L Secure Lock';
+    fid=parseInt(document.getElementById('orec').value);
+    var f=forms.find(function(x){return x.id===fid;});
+    oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);
+  }else{
+    fid=parseInt(document.getElementById('orec').value);
+    var fm=forms.find(function(f){return f.id===fid;});
+    if(!fm){window.alert('Select a formulation');return;}
+    oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;
+    if(isGam)stK=document.getElementById('oss').value;
+    if(isBkt)bkt=document.getElementById('obk').value;
+  }
+
+  var lid=dl==='courier'||isSec;
+  var oid='ORD-'+NID++;
+  var orderData={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi};
+  var res=await api('POST','/orders',orderData);
+  if(res){
+    var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi};
+    orders.push(o);
+    var fm3=fid?forms.find(function(f){return f.id===fid;}):null;
+    document.getElementById('sc').innerHTML=bSlip(o,fm3);
+    document.getElementById('sarea').style.display='block';
+  }
+}
+
+function bSlip(o,f){
+  var qr=mkQR(o.id);
+  var rows=
+    '<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div>'+
+    '<div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div>'+
+    '<div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div>'+
+    '<div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div>'+
+    '<div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+
+    (o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+
+    (o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+
+    '<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div>'+
+    '<div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+
+    (o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');
+
+  // INGREDIENTS TOTALS FOR FULL ORDER
+  if(f&&(f.ingredients||[]).length>0){
+    rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';
+    (f.ingredients||[]).forEach(function(ing){
+      var name=ing.name;
+      // If stone ingredient, replace with chosen stone size
+      if(ing.is_stone&&o.stK)name=o.stK;
+      rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty).toFixed(2)+' '+ing.unit+'</span></div>';
+    });
+  }
+
+  // TINT TOTALS FOR FULL ORDER
+  var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);
+  if(tints.length){
+    rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';
+    tints.forEach(function(t){
+      var totalY=t.y*o.qty;var totalS=t.s*o.qty;var totalMl=ml(t.s,t.y)*o.qty;
+      rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+totalY+'Y + '+totalS+' shots<br>('+totalMl.toFixed(1)+'ml total)</span></div>';
+    });
+  }
+
+  return'<div class="slip">'+
+    '<div class="shr"><div style="font-size:14px;font-weight:bold;letter-spacing:1px">LIFE COATS</div>'+
+    '<div style="font-size:9px;letter-spacing:0.5px">WE\'VE GOT YOU COVERED</div></div>'+
+    '<div style="text-align:center;margin:6px 0 3px">'+qr+'</div>'+
+    '<div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div>'+
+    '<hr class="sdv">'+rows+
+    '<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';
+}
+
+function mkQR(text){
+  var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';
+  for(var r=0;r<cells;r++)for(var cc=0;cc<cells;cc++){
+    var fill=(r<7&&cc<7)||(r<7&&cc>cells-8)||(r>cells-8&&cc<7)?((r===0||r===6||cc===0||cc===6||(r>=2&&r<=4&&cc>=2&&cc<=4))?1:0):((r+cc+(text.charCodeAt(0)||65))%3===0?1:0);
+    if(fill)rcts+='<rect x="'+(cc*c)+'" y="'+(r*c)+'" width="'+c+'" height="'+c+'" fill="#000"/>';
+  }
+  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+rcts+'</svg>';
+}
+
+function cOC(){document.getElementById('sarea').style.display='none';document.getElementById('oc').value='';document.getElementById('onn').value='';sOT('active',null);}
+
+function sOT(tab,el){
+  if(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}
+  document.getElementById('ot-new').style.display=tab==='new'?'block':'none';
+  document.getElementById('ot-active').style.display=tab==='active'?'block':'none';
+  document.getElementById('ot-done').style.display=tab==='done'?'block':'none';
+  rOLists();
+}
+
+function rOLists(){
+  var p=orders.filter(function(o){return o.status==='pending';});
+  var d=orders.filter(function(o){return o.status==='done';});
+  var countEl=document.getElementById('active-count');
+  if(countEl)countEl.textContent=p.length>0?p.length:'';
+  document.getElementById('aol').innerHTML=p.length?p.map(function(o){
+    return'<div class="oc"><div class="oi">'+
+      '<div class="oid">'+o.id+'</div>'+
+      '<div class="on">'+o.n+' ×'+o.qty+'</div>'+
+      '<div class="od">'+o.client+' · '+ptL(o.t)+(o.bkt?' · '+o.bkt:'')+(o.stK?' · '+o.stK:'')+'</div>'+
+      '</div>'+
+      '<button class="btn btns btnw" onclick="oComplete(\''+o.id+'\')"><i class="ti ti-circle-check"></i> Mark complete</button></div>';
+  }).join(''):'<div class="es card">No active orders</div>';
+  document.getElementById('dol').innerHTML=d.length?d.map(function(o){
+    return'<div class="oc"><div class="oi">'+
+      '<div class="oid">'+o.id+'</div>'+
+      '<div class="on">'+o.n+' ×'+o.qty+'</div>'+
+      '<div class="od">'+o.client+' · '+ptL(o.t)+'</div>'+
+      '</div><span class="bdg bok"><i class="ti ti-circle-check"></i> Complete</span></div>';
+  }).join(''):'<div class="es card">No completed orders yet</div>';
+}
+
+function oComplete(id){
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  pendingOrderId=id;
+  var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
+  document.getElementById('comp-detail').innerHTML=
+    '<div class="oc" style="margin-bottom:0.75rem"><div class="oi">'+
+    '<div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div>'+
+    '<div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';
+
+  function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}
+
+  var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';
+
+  if(f){
+    // Deduct from ingredients
+    (f.ingredients||[]).forEach(function(ing){
+      var name=ing.name;
+      if(ing.is_stone&&o.stK)name=o.stK;
+      dd+=dl(name,ing.qty*o.qty,ing.unit);
+    });
+    // Deduct tints
+    (f.tints||[]).forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});
+  }
+  // Colour match tints
+  if(o.cmTi&&o.cmTi.length)o.cmTi.forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});
+  // Packaging
+  if(o.bkt){
+    if(o.bkt.includes('Printed'))dd+=dl('20L Printed Buckets',o.qty,'units');
+    else if(o.bkt.includes('Titan'))dd+=dl('20L Titan Black Buckets',o.qty,'units');
+    else if(o.bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',o.qty,'units');
+    else if(o.bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',o.qty,'units');
+  }
+  if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)dd+=dl('Plastic Bags',o.qty,'units');
+  if(o.lid)dd+=dl('Lids',o.qty,'units');
+
+  document.getElementById('comp-deductions').innerHTML=dd;
+  oM('m-comp');
+}
+
+async function confComplete(){
+  var id=pendingOrderId;
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
+
+  async function dm(name,qty,unit){
+    // Check if it's a base first
+    if(bases[name]){bases[name].stock=Math.max(0,bases[name].stock-qty);await api('PUT','/bases/'+bases[name].id,{stock:bases[name].stock});return;}
+    var m=mats.find(function(x){return x.name===name;});
+    if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}
+  }
+  async function dp(key,qty){
+    if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}
+  }
+
+  if(f){
+    for(var i=0;i<(f.ingredients||[]).length;i++){
+      var ing=f.ingredients[i];
+      var name=ing.name;
+      if(ing.is_stone&&o.stK)name=o.stK;
+      await dm(name,ing.qty*o.qty,ing.unit);
+    }
+    for(var j=0;j<(f.tints||[]).length;j++){
+      var t=f.tints[j];
+      await dm(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');
+    }
+  }
+  if(o.cmTi)for(var k=0;k<o.cmTi.length;k++){await dm(o.cmTi[k].n,(ml(o.cmTi[k].s,o.cmTi[k].y)/1000)*o.qty,'L');}
+
+  if(o.bkt){
+    if(o.bkt.includes('Printed'))await dp('pr20',o.qty);
+    else if(o.bkt.includes('Titan'))await dp('ti20',o.qty);
+    else if(o.bkt.includes('5L Secure'))await dp('sl5',o.qty);
+    else if(o.bkt.includes('20L Secure'))await dp('sl20',o.qty);
+  }
+  if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)await dp('bags',o.qty);
+  if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}
+
+  await api('PUT','/orders/'+id,{status:'done'});
+  o.status='done';
+  cM('m-comp');rOLists();rDash();
+}
+
+// REPORTS
+function rRep(){rWk();}
+function sRT(tab,el){
+  PRT=tab;
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  if(el)el.classList.add('active');
+  ['wk','mo','pr'].forEach(function(t){document.getElementById('rt-'+t).style.display=t===tab?'block':'none';});
+  if(tab==='wk')rWk();if(tab==='mo')rMo();if(tab==='pr')rPr();
+}
+
+function rWk(){
+  var done=orders.filter(function(o){return o.status==='done';});
+  var bk=done.reduce(function(a,o){return a+o.qty;},0);
+  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
+  var lw=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).length;
+  var now=new Date();var wk=new Date(now);wk.setDate(now.getDate()-7);
+  document.getElementById('rt-wk').innerHTML=
+    '<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+wk.toDateString()+' – '+now.toDateString()+'</p>'+
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'wk\')"><i class="ti ti-file-text"></i> Export PDF</button></div>'+
+    '<div class="rev"><div class="rvl">Est. weekly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div>'+
+    '<div class="g3" style="margin-bottom:0.75rem">'+
+    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+done.length+'</div><div style="font-size:11px;color:#888">Orders completed</div></div>'+
+    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+bk+'</div><div style="font-size:11px;color:#888">Buckets produced</div></div>'+
+    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:'+(lw>0?'#E24B4A':'#5B8FA8')+'">'+lw+'</div><div style="font-size:11px;color:#888">Low stock alerts</div></div></div>'+
+    '<div class="card"><h3>Raw material stock</h3><div style="overflow-x:auto"><table><thead><tr><th>Material</th><th>Cat</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th></tr></thead><tbody>'+
+    mats.map(function(m){return'<tr><td>'+m.name+'</td><td><span class="bdg bgry">'+m.category+'</span></td><td>'+m.stock.toFixed(1)+'</td><td>'+m.unit+'</td><td>'+m.alert_level+'</td><td>'+bdg(m.stock,m.alert_level)+'</td></tr>';}).join('')+'</tbody></table></div></div>'+
+    '<div class="card"><h3>Base stock</h3><div class="g4">'+
+    Object.values(bases).map(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';return'<div class="met" style="cursor:default"><div class="ml">'+b.name+'</div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'Low':'OK')+'</div></div>';}).join('')+
+    '</div></div>'+
+    '<div class="card"><h3>Orders completed</h3>'+
+    (done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr></thead><tbody>'+
+    done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+
+    '</tbody></table></div>':'<div class="es">No orders yet</div>')+'</div>';
+}
+
+function rMo(){
+  var now=new Date();var ms=new Date(now.getFullYear(),now.getMonth(),1);var me=new Date(now.getFullYear(),now.getMonth()+1,0);
+  var done=orders.filter(function(o){return o.status==='done';});
+  var bk=done.reduce(function(a,o){return a+o.qty;},0);
+  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
+  var byT={};done.forEach(function(o){byT[o.t]=(byT[o.t]||0)+o.qty;});
+  document.getElementById('rt-mo').innerHTML=
+    '<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+ms.toDateString()+' – '+me.toDateString()+'</p>'+
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'mo\')"><i class="ti ti-file-text"></i> Export PDF</button></div>'+
+    '<div class="rev"><div class="rvl">Est. monthly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div>'+
+    '<div class="card"><h3>Buckets by product type</h3>'+
+    Object.keys(byT).map(function(t){return'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+ptL(t)+'</span><span class="bdg bteal">'+byT[t]+' buckets</span></div>';}).join('')+
+    (Object.keys(byT).length===0?'<div class="es">No orders this month</div>':'')+'</div>'+
+    '<div class="card"><h3>Revenue by colour</h3>'+
+    (done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>'+
+    done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var pr=f&&f.price?f.price:0;return'<tr><td>'+o.n+'</td><td>'+ptL(o.t)+'</td><td>'+o.qty+'</td><td>'+fmt(pr)+'</td><td><b>'+fmt(pr*o.qty)+'</b></td></tr>';}).join('')+
+    '</tbody></table></div>':'<div class="es">No orders this month</div>')+'</div>';
+}
+
+function rPr(){
+  document.getElementById('rt-pr').innerHTML=
+    '<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Selling prices per colour</h3><span style="font-size:11px;color:#888">Admin only</span></div>'+
+    '<div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Sub-category</th><th>Price/bucket</th><th></th></tr></thead><tbody>'+
+    forms.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(f){
+      return'<tr><td><b>'+f.name+'</b></td><td><span class="bdg bgry">'+ptL(f.type)+'</span></td><td>'+f.sub_category+'</td><td><b>'+fmt(f.price||0)+'</b></td>'+
+      '<td><button class="btn btns" onclick="eP('+f.id+')"><i class="ti ti-edit"></i></button></td></tr>';
+    }).join('')+'</tbody></table></div></div>';
+}
+
+async function eP(id){
+  var f=forms.find(function(x){return x.id===id;});if(!f)return;
+  var v=prompt('Price for '+f.name+'\nCurrent: '+fmt(f.price||0)+'\nEnter price per bucket in Rands:');
+  if(v!==null&&v!==''&&!isNaN(v)){f.price=parseFloat(v);await api('PUT','/formulations/'+id,{price:f.price});rPr();}
+}
+
+function oPDF(type){
+  pdfType=type;
+  var opts=[{id:'pdr',l:'Revenue totals',c:true},{id:'pdo',l:'Orders completed',c:true},{id:'pds',l:'Raw material stock',c:true},{id:'pdb',l:'Base stock levels',c:true},{id:'pdp',l:'Packaging stock',c:false}];
+  document.getElementById('pdfo').innerHTML=opts.map(function(o){return'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><input type="checkbox" id="'+o.id+'"'+(o.c?' checked':'')+' style="width:auto"><label for="'+o.id+'" style="cursor:pointer;margin-left:4px">'+o.l+'</label></div>';}).join('');
+  oM('m-pdf');
+}
+
+function xPDF(){
+  var done=orders.filter(function(o){return o.status==='done';});
+  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
+  var now=new Date();
+  var iR=document.getElementById('pdr').checked,iO=document.getElementById('pdo').checked,iS=document.getElementById('pds').checked,iB=document.getElementById('pdb').checked,iP=document.getElementById('pdp').checked;
+  var h='<html><head><title>Life Coats Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#333;padding:2rem}h1{color:#5B8FA8;font-size:19px}h2{font-size:14px;margin:1.25rem 0 0.4rem;border-bottom:1px solid #eee;padding-bottom:3px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:5px 7px;font-size:10px;border-bottom:1px solid #ddd;text-transform:uppercase}td{padding:6px 7px;border-bottom:1px solid #eee;font-size:11px}.rv{background:#E8F4F9;padding:0.75rem;border-radius:5px;margin-bottom:0.75rem}.rvv{font-size:22px;font-weight:bold;color:#3a6e87}.ok{color:#3B6D11}.lw{color:#854F0B}.cr{color:#A32D2D}</style></head><body>';
+  h+='<h1>Life Coats — '+pdfType.toUpperCase()+' Report</h1><p style="font-size:11px;color:#666">Generated: '+now.toDateString()+'</p>';
+  if(iR)h+='<div class="rv"><div style="font-size:11px;color:#3a6e87">Estimated revenue</div><div class="rvv">'+fmt(rev)+'</div></div>';
+  if(iO&&done.length)h+='<h2>Orders completed</h2><table><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr>'+done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+'</table>';
+  if(iS)h+='<h2>Raw material stock</h2><table><tr><th>Material</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th></tr>'+mats.map(function(m){var s=stt(m.stock,m.alert_level);return'<tr><td>'+m.name+'</td><td>'+m.stock.toFixed(1)+'</td><td>'+m.unit+'</td><td>'+m.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
+  if(iB)h+='<h2>Base stock</h2><table><tr><th>Base</th><th>Stock (L)</th><th>Alert (L)</th><th>Status</th></tr>'+Object.values(bases).map(function(b){var s=stt(b.stock,b.alert_level);return'<tr><td>'+b.name+'</td><td>'+b.stock+'</td><td>'+b.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
+  if(iP)h+='<h2>Packaging stock</h2><table><tr><th>Item</th><th>Stock</th><th>Alert</th><th>Status</th></tr>'+Object.values(pkgData).map(function(p){var s=stt(p.stock,p.alert_level);return'<tr><td>'+p.name+'</td><td>'+p.stock+'</td><td>'+p.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
+  h+='</body></html>';
+  var w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(function(){w.print();},500);}
+  cM('m-pdf');
+}
+
+function oM(id){document.getElementById(id).classList.add('show');}
+function cM(id){document.getElementById(id).classList.remove('show');}
+function cBG(e,id){if(e.target===document.getElementById(id))cM(id);}
+
+loadAll();
+setInterval(function(){
+  if(!TV){var el=document.getElementById('dt');if(el){var n=new Date();el.textContent=n.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}}
+},60000);
+</script>
 </body>
 </html>
