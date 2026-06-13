@@ -993,392 +993,287 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </html>
 
 <style>
-    /* Clean workspace card adaptations for regular light-mode view */
-    .dashboard-light-active .card, 
-    .dashboard-light-active .widget-card {
-        background: #ffffff !important;
-        color: #1a1a1a !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-    }
-
-    /* Scroll constraint box for emergency notifications */
-    .alert-scroll-box {
-        max-height: 150px;
-        overflow-y: auto;
-        padding-right: 5px;
-    }
-
-    /* Pinning Panel Drawer Configuration */
-    .pin-manager-drawer {
-        background: white;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 14px;
-        margin-top: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        display: none;
-        color: #1a1a1a !important;
-    }
-    .pin-manager-drawer.open {
-        display: block;
-    }
-    .pin-item-row {
+    /* Sleek, Native Layout Enhancements */
+    .pinned-header-actions {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 0;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 13px;
+        margin-bottom: 12px;
+        border-bottom: 0.5px solid #e0e0e0;
+        padding-bottom: 6px;
     }
-
-    /* Top Custom Preset Toolbar Formatting */
-    .preset-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-        background: #f8fafc;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        border: 1px solid #e2e8f0;
-        color: #1a1a1a !important;
+    .pinned-control-btn {
+        font-size: 11px;
+        color: #5B8FA8;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
-
-    /* Low Stock Pulsing Zone Alerts */
-    .critical-pulse-alert {
-        background: #fff5f5;
-        border: 2px solid #ef4444;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 20px;
-        animation: criticalPulse 2s infinite alternate;
+    .pinned-control-btn:hover {
+        text-decoration: underline;
     }
-    @keyframes criticalPulse {
-        0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); border-color: #ef4444; }
-        100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); border-color: #dc2626; }
+    .inline-star-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0 4px;
+        margin-right: 4px;
+        vertical-align: middle;
+        transition: transform 0.1s ease;
     }
-
-    /* Gauge Ring Graphic Properties */
-    .gauge-ring-container {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
+    .inline-star-toggle:hover {
+        transform: scale(1.2);
     }
-    .gauge-ring-circle {
-        transition: stroke-dashoffset 0.4s ease;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
+    /* Clean Setup Modal Overlay */
+    .lc-modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.4);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 10000; opacity: 0; pointer-events: none;
+        transition: opacity 0.2s ease;
     }
-    .gauge-center-text {
-        position: absolute;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-weight: 700;
+    .lc-modal-overlay.active {
+        opacity: 1; pointer-events: auto;
+    }
+    .lc-modal-card {
+        background: white; width: 480px; max-width: 90%;
+        border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 20px; border: 0.5px solid #e0e0e0;
+    }
+    .lc-modal-list {
+        max-height: 240px; overflow-y: auto;
+        margin: 12px 0; border: 0.5px solid #e0e0e0; border-radius: 4px;
+    }
+    .lc-modal-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 12px; border-bottom: 0.5px solid #f0f0f0; font-size: 13px;
     }
 </style>
 
+<div id="lcPinModal" class="lc-modal-overlay">
+    <div class="lc-modal-card">
+        <h3 style="font-size: 14px; font-weight: 500; color: #5B8FA8; margin-bottom: 4px;">Configure High-Velocity Tracking</h3>
+        <p style="font-size: 11px; color: #888; margin-bottom: 12px;">Toggle items to feature them in the primary dashboard monitor.</p>
+        
+        <div class="tabs" style="margin-bottom: 8px;">
+            <div class="tab active" id="modalTabMats" onclick="switchModalTab('mats')">Materials</div>
+            <div class="tab" id="modalTabPkg" onclick="switchModalTab('pkg')">Packaging</div>
+        </div>
+
+        <div id="modalListContent" class="lc-modal-list"></div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+            <button class="btn btns" onclick="promptSaveLayoutPreset()" style="font-size: 12px;">Save Layout Preset</button>
+            <button class="btn" onclick="closePinConfigModal()" style="background: #5B8FA8; color: white; font-size: 12px;">Done</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Safe Memory Handlers
-    let pinnedMaterials = JSON.parse(localStorage.getItem('lc_pinned_materials')) || [];
-    let pinnedPackaging = JSON.parse(localStorage.getItem('lc_pinned_packaging')) || [];
-    let activeGaugeStyle = localStorage.getItem('lc_gauge_style') || 'bar';
-    let isPinDrawerOpen = false;
+    // Safe Memory States
+    let pinnedItems = JSON.parse(localStorage.getItem('lc_pinned_items_v18')) || [];
+    let currentModalTab = 'mats';
 
-    // Cache Pointer References to Claude's Core Rendering Systems
-    const nativeDashboardView = typeof rDash !== 'undefined' ? rDash : null;
-    const nativeTelevisionView = typeof tTV !== 'undefined' ? tTV : null;
+    // Capture Claude's Core Layout Engines safely
+    const nativeDashRender = typeof rDash !== 'undefined' ? rDash : null;
+    const nativeTvRender = typeof tTV !== 'undefined' ? tTV : null;
 
-    // 1. Intercept Regular Workspace Dashboard Function
-    if (nativeDashboardView) {
+    // Intercept standard workspace views
+    if (nativeDashRender) {
         rDash = function() {
-            // Run Claude's native layout engine generation sequence first
-            nativeDashboardView();
-            
-            // Immediately catch the output container and inject the v1.7 extension pack
-            injectCustomWorkspaceElements();
+            try {
+                nativeDashRender(); // Run Claude's layout logic cleanly
+                applyNativeWorkspaceExtensions();
+            } catch (err) {
+                console.error("Dashboard extension intercept error:", err);
+            }
         };
     }
 
-    // 2. Intercept Screen Toggle For TV Monitor Output Mode
-    if (nativeTelevisionView) {
+    // Intercept TV production layouts
+    if (nativeTvRender) {
         tTV = function() {
-            // Run Claude's fullscreen compiler engine sequence first
-            nativeTelevisionView();
-            
-            // If TV Mode boolean flag is true, inject the custom High-Velocity panel inside the dark screen wrapper
-            if (typeof TV !== 'undefined' && TV) {
-                injectCustomTVModeElements();
+            try {
+                nativeTvRender();
+                if (typeof TV !== 'undefined' && TV) {
+                    applyNativeTvExtensions();
+                }
+            } catch (err) {
+                console.error("TV view extension intercept error:", err);
             }
         };
     }
 
     // Process Workspace UI Aggregations
-    function injectCustomWorkspaceElements() {
-        const container = document.getElementById('dc');
-        if (!container) return;
+    function applyNativeWorkspaceExtensions() {
+        const targetContainer = document.getElementById('dc');
+        if (!targetContainer) return;
 
-        // Dynamic light layout normalization properties
-        container.style.background = '#ffffff';
-        container.style.color = '#1a1a1a';
-        container.classList.add('dashboard-light-active');
+        let originalHTML = targetContainer.innerHTML;
+        let runningHTML = '';
 
-        const baseClaudeHTML = container.innerHTML;
-
-        // Build list for the Pinning Selector Panel map arrays
-        let materialRows = '';
-        if (typeof mats !== 'undefined' && Array.isArray(mats)) {
-            mats.forEach(m => {
-                const id = m.id || m.name;
-                const isPinned = pinnedMaterials.includes(id);
-                materialRows += `<div class="pin-item-row"><span>💧 ${m.name}</span><button onclick="executePinToggle('${id}', false)" style="background:none; border:none; cursor:pointer; font-size:16px; color:${isPinned?'#f59e0b':'#cbd5e1'};">${isPinned?'★':'☆'}</button></div>`;
-            });
-        }
-
-        let packagingRows = '';
-        if (typeof pkgData !== 'undefined') {
-            Object.values(pkgData).forEach(p => {
-                const id = p.id || p.name;
-                const isPinned = pinnedPackaging.includes(id);
-                packagingRows += `<div class="pin-item-row"><span>📦 ${p.name}</span><button onclick="executePinToggle('${id}', true)" style="background:none; border:none; cursor:pointer; font-size:16px; color:${isPinned?'#f59e0b':'#cbd5e1'};">${isPinned?'★':'☆'}</button></div>`;
-            });
-        }
-
-        let toolbarHTML = `
-            <div class="preset-toolbar">
-                <div style="font-weight: 600; color: #475569; font-size: 13px;">📊 WORKSPACE PRESETS:</div>
-                <select id="presetDropdown" onchange="applySavedPreset(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; background: white; width: 180px;"></select>
-                <button onclick="saveDashboardPreset()" style="padding: 6px 12px; background: #5B8FA8; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">Save Layout</button>
-                <button onclick="togglePinDrawer()" style="padding: 6px 12px; background: #475569; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">✨ Pin Items</button>
-                <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
-                    <span style="font-size: 12px; font-weight: 500; color: #64748b;">Gauge Style:</span>
-                    <button onclick="setGaugeStyle('bar')" style="padding: 4px 10px; background: ${activeGaugeStyle==='bar'?'#475569':'#e2e8f0'}; color: ${activeGaugeStyle==='bar'?'white':'#475569'}; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Bars</button>
-                    <button onclick="setGaugeStyle('ring')" style="padding: 4px 10px; background: ${activeGaugeStyle==='ring'?'#475569':'#e2e8f0'}; color: ${activeGaugeStyle==='ring'?'white':'#475569'}; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Rings</button>
-                </div>
-            </div>
-            <div id="pinManagerPanel" class="pin-manager-drawer ${isPinDrawerOpen ? 'open' : '密'}">
-                <h4 style="margin: 0 0 10px 0; font-size: 14px; color:#1e293b;">Select High-Velocity Stock to Pin:</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div><strong style="font-size: 12px; color: #64748b; text-transform: uppercase;">Raw Materials</strong><div style="max-height:180px; overflow-y:auto; margin-top:6px;">${materialRows || '<p style="color:#94a3b8; font-size:12px;">None loaded</p>'}</div></div>
-                    <div><strong style="font-size: 12px; color: #64748b; text-transform: uppercase;">Packaging Stock</strong><div style="max-height:180px; overflow-y:auto; margin-top:6px;">${packagingRows || '<p style="color:#94a3b8; font-size:12px;">None loaded</p>'}</div></div>
-                </div>
-            </div>
-        `;
-
-        const emergencyBanners = checkEmergencyOverrides();
+        // Generate Pinned Stock Section if items exist
+        let pinnedCardsHTML = '';
         
-        let pinnedStockHTML = '<div class="card" style="padding: 20px; margin-top: 20px;"><h3>⭐ HIGH-VELOCITY STOCK MONITOR</h3><div style="display: flex; flex-wrap: wrap; gap: 24px; margin-top: 15px;">';
-        let hasPinnedItems = false;
-
+        // Loop Materials Safely
         if (typeof mats !== 'undefined' && Array.isArray(mats)) {
             mats.forEach(m => {
-                const id = m.id || m.name;
-                if (pinnedMaterials.includes(id)) {
-                    pinnedStockHTML += renderFuelGauge(m.name, m.stock, m.alert_level, m.max_target || 5000, activeGaugeStyle, false);
-                    hasPinnedItems = true;
+                if (pinnedItems.includes(m.name)) {
+                    pinnedCardsHTML += `<div class="bci"><span class="bcn">💧 ${m.name}</span><div class="bct"><div class="bcf ${bc(m.stock,m.alert_level)}" style="width:${pct(m.stock,m.alert_level)}%"></div></div><span class="bcv">${dspStock(m)}</span>${bdg(m.stock,m.alert_level)}</div>`;
                 }
             });
         }
+
+        // Loop Packaging Stock Safely
         if (typeof pkgData !== 'undefined') {
             Object.values(pkgData).forEach(p => {
-                const id = p.id || p.name;
-                if (pinnedPackaging.includes(id)) {
-                    pinnedStockHTML += renderFuelGauge(p.name, p.stock, p.alert_level, p.max_target || 2000, activeGaugeStyle, false);
-                    hasPinnedItems = true;
+                if (pinnedItems.includes(p.name)) {
+                    let col = p.stock <= p.alert_level ? '#E24B4A' : p.stock <= (p.alert_level * 1.5) ? '#EF9F27' : '#5B8FA8';
+                    pinnedCardsHTML += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:0.5px solid #e0e0e0; font-size:12px;"><span>📦 ${p.name}</span><span style="font-weight:500; color:${col};">${p.stock} units</span></div>`;
                 }
             });
         }
-        if (!hasPinnedItems) {
-            pinnedStockHTML += '<p style="color: #94a3b8; font-size: 13px; padding: 10px 0;">No high-velocity tracks pinned. Open "✨ Pin Items" above to populate tracks.</p>';
-        }
-        pinnedStockHTML += '</div></div>';
 
-        // Rewrite layout frame architecture seamlessly
-        container.innerHTML = toolbarHTML + emergencyBanners + baseClaudeHTML + pinnedStockHTML;
-        fetchAvailablePresets();
+        // Build elegant top monitor zone matching native UI elements perfectly
+        if (pinnedCardsHTML !== '') {
+            runningHTML += `
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="pinned-header-actions">
+                        <h3 style="margin: 0; font-size: 13px; font-weight: 500; color: #5B8FA8;">⭐ High-Velocity Tracking Monitor</h3>
+                        <button class="pinned-control-btn" onclick="openPinConfigModal()">Configure Tracks</button>
+                    </div>
+                    ${pinnedCardsHTML}
+                </div>
+            `;
+        } else {
+            // Minimal entry point if completely empty layout state
+            runningHTML += `
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+                    <button class="pinned-control-btn" onclick="openPinConfigModal()">⚙️ Configure High-Velocity Tracker</button>
+                </div>
+            `;
+        }
+
+        targetContainer.innerHTML = runningHTML + originalHTML;
     }
 
-    // Process TV Mode Aggregations (Maintains 32-Inch High Contrast Dark Styling)
-    function injectCustomTVModeElements() {
-        const container = document.getElementById('dc');
+    // Process TV Overrides (Seamless dark layout alignment)
+    function applyNativeTvExtensions() {
         const tvWrap = document.querySelector('.tv-wrap');
-        if (!container || !tvWrap) return;
+        if (!tvWrap) return;
 
-        container.style.background = '#0f172a'; // Deep slate primary high contrast override
-        container.classList.remove('dashboard-light-active');
-
-        let tvPinnedHTML = '<div class="tv-widget" style="margin-top:12px; clear:both;"><div class="tv-wt">⭐ HIGH-VELOCITY STOCK METRICS (WORKSPACE RUNTIME)</div><div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 14px; background: rgba(255,255,255,0.02); border-radius:8px; margin-top:10px;">';
-        let hasPinned = false;
-
+        let tvPinnedContent = '';
         if (typeof mats !== 'undefined' && Array.isArray(mats)) {
             mats.forEach(m => {
-                const id = m.id || m.name;
-                if (pinnedMaterials.includes(id)) {
-                    tvPinnedHTML += renderFuelGauge(m.name, m.stock, m.alert_level, m.max_target || 5000, activeGaugeStyle, true);
-                    hasPinned = true;
-                }
-            });
-        }
-        if (typeof pkgData !== 'undefined') {
-            Object.values(pkgData).forEach(p => {
-                const id = p.id || p.name;
-                if (pinnedPackaging.includes(id)) {
-                    tvPinnedHTML += renderFuelGauge(p.name, p.stock, p.alert_level, p.max_target || 2000, activeGaugeStyle, true);
-                    hasPinned = true;
+                if (pinnedItems.includes(m.name)) {
+                    let bc2 = stt(m.stock,m.alert_level)==='cr'?'#E24B4A':stt(m.stock,m.alert_level)==='lw'?'#EF9F27':'#5B8FA8';
+                    tvPinnedContent += `<div class="tv-bar"><span class="tv-bn">⭐ ${m.name}</span><div class="tv-bt"><div class="tv-bf" style="width:${pct(m.stock,m.alert_level)}%; background:${bc2}"></div></div><span class="tv-bv">${dspStock(m)}</span></div>`;
                 }
             });
         }
 
-        if (!hasPinned) {
-            tvPinnedHTML += '<div style="color: rgba(255,255,255,0.3); font-size:12px; padding:10px 0;">No high-velocity tracks configured. Mark items using regular workspace dashboard mode.</div>';
-        }
-        tvPinnedHTML += '</div></div>';
-        tvWrap.innerHTML += tvPinnedHTML;
-    }
-
-    // Dynamic Render Elements
-    function renderFuelGauge(name, current, minLimit, maxTarget, styleMode = 'bar', isTVMode = false) {
-        const targetMax = maxTarget > 0 ? maxTarget : (minLimit * 4 || 100);
-        const percentage = Math.min(100, Math.max(0, (current / targetMax) * 100));
-        let color = '#5B8FA8';
-        if (current <= minLimit) color = '#ef4444';
-        else if (percentage < 35) color = '#f97316';
-
-        const txtStyle = isTVMode ? 'color: rgba(255,255,255,0.9);' : 'color: #1a1a1a;';
-        const subTxtStyle = isTVMode ? 'color: rgba(255,255,255,0.4);' : 'color: #64748b;';
-        const barTrack = isTVMode ? 'background: rgba(255,255,255,0.1);' : 'background: #e2e8f0;';
-
-        if (styleMode === 'ring') {
-            const radius = 30;
-            const circumference = 2 * Math.PI * radius;
-            const offset = circumference - (percentage / 100) * circumference;
-            return `
-                <div class="gauge-ring-container" style="margin: 10px; min-width:110px; text-align:center;">
-                    <svg width="76" height="76">
-                        <circle stroke="${isTVMode ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}" stroke-width="6" fill="transparent" r="${radius}" cx="38" cy="38"/>
-                        <circle stroke="${color}" stroke-width="6" fill="transparent" r="${radius}" cx="38" cy="38" class="gauge-ring-circle" stroke-dasharray="${circumference} ${circumference}" stroke-dashoffset="${offset}"/>
-                    </svg>
-                    <div class="gauge-center-text" style="color: ${color}; font-size:13px; top:38%;">${Math.round(percentage)}%</div>
-                    <div style="font-size: 12px; font-weight: 600; margin-top: 6px; ${txtStyle}">${name}</div>
-                    <div style="font-size: 10px; ${subTxtStyle}">${current.toFixed(0)} units</div>
-                </div>
-            `;
-        } else {
-            return `
-                <div style="margin-bottom: 12px; padding: 2px 0; min-width: 220px; flex: 1 1 220px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; ${txtStyle}">
-                        <span>${name}</span>
-                        <span style="color: ${color};">${current.toFixed(0)} / ${targetMax} (${Math.round(percentage)}%)</span>
-                    </div>
-                    <div style="height: 12px; ${barTrack} border-radius: 6px; overflow: hidden;">
-                        <div style="width: ${percentage}%; height: 100%; background: ${color}; transition: width 0.4s ease-out;"></div>
-                    </div>
-                </div>
-            `;
+        if (tvPinnedContent !== '') {
+            let tvSection = document.createElement('div');
+            tvSection.className = 'tv-widget';
+            tvSection.style.marginTop = '10px';
+            tvSection.innerHTML = `<div class="tv-wt">⭐ HIGH-VELOCITY STOCK TRACKS</div>${tvPinnedContent}`;
+            tvWrap.appendChild(tvSection);
         }
     }
 
-    // Controls Configuration
-    function togglePinDrawer() {
-        isPinDrawerOpen = !isPinDrawerOpen;
-        const drawer = document.getElementById('pinManagerPanel');
-        if (drawer) drawer.classList.toggle('open', isPinDrawerOpen);
-    }
-
-    function setGaugeStyle(style) {
-        activeGaugeStyle = style;
-        localStorage.setItem('lc_gauge_style', style);
-        if (typeof rDash === 'function') rDash();
-    }
-
-    function executePinToggle(id, isPackagingElement) {
-        if (isPackagingElement) {
-            pinnedPackaging = pinnedPackaging.includes(id) ? pinnedPackaging.filter(x => x !== id) : [...pinnedPackaging, id];
-            localStorage.setItem('lc_pinned_packaging', JSON.stringify(pinnedPackaging));
-        } else {
-            pinnedMaterials = pinnedMaterials.includes(id) ? pinnedMaterials.filter(x => x !== id) : [...pinnedMaterials, id];
-            localStorage.setItem('lc_pinned_materials', JSON.stringify(pinnedMaterials));
+    // Modal Control Windows Logics
+    function openPinConfigModal() {
+        const modal = document.getElementById('lcPinModal');
+        if (modal) {
+            modal.classList.add('active');
+            renderModalListItems();
         }
-        if (typeof rDash === 'function') rDash();
     }
 
-    function checkEmergencyOverrides() {
-        let alertContent = '';
-        if (typeof mats !== 'undefined' && Array.isArray(mats)) {
+    function closePinConfigModal() {
+        const modal = document.getElementById('lcPinModal');
+        if (modal) modal.classList.remove('active');
+        if (nativeDashRender) rDash();
+    }
+
+    function switchModalTab(tabKey) {
+        currentModalTab = tabKey;
+        document.getElementById('modalTabMats').classList.toggle('active', tabKey === 'mats');
+        document.getElementById('modalTabPkg').classList.toggle('active', tabKey === 'pkg');
+        renderModalListItems();
+    }
+
+    function renderModalListItems() {
+        const listContainer = document.getElementById('modalListContent');
+        if (!listContainer) return;
+
+        let html = '';
+        if (currentModalTab === 'mats' && typeof mats !== 'undefined' && Array.isArray(mats)) {
             mats.forEach(m => {
-                if (typeof stt === 'function' && stt(m.stock, m.alert_level) !== 'ok') {
-                    alertContent += `<div style="margin: 4px 0; font-weight: 600; color: #dc2626;">⚠️ RAW MATERIAL OVERRUN: ${m.name} is reading ${m.stock} L/kg (Trigger Limit: ${m.alert_level})</div>`;
-                }
+                const isPinned = pinnedItems.includes(m.name);
+                html += `
+                    <div class="lc-modal-row">
+                        <span>💧 ${m.name}</span>
+                        <button class="inline-star-toggle" onclick="toggleItemPin('${m.name}')" style="color: ${isPinned ? '#f59e0b' : '#cbd5e1'}">
+                            ${isPinned ? '★' : '☆'}
+                        </button>
+                    </div>`;
             });
-        }
-        if (typeof pkgData !== 'undefined') {
+        } else if (currentModalTab === 'pkg' && typeof pkgData !== 'undefined') {
             Object.values(pkgData).forEach(p => {
-                if (p.stock <= p.alert_level) {
-                    alertContent += `<div style="margin: 4px 0; font-weight: 600; color: #dc2626;">📦 PACKAGING DEPLETION: ${p.name} drops to ${p.stock} units (Trigger Limit: ${p.alert_level})</div>`;
-                }
+                const isPinned = pinnedItems.includes(p.name);
+                html += `
+                    <div class="lc-modal-row">
+                        <span>📦 ${p.name}</span>
+                        <button class="inline-star-toggle" onclick="toggleItemPin('${p.name}')" style="color: ${isPinned ? '#f59e0b' : '#cbd5e1'}">
+                            ${isPinned ? '★' : '☆'}
+                        </button>
+                    </div>`;
             });
         }
-        return alertContent !== '' ? `<div class="critical-pulse-alert"><h3 style="margin-bottom: 6px; font-size: 14px; color: #b91c1c; display: flex; align-items: center; gap: 8px;">🚨 CRITICAL BUSINESS OVERRIDE ALERT</h3><div class="alert-scroll-box">${alertContent}</div></div>` : '';
+
+        listContainer.innerHTML = html || '<div style="padding:12px; text-align:center; color:#aaa; font-size:12px;">No items detected</div>';
     }
 
-    // Supabase Presets Synchronization Integration
-    async function saveDashboardPreset(customName) {
-        if (typeof supabase === 'undefined') return alert('Supabase client reference missing.');
-        if (!customName) customName = prompt("Enter a unique layout template label:");
-        if (!customName) return;
-
-        const layoutData = {
-            gaugeStyle: activeGaugeStyle,
-            pinnedMaterials: pinnedMaterials,
-            pinnedPackaging: pinnedPackaging,
-            timestamp: new Date().getTime()
-        };
-
-        const { data, error } = await supabase
-            .from('dashboard_presets')
-            .upsert([{ name: customName, config: layoutData }], { onConflict: 'name' });
-
-        if (error) {
-            alert("Could not sync template: " + error.message);
+    function toggleItemPin(itemName) {
+        if (pinnedItems.includes(itemName)) {
+            pinnedItems = pinnedItems.filter(name => name !== itemName);
         } else {
-            alert(`Preset "${customName}" pushed successfully.`);
-            if (typeof rDash === 'function') rDash();
+            pinnedItems.push(itemName);
+        }
+        localStorage.setItem('lc_pinned_items_v18', JSON.stringify(pinnedItems));
+        renderModalListItems(); // Immediately update the modal star color state
+    }
+
+    // Isolated, Safe Supabase Synchronization Loops (Will never block UI if missing tables)
+    async function promptSaveLayoutPreset() {
+        if (typeof supabase === 'undefined') {
+            alert("Supabase integration reference is unavailable.");
+            return;
+        }
+        const presetLabel = prompt("Provide a unique name for this layout setup:");
+        if (!presetLabel) return;
+
+        try {
+            const payload = { pinned_tracks: pinnedItems, updated_at: new Date().toISOString() };
+            const { error } = await supabase
+                .from('dashboard_presets')
+                .upsert([{ name: presetLabel, config: payload }], { onConflict: 'name' });
+
+            if (error) throw error;
+            alert(`Preset "${presetLabel}" synced successfully.`);
+        } catch (err) {
+            console.warn("Supabase Sync bypassed. Saving locally instead:", err.message);
+            localStorage.setItem(`lc_preset_fallback_${presetLabel}`, JSON.stringify(pinnedItems));
+            alert(`Saved layout configuration locally as "${presetLabel}".`);
         }
     }
 
-    async function fetchAvailablePresets() {
-        if (typeof supabase === 'undefined') return;
-        const { data, error } = await supabase.from('dashboard_presets').select('name');
-        if (error || !data) return;
-        
-        const menu = document.getElementById('presetDropdown');
-        if (!menu) return;
-        
-        menu.innerHTML = '<option value="">-- Load Layout --</option>';
-        data.forEach(preset => {
-            menu.innerHTML += `<option value="${preset.name}">${preset.name}</option>`;
-        });
-    }
-
-    async function applySavedPreset(presetName) {
-        if (!presetName || typeof supabase === 'undefined') return;
-        const { data, error } = await supabase.from('dashboard_presets').select('config').eq('name', presetName).single();
-        if (error || !data) return;
-        
-        const config = data.config;
-        activeGaugeStyle = config.gaugeStyle || 'bar';
-        pinnedMaterials = config.pinnedMaterials || [];
-        pinnedPackaging = config.pinnedPackaging || [];
-        
-        localStorage.setItem('lc_gauge_style', activeGaugeStyle);
-        localStorage.setItem('lc_pinned_materials', JSON.stringify(pinnedMaterials));
-        localStorage.setItem('lc_pinned_packaging', JSON.stringify(pinnedPackaging));
-        
-        if (typeof rDash === 'function') rDash();
-    }
-
-    // Execution Initializer Loop
-    setTimeout(() => { if (typeof rDash === 'function') rDash(); }, 1000);
+    // Self-starting structural initializer 
+    setTimeout(() => { if (nativeDashRender) rDash(); }, 600);
 </script>
