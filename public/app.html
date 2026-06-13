@@ -992,8 +992,11 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </body>
 </html>
 
+<!-- =======================================================
+     LIFE COATS WORKSPACE ENGINE v1.9 - THE LAYOUT FREEDOM UPDATE
+     ======================================================= -->
 <style>
-    /* Sleek, Native Layout Enhancements */
+    /* Premium Native Display Configurations */
     .pinned-header-actions {
         display: flex;
         align-items: center;
@@ -1023,30 +1026,72 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         padding: 0 4px;
         margin-right: 4px;
         vertical-align: middle;
-        transition: transform 0.1s ease;
     }
-    .inline-star-toggle:hover {
-        transform: scale(1.2);
+    
+    /* Compact Layout Tag Styles */
+    .compact-track-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
     }
-    /* Clean Setup Modal Overlay */
+    .compact-track-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border: 0.5px solid #cbd5e1;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .compact-track-badge.alert-low {
+        background: #fff5f5;
+        border-color: #fecaca;
+        color: #c53030;
+    }
+
+    /* Layout Selection Form Controls */
+    .control-group-row {
+        margin-bottom: 12px;
+    }
+    .control-group-row label {
+        display: block;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .control-select-input {
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        background: white;
+    }
+
+    /* Layout Freedom Configuration Window Overlay */
     .lc-modal-overlay {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(15, 23, 42, 0.4);
+        background: rgba(15, 23, 42, 0.3);
         display: flex; align-items: center; justify-content: center;
         z-index: 10000; opacity: 0; pointer-events: none;
-        transition: opacity 0.2s ease;
+        transition: opacity 0.15s ease;
     }
     .lc-modal-overlay.active {
         opacity: 1; pointer-events: auto;
     }
     .lc-modal-card {
-        background: white; width: 480px; max-width: 90%;
-        border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        padding: 20px; border: 0.5px solid #e0e0e0;
+        background: white; width: 500px; max-width: 95%;
+        border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        padding: 20px; border: 0.5px solid #cbd5e1;
     }
     .lc-modal-list {
-        max-height: 240px; overflow-y: auto;
+        max-height: 200px; overflow-y: auto;
         margin: 12px 0; border: 0.5px solid #e0e0e0; border-radius: 4px;
     }
     .lc-modal-row {
@@ -1055,11 +1100,31 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
     }
 </style>
 
+<!-- Clean Setup Dialog System Component -->
 <div id="lcPinModal" class="lc-modal-overlay">
     <div class="lc-modal-card">
-        <h3 style="font-size: 14px; font-weight: 500; color: #5B8FA8; margin-bottom: 4px;">Configure High-Velocity Tracking</h3>
-        <p style="font-size: 11px; color: #888; margin-bottom: 12px;">Toggle items to feature them in the primary dashboard monitor.</p>
+        <h3 style="font-size: 14px; font-weight: 500; color: #5B8FA8; margin-bottom: 4px;">🎛️ Design & Layout Customizer</h3>
+        <p style="font-size: 11px; color: #888; margin-bottom: 14px;">Tailor the high-velocity monitoring interface to match your workspace needs exactly.</p>
         
+        <!-- Layout Architecture Controls -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+            <div class="control-group-row">
+                <label>Screen Placement Position</label>
+                <select id="cfgPlacement" class="control-select-input" onchange="updateLayoutSetting('placement', this.value)">
+                    <option value="top">Top of Dashboard</option>
+                    <option value="bottom">Bottom of Dashboard</option>
+                    <option value="hidden">Hide completely</option>
+                </select>
+            </div>
+            <div class="control-group-row">
+                <label>Visual Presentation Density</label>
+                <select id="cfgDensity" class="control-select-input" onchange="updateLayoutSetting('density', this.value)">
+                    <option value="bars">Native Progress Bars</option>
+                    <option value="tags">Compact Status Tags</option>
+                </select>
+            </div>
+        </div>
+
         <div class="tabs" style="margin-bottom: 8px;">
             <div class="tab active" id="modalTabMats" onclick="switchModalTab('mats')">Materials</div>
             <div class="tab" id="modalTabPkg" onclick="switchModalTab('pkg')">Packaging</div>
@@ -1067,138 +1132,195 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 
         <div id="modalListContent" class="lc-modal-list"></div>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 16px;">
-            <button class="btn btns" onclick="promptSaveLayoutPreset()" style="font-size: 12px;">Save Layout Preset</button>
-            <button class="btn" onclick="closePinConfigModal()" style="background: #5B8FA8; color: white; font-size: 12px;">Done</button>
+        <!-- Presets Logic Bar Interface -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <select id="localPresetSelector" class="control-select-input" style="flex: 1;" onchange="loadLocalLayoutPreset(this.value)">
+                <option value="">-- Load Layout Preset --</option>
+            </select>
+            <button class="btn btns" onclick="saveLocalLayoutPreset()" style="font-size: 11px; padding: 5px 10px; white-space: nowrap;">Save Preset</button>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+            <button class="btn" onclick="closePinConfigModal()" style="background: #5B8FA8; color: white; font-size: 12px; padding: 6px 16px;">Apply Design Changes</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Safe Memory States
-    let pinnedItems = JSON.parse(localStorage.getItem('lc_pinned_items_v18')) || [];
+    // System Variables & Default Storage Parameters
+    let pinnedItems = JSON.parse(localStorage.getItem('lc_pinned_items_v19')) || [];
+    let displayPlacement = localStorage.getItem('lc_layout_placement') || 'top';
+    let displayDensity = localStorage.getItem('lc_layout_density') || 'bars';
     let currentModalTab = 'mats';
 
-    // Capture Claude's Core Layout Engines safely
+    // Core Intercept Hooks
     const nativeDashRender = typeof rDash !== 'undefined' ? rDash : null;
     const nativeTvRender = typeof tTV !== 'undefined' ? tTV : null;
 
-    // Intercept standard workspace views
     if (nativeDashRender) {
         rDash = function() {
             try {
-                nativeDashRender(); // Run Claude's layout logic cleanly
+                nativeDashRender(); // Execute clean rendering run
                 applyNativeWorkspaceExtensions();
             } catch (err) {
-                console.error("Dashboard extension intercept error:", err);
+                console.error("Layout engine error:", err);
             }
         };
     }
 
-    // Intercept TV production layouts
     if (nativeTvRender) {
         tTV = function() {
             try {
                 nativeTvRender();
+                // Inject tracks safely directly into Claude's multi-column grid architecture
                 if (typeof TV !== 'undefined' && TV) {
-                    applyNativeTvExtensions();
+                    applyNativeTvGridExtensions();
                 }
             } catch (err) {
-                console.error("TV view extension intercept error:", err);
+                console.error("TV grid engine error:", err);
             }
         };
     }
 
-    // Process Workspace UI Aggregations
+    // Process Workspace Custom Modifications
     function applyNativeWorkspaceExtensions() {
+        if (displayPlacement === 'hidden') return;
+        
         const targetContainer = document.getElementById('dc');
         if (!targetContainer) return;
 
         let originalHTML = targetContainer.innerHTML;
-        let runningHTML = '';
+        let monitorHTML = '';
 
-        // Generate Pinned Stock Section if items exist
-        let pinnedCardsHTML = '';
+        // Build Component Rows based on user preferences
+        let trackedItemsContent = '';
         
-        // Loop Materials Safely
-        if (typeof mats !== 'undefined' && Array.isArray(mats)) {
-            mats.forEach(m => {
-                if (pinnedItems.includes(m.name)) {
-                    pinnedCardsHTML += `<div class="bci"><span class="bcn">💧 ${m.name}</span><div class="bct"><div class="bcf ${bc(m.stock,m.alert_level)}" style="width:${pct(m.stock,m.alert_level)}%"></div></div><span class="bcv">${dspStock(m)}</span>${bdg(m.stock,m.alert_level)}</div>`;
-                }
-            });
-        }
+        if (displayDensity === 'tags') {
+            trackedItemsContent += '<div class="compact-track-container">';
+            let hasTags = false;
 
-        // Loop Packaging Stock Safely
-        if (typeof pkgData !== 'undefined') {
-            Object.values(pkgData).forEach(p => {
-                if (pinnedItems.includes(p.name)) {
-                    let col = p.stock <= p.alert_level ? '#E24B4A' : p.stock <= (p.alert_level * 1.5) ? '#EF9F27' : '#5B8FA8';
-                    pinnedCardsHTML += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:0.5px solid #e0e0e0; font-size:12px;"><span>📦 ${p.name}</span><span style="font-weight:500; color:${col};">${p.stock} units</span></div>`;
-                }
-            });
-        }
-
-        // Build elegant top monitor zone matching native UI elements perfectly
-        if (pinnedCardsHTML !== '') {
-            runningHTML += `
-                <div class="card" style="margin-bottom: 20px;">
-                    <div class="pinned-header-actions">
-                        <h3 style="margin: 0; font-size: 13px; font-weight: 500; color: #5B8FA8;">⭐ High-Velocity Tracking Monitor</h3>
-                        <button class="pinned-control-btn" onclick="openPinConfigModal()">Configure Tracks</button>
-                    </div>
-                    ${pinnedCardsHTML}
-                </div>
-            `;
+            if (typeof mats !== 'undefined' && Array.isArray(mats)) {
+                mats.forEach(m => {
+                    if (pinnedItems.includes(m.name)) {
+                        let isLow = stt(m.stock, m.alert_level) !== 'ok';
+                        trackedItemsContent += `<div class="compact-track-badge ${isLow ? 'alert-low' : ''}">💧 <strong>${m.name}:</strong> ${dspStock(m)}</div>`;
+                        hasTags = true;
+                    }
+                });
+            }
+            if (typeof pkgData !== 'undefined') {
+                Object.values(pkgData).forEach(p => {
+                    if (pinnedItems.includes(p.name)) {
+                        let isLow = p.stock <= p.alert_level;
+                        trackedItemsContent += `<div class="compact-track-badge ${isLow ? 'alert-low' : ''}">📦 <strong>${p.name}:</strong> ${p.stock} units</div>`;
+                        hasTags = true;
+                    }
+                });
+            }
+            if (!hasTags) trackedItemsContent += '<span style="font-size:12px; color:#aaa;">No high-velocity tracks pinned.</span>';
+            trackedItemsContent += '</div>';
         } else {
-            // Minimal entry point if completely empty layout state
-            runningHTML += `
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
-                    <button class="pinned-control-btn" onclick="openPinConfigModal()">⚙️ Configure High-Velocity Tracker</button>
-                </div>
-            `;
+            // High Fidelity Progress Bar Generation Mode
+            if (typeof mats !== 'undefined' && Array.isArray(mats)) {
+                mats.forEach(m => {
+                    if (pinnedItems.includes(m.name)) {
+                        trackedItemsContent += `<div class="bci"><span class="bcn">💧 ${m.name}</span><div class="bct"><div class="bcf ${bc(m.stock,m.alert_level)}" style="width:${pct(m.stock,m.alert_level)}%"></div></div><span class="bcv">${dspStock(m)}</span>${bdg(m.stock,m.alert_level)}</div>`;
+                    }
+                });
+            }
+            if (typeof pkgData !== 'undefined') {
+                Object.values(pkgData).forEach(p => {
+                    if (pinnedItems.includes(p.name)) {
+                        let col = p.stock <= p.alert_level ? '#E24B4A' : p.stock <= (p.alert_level * 1.5) ? '#EF9F27' : '#5B8FA8';
+                        trackedItemsContent += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:0.5px solid #e0e0e0; font-size:12px;"><span>📦 ${p.name}</span><span style="font-weight:500; color:${col};">${p.stock} units</span></div>`;
+                    }
+                });
+            }
+            if (trackedItemsContent === '') {
+                trackedItemsContent = '<p style="color: #94a3b8; font-size: 12px; margin: 4px 0;">No tracks pinned. Click "Configure Tracks" to add.</p>';
+            }
         }
 
-        targetContainer.innerHTML = runningHTML + originalHTML;
+        // Framework Card Housing Component
+        monitorHTML = `
+            <div class="card" style="margin-bottom: 20px; margin-top: ${displayPlacement === 'bottom' ? '20px' : '0'};">
+                <div class="pinned-header-actions">
+                    <h3 style="margin: 0; font-size: 13px; font-weight: 500; color: #5B8FA8;">⭐ High-Velocity Tracking Monitor</h3>
+                    <button class="pinned-control-btn" onclick="openPinConfigModal()">Configure Interface</button>
+                </div>
+                ${trackedItemsContent}
+            </div>
+        `;
+
+        // Direct Layout Assembly Injection Matrix
+        if (displayPlacement === 'bottom') {
+            targetContainer.innerHTML = originalHTML + monitorHTML;
+        } else {
+            targetContainer.innerHTML = monitorHTML + originalHTML;
+        }
     }
 
-    // Process TV Overrides (Seamless dark layout alignment)
-    function applyNativeTvExtensions() {
+    // Process TV Custom Overrides (Embeds Directly into Grid)
+    function applyNativeTvGridExtensions() {
         const tvWrap = document.querySelector('.tv-wrap');
         if (!tvWrap) return;
 
-        let tvPinnedContent = '';
+        // Locates Claude's secondary display grid column container safely
+        const gridBlocks = tvWrap.querySelectorAll('div[style*="display:grid"], div[style*="display: grid"]');
+        if (gridBlocks.length < 2) return;
+
+        // Target the second grid tier containing Manufactured Stock and Active Orders
+        const rightColumn = gridBlocks[1].children[1];
+        if (!rightColumn) return;
+
+        let tvItemsHTML = '';
         if (typeof mats !== 'undefined' && Array.isArray(mats)) {
             mats.forEach(m => {
                 if (pinnedItems.includes(m.name)) {
                     let bc2 = stt(m.stock,m.alert_level)==='cr'?'#E24B4A':stt(m.stock,m.alert_level)==='lw'?'#EF9F27':'#5B8FA8';
-                    tvPinnedContent += `<div class="tv-bar"><span class="tv-bn">⭐ ${m.name}</span><div class="tv-bt"><div class="tv-bf" style="width:${pct(m.stock,m.alert_level)}%; background:${bc2}"></div></div><span class="tv-bv">${dspStock(m)}</span></div>`;
+                    tvItemsHTML += `<div class="tv-bar"><span class="tv-bn">⭐ ${m.name}</span><div class="tv-bt"><div class="tv-bf" style="width:${pct(m.stock,m.alert_level)}%; background:${bc2}"></div></div><span class="tv-bv">${dspStock(m)}</span></div>`;
                 }
             });
         }
 
-        if (tvPinnedContent !== '') {
-            let tvSection = document.createElement('div');
-            tvSection.className = 'tv-widget';
-            tvSection.style.marginTop = '10px';
-            tvSection.innerHTML = `<div class="tv-wt">⭐ HIGH-VELOCITY STOCK TRACKS</div>${tvPinnedContent}`;
-            tvWrap.appendChild(tvSection);
+        if (tvItemsHTML !== '') {
+            let widgetCard = document.createElement('div');
+            widgetCard.className = 'tv-widget';
+            widgetCard.style.marginBottom = '10px';
+            widgetCard.innerHTML = `<div class="tv-wt">⭐ HIGH-VELOCITY MONITOR</div>${tvItemsHTML}`;
+            
+            // Insert widget card beautifully at the top of the column block frame
+            rightColumn.insertBefore(widgetCard, rightColumn.firstChild);
         }
     }
 
-    // Modal Control Windows Logics
+    // Config Dialog Handlers
     function openPinConfigModal() {
         const modal = document.getElementById('lcPinModal');
-        if (modal) {
-            modal.classList.add('active');
-            renderModalListItems();
-        }
+        if (!modal) return;
+        
+        document.getElementById('cfgPlacement').value = displayPlacement;
+        document.getElementById('cfgDensity').value = displayDensity;
+        
+        modal.classList.add('active');
+        renderModalListItems();
+        refreshPresetListMenu();
     }
 
     function closePinConfigModal() {
         const modal = document.getElementById('lcPinModal');
         if (modal) modal.classList.remove('active');
         if (nativeDashRender) rDash();
+    }
+
+    function updateLayoutSetting(key, val) {
+        if (key === 'placement') {
+            displayPlacement = val;
+            localStorage.setItem('lc_layout_placement', val);
+        } else if (key === 'density') {
+            displayDensity = val;
+            localStorage.setItem('lc_layout_density', val);
+        }
     }
 
     function switchModalTab(tabKey) {
@@ -1236,8 +1358,7 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
                     </div>`;
             });
         }
-
-        listContainer.innerHTML = html || '<div style="padding:12px; text-align:center; color:#aaa; font-size:12px;">No items detected</div>';
+        listContainer.innerHTML = html || '<div style="padding:12px; text-align:center; color:#aaa;">No data structures loaded</div>';
     }
 
     function toggleItemPin(itemName) {
@@ -1246,34 +1367,61 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         } else {
             pinnedItems.push(itemName);
         }
-        localStorage.setItem('lc_pinned_items_v18', JSON.stringify(pinnedItems));
-        renderModalListItems(); // Immediately update the modal star color state
+        localStorage.setItem('lc_pinned_items_v19', JSON.stringify(pinnedItems));
+        renderModalListItems();
     }
 
-    // Isolated, Safe Supabase Synchronization Loops (Will never block UI if missing tables)
-    async function promptSaveLayoutPreset() {
-        if (typeof supabase === 'undefined') {
-            alert("Supabase integration reference is unavailable.");
-            return;
-        }
-        const presetLabel = prompt("Provide a unique name for this layout setup:");
-        if (!presetLabel) return;
+    // Clean Local Memory Layout Preset Handlers (No Server-Side Interferences)
+    function saveLocalLayoutPreset() {
+        const label = prompt("Enter a unique descriptor label for this configuration:");
+        if (!label) return;
 
-        try {
-            const payload = { pinned_tracks: pinnedItems, updated_at: new Date().toISOString() };
-            const { error } = await supabase
-                .from('dashboard_presets')
-                .upsert([{ name: presetLabel, config: payload }], { onConflict: 'name' });
+        let customPresets = JSON.parse(localStorage.getItem('lc_saved_presets_v19')) || {};
+        customPresets[label] = {
+            pinned: pinnedItems,
+            placement: displayPlacement,
+            density: displayDensity
+        };
 
-            if (error) throw error;
-            alert(`Preset "${presetLabel}" synced successfully.`);
-        } catch (err) {
-            console.warn("Supabase Sync bypassed. Saving locally instead:", err.message);
-            localStorage.setItem(`lc_preset_fallback_${presetLabel}`, JSON.stringify(pinnedItems));
-            alert(`Saved layout configuration locally as "${presetLabel}".`);
+        localStorage.setItem('lc_saved_presets_v19', JSON.stringify(customPresets));
+        alert(`Preset "${label}" saved successfully to local runtime profile memory.`);
+        refreshPresetListMenu();
+    }
+
+    function refreshPresetListMenu() {
+        const menu = document.getElementById('localPresetSelector');
+        if (!menu) return;
+
+        let customPresets = JSON.parse(localStorage.getItem('lc_saved_presets_v19')) || {};
+        menu.innerHTML = '<option value="">-- Load Layout Preset --</option>';
+        
+        Object.keys(customPresets).forEach(key => {
+            menu.innerHTML += `<option value="${key}">${key}</option>`;
+        });
+    }
+
+    function loadLocalLayoutPreset(label) {
+        if (!label) return;
+        let customPresets = JSON.parse(localStorage.getItem('lc_saved_presets_v19')) || {};
+        const config = customPresets[label];
+        
+        if (config) {
+            pinnedItems = config.pinned || [];
+            displayPlacement = config.placement || 'top';
+            displayDensity = config.density || 'bars';
+
+            localStorage.setItem('lc_pinned_items_v19', JSON.stringify(pinnedItems));
+            localStorage.setItem('lc_layout_placement', displayPlacement);
+            localStorage.setItem('lc_layout_density', displayDensity);
+
+            document.getElementById('cfgPlacement').value = displayPlacement;
+            document.getElementById('cfgDensity').value = displayDensity;
+
+            renderModalListItems();
+            alert(`Loaded layout settings profile "${label}".`);
         }
     }
 
-    // Self-starting structural initializer 
-    setTimeout(() => { if (nativeDashRender) rDash(); }, 600);
+    // Boot Routine Ignition Sequence
+    setTimeout(() => { if (nativeDashRender) rDash(); }, 500);
 </script>
