@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:transparent}
 .app{display:flex;height:100vh;overflow:hidden}
-.sidebar{width:210px;min-width:210px;background:#f8f9fa;border-right:0.5px solid #e0e0e0;display:flex;flex-direction:column;padding:0.75rem 0;overflow-y:auto;transition:width 0.3s}
+.sidebar{width:215px;min-width:215px;background:#f8f9fa;border-right:0.5px solid #e0e0e0;display:flex;flex-direction:column;padding:0.75rem 0;overflow-y:auto}
 .sidebar.hidden{width:0;min-width:0;overflow:hidden;padding:0}
 .logo{padding:0 1rem 0.75rem;border-bottom:0.5px solid #e0e0e0;margin-bottom:0.5rem}
 .logo h2{font-size:14px;font-weight:500;color:#5B8FA8}
@@ -46,6 +46,7 @@ body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:tr
 .btnp{background:#5B8FA8;color:#fff;border-color:#5B8FA8}.btnp:hover{background:#4a7a93}
 .btnd{background:#FCEBEB;color:#A32D2D;border-color:#F7C1C1}
 .btnw{background:#E1F5EE;color:#0F6E56;border-color:#5B8FA8}
+.btno{background:#FFF3E0;color:#E65100;border-color:#FFB74D}
 .btns{padding:4px 10px;font-size:12px}
 .fg{margin-bottom:0.85rem}
 .fg label{display:block;font-size:12px;font-weight:500;margin-bottom:3px;color:#444}
@@ -111,25 +112,37 @@ tr:hover td{background:#f8f9fa}
 .slv{text-align:right;flex:0 0 53%;font-weight:bold;word-break:break-word}
 .sdv{border:none;border-top:1px dashed #000;margin:4px 0}
 .sft{text-align:center;font-size:8px;color:#666;margin-top:5px;padding-top:4px;border-top:1px dashed #000}
-.ing-row{display:grid;grid-template-columns:1fr 100px 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
-.tint-row{display:grid;grid-template-columns:1fr 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
-.stone-row{display:grid;grid-template-columns:1fr 80px 80px 36px;gap:6px;align-items:end;margin-bottom:6px}
 .ing-section{background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:0.75rem}
 .ing-section-title{font-size:11px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px}
 .conf-wrap{background:#fff;border-radius:12px;border:0.5px solid #e0e0e0;padding:1.5rem;width:380px;max-width:95%;text-align:center}
 .conf-wrap h3{font-size:16px;font-weight:500;margin-bottom:0.5rem}
 .conf-wrap p{font-size:13px;color:#666;margin-bottom:1.25rem}
-.datalist-wrap{position:relative}
+.batch-card{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1rem;margin-bottom:8px}
+.stock-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px}
+.stock-row:last-child{border-bottom:none}
+.tv-wrap{background:#1a1a2e;min-height:100vh;padding:1rem;color:#fff}
+.tv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(255,255,255,0.1)}
+.tv-title{font-size:18px;font-weight:500;color:#5B8FA8;display:flex;align-items:center;gap:8px}
+.tv-rev{background:linear-gradient(135deg,#5B8FA8,#3a6e87);border-radius:12px;padding:0.75rem 1.25rem;text-align:center}
+.tv-rl{font-size:10px;opacity:0.8}
+.tv-rv{font-size:24px;font-weight:500}
+.tv-widget{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1rem}
+.tv-wt{font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem}
+.tv-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tv-bn{width:120px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,0.8)}
+.tv-bt{flex:1;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden}
+.tv-bf{height:100%;border-radius:5px}
+.tv-bv{width:70px;text-align:right;font-size:11px;color:rgba(255,255,255,0.6)}
+.tv-met{background:rgba(255,255,255,0.05);border-radius:8px;padding:0.75rem;text-align:center}
+.tv-mv{font-size:28px;font-weight:500}
+.tv-ml{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px}
+.tv-alert{background:rgba(231,76,60,0.2);border:1px solid rgba(231,76,60,0.4);border-radius:8px;padding:7px 12px;font-size:11px;color:#ff6b6b;overflow:hidden;white-space:nowrap;margin-bottom:0.75rem}
 </style>
 </head>
 <body>
-
 <div class="loading-screen" id="ls">
-  <div class="spinner"></div>
-  <h2>Life Coats</h2>
-  <p>Loading ProducTrack...</p>
+  <div class="spinner"></div><h2>Life Coats</h2><p>Loading ProducTrack...</p>
 </div>
-
 <div class="app" id="app" style="display:none">
 <div class="sidebar" id="sb">
   <div class="logo"><h2>Life Coats</h2><p id="rl">ProducTrack</p></div>
@@ -137,7 +150,8 @@ tr:hover td{background:#f8f9fa}
   <div class="ni active" onclick="nav('dash',this)" data-r="admin,reception"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
   <div class="ns">Stock</div>
   <div class="ni" onclick="nav('mats',this)" data-r="admin"><i class="ti ti-package"></i>Raw Materials</div>
-  <div class="ni" onclick="nav('bases',this)" data-r="admin"><i class="ti ti-flask"></i>Base Production</div>
+  <div class="ni" onclick="nav('receive',this)" data-r="admin"><i class="ti ti-truck"></i>Receive Stock</div>
+  <div class="ni" onclick="nav('batches',this)" data-r="admin,reception"><i class="ti ti-flask"></i>Batch Production</div>
   <div class="ni" onclick="nav('pkg',this)" data-r="admin"><i class="ti ti-bucket"></i>Packaging</div>
   <div class="ns">Production</div>
   <div class="ni" onclick="nav('forms',this)" data-r="admin"><i class="ti ti-book"></i>Formulations</div>
@@ -145,12 +159,10 @@ tr:hover td{background:#f8f9fa}
   <div class="ns">Reports</div>
   <div class="ni" onclick="nav('rep',this)" data-r="admin"><i class="ti ti-chart-bar"></i>Reports</div>
   <div class="user-info">
-    <p>Logged in as</p>
-    <span id="un-display"></span>
+    <p>Logged in as</p><span id="un-display"></span>
     <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
   </div>
 </div>
-
 <div class="main" id="main">
 
 <!-- DASHBOARD -->
@@ -161,10 +173,8 @@ tr:hover td{background:#f8f9fa}
       <span class="blink"></span><span style="font-size:11px;color:#888">Live</span>
       <button class="btn btns" onclick="tCP()"><i class="ti ti-settings"></i> Customise</button>
       <select onchange="loadPreset(this.value)" style="font-size:12px;padding:4px 8px;border-radius:8px;border:0.5px solid #ddd">
-        <option value="">Presets...</option>
-        <option value="stock">Stock focus</option>
-        <option value="prod">Production focus</option>
-        <option value="full">Full view</option>
+        <option value="">Presets...</option><option value="stock">Stock focus</option>
+        <option value="prod">Production focus</option><option value="full">Full view</option>
       </select>
       <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-tv"></i> TV Mode</button>
     </div>
@@ -175,7 +185,7 @@ tr:hover td{background:#f8f9fa}
     <span class="wt on" id="wt-me" onclick="tW('me')"><i class="ti ti-chart-bar"></i>Metrics</span>
     <span class="wt on" id="wt-rv" onclick="tW('rv')"><i class="ti ti-currency-dollar"></i>Revenue</span>
     <span class="wt on" id="wt-st" onclick="tW('st')"><i class="ti ti-package"></i>Stock</span>
-    <span class="wt on" id="wt-ba" onclick="tW('ba')"><i class="ti ti-flask"></i>Bases</span>
+    <span class="wt on" id="wt-ms" onclick="tW('ms')"><i class="ti ti-flask"></i>Manufactured</span>
     <span class="wt on" id="wt-or" onclick="tW('or')"><i class="ti ti-clipboard-list"></i>Orders</span>
     <span class="wt on" id="wt-pk" onclick="tW('pk')"><i class="ti ti-bucket"></i>Packaging</span>
   </div>
@@ -184,7 +194,7 @@ tr:hover td{background:#f8f9fa}
 
 <!-- RAW MATERIALS -->
 <div class="pg" id="pg-mats">
-  <div class="ph"><div><h1>Raw Materials</h1><p>Stock levels, suppliers and alert thresholds</p></div>
+  <div class="ph"><div><h1>Raw Materials</h1><p>Stock levels and alert thresholds</p></div>
     <button class="btn btnp btns" onclick="oM('m-am')"><i class="ti ti-plus"></i> Add material</button></div>
   <select id="mf" onchange="rMats()" style="font-size:12px;padding:5px 8px;border-radius:8px;border:0.5px solid #ddd;margin-bottom:0.75rem">
     <option value="all">All categories</option><option value="resin">Resins</option><option value="chemical">Chemicals</option>
@@ -193,55 +203,60 @@ tr:hover td{background:#f8f9fa}
   </select>
   <div id="sm" style="display:none" class="sb"><i class="ti ti-circle-check"></i><span id="smm"></span></div>
   <div class="card" style="padding:0;overflow:hidden"><div style="overflow-x:auto">
-    <table><thead><tr><th>Material</th><th>Cat</th><th>Supplier</th><th>Pack</th><th>Description</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th><th></th></tr></thead>
+    <table><thead><tr><th>Material</th><th>Cat</th><th>Supplier</th><th>Pack</th><th>Stock</th><th>Alert</th><th>Status</th><th></th></tr></thead>
     <tbody id="mt"></tbody></table></div></div>
 </div>
 
-<!-- BASE PRODUCTION -->
-<div class="pg" id="pg-bases">
-  <div class="ph"><div><h1>Base Production</h1><p>Log batches and track base stock — click any card to update stock</p></div>
-    <button class="btn btnp btns" onclick="oM('m-nb')"><i class="ti ti-plus"></i> Add base type</button></div>
-  <div class="al"><i class="ti ti-lock"></i> Base formulas are admin-only</div>
-  <div class="g4" id="bsc"></div>
-  <div class="g2">
-    <div class="card"><h3>Log a batch</h3>
-      <div class="fg"><label>Base type</label><select id="bt" onchange="sBF()"></select></div>
-      <div class="fg"><label>Litres to produce</label><input type="number" id="bl" value="200" min="1" oninput="sBF()"></div>
-      <div id="bfp" class="ib" style="font-size:11px;min-height:30px"></div>
-      <button class="btn btnp btns" onclick="lBase()"><i class="ti ti-plus"></i> Log batch &amp; deduct materials</button>
+<!-- RECEIVE STOCK -->
+<div class="pg" id="pg-receive">
+  <div class="ph"><div><h1>Receive Stock</h1><p>Log new deliveries from suppliers</p></div></div>
+  <div class="card"><h3>Log a delivery</h3>
+    <div class="fr">
+      <div class="fg"><label>Material</label><select id="rcv-mat" onchange="onRcvChange()"><option value="">Select material...</option></select></div>
+      <div class="fg"><label id="rcv-lbl">Quantity received</label><input type="number" id="rcv-qty" placeholder="e.g. 4" min="1" step="1"></div>
     </div>
-    <div class="card"><h3>Recent batches</h3><div id="blog"></div></div>
+    <div id="rcv-info" class="ib" style="display:none"></div>
+    <div class="fg"><label>Notes (optional)</label><input type="text" id="rcv-notes" placeholder="e.g. Hippo delivery, invoice #1234"></div>
+    <button class="btn btnp" onclick="receiveStock()"><i class="ti ti-plus"></i> Add to stock</button>
   </div>
-  <div class="card">
-    <div class="fb"><h3>Base formulas</h3><button class="btn btns" onclick="oBaseEdit()"><i class="ti ti-edit"></i> Edit formulas</button></div>
-    <div id="bfd" style="margin-top:0.75rem"></div>
+  <div class="card"><h3>Recent deliveries</h3><div id="rcv-log"></div></div>
+</div>
+
+<!-- BATCH PRODUCTION -->
+<div class="pg" id="pg-batches">
+  <div class="ph">
+    <div><h1>Batch Production</h1><p>Produce batches and manage recipes</p></div>
+    <button class="btn btnp btns" id="add-recipe-btn" onclick="openAddBatch()" style="display:none"><i class="ti ti-plus"></i> Add recipe</button>
   </div>
+  <div class="tabs">
+    <div class="tab active" onclick="sBT('produce',this)">Produce a batch</div>
+    <div class="tab" id="recipes-tab" onclick="sBT('recipes',this)" style="display:none">Recipes</div>
+    <div class="tab" onclick="sBT('log',this)">Production log</div>
+  </div>
+  <div id="bt-produce"></div>
+  <div id="bt-recipes" style="display:none"></div>
+  <div id="bt-log" style="display:none"></div>
 </div>
 
 <!-- PACKAGING -->
 <div class="pg" id="pg-pkg">
-  <div class="ph"><div><h1>Packaging</h1><p>Click any card to edit stock or alert threshold</p></div></div>
+  <div class="ph"><div><h1>Packaging</h1><p>Click any card to edit — use Book Out to manually deduct items</p></div></div>
   <div class="g3" id="pkgc"></div>
   <div class="card"><h3>Add stock</h3>
     <div class="fr">
       <div class="fg"><label>Item</label><select id="pi">
-        <option value="pr20">20L Printed Buckets</option>
-        <option value="ti20">20L Titan Black Buckets</option>
-        <option value="ti20l">20L Titan Black Lids</option>
-        <option value="sl20">20L Secure Lock Buckets</option>
-        <option value="sl20l">20L Secure Lock Lids</option>
-        <option value="sl5">5L Secure Lock Buckets</option>
-        <option value="sl5l">5L Secure Lock Lids</option>
-        <option value="bags">Plastic Bags</option>
-        <option value="trs">Steel Trowels</option>
-        <option value="trp">Plastic Floats</option>
-        <option value="t36">Masking Tape 36mm (box)</option>
-        <option value="t18">Masking Tape 18mm (box)</option>
+        <option value="pr20">20L Printed Buckets</option><option value="ti20">20L Titan Black Buckets</option>
+        <option value="ti20l">20L Titan Black Lids</option><option value="sl20">20L Secure Lock Buckets</option>
+        <option value="sl20l">20L Secure Lock Lids</option><option value="sl5">5L Secure Lock Buckets</option>
+        <option value="sl5l">5L Secure Lock Lids</option><option value="bags">Plastic Bags</option>
+        <option value="trs">Steel Trowels</option><option value="trp">Plastic Floats</option>
+        <option value="t36">Masking Tape 36mm (box)</option><option value="t18">Masking Tape 18mm (box)</option>
       </select></div>
       <div class="fg"><label>Quantity to add</label><input type="number" id="pq" placeholder="Units" min="1"></div>
     </div>
     <button class="btn btnp btns" onclick="addPkg()"><i class="ti ti-plus"></i> Add stock</button>
   </div>
+  <div class="card"><h3>Recent bookings out</h3><div id="bo-log"></div></div>
 </div>
 
 <!-- FORMULATIONS -->
@@ -270,82 +285,54 @@ tr:hover td{background:#f8f9fa}
     <div class="tab" onclick="sOT('done',this)">Completed</div>
   </div>
   <div id="ot-new">
-    <div id="rec-stock" style="display:none" class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Stock overview</h3><div id="rsc"></div></div>
+    <div id="rec-stock" style="display:none" class="card"><h3>Stock overview</h3><div id="rsc"></div></div>
     <div class="card"><h3>Build an order</h3>
       <div class="fr">
         <div class="fg"><label>Client name</label><input type="text" id="oc" placeholder="Client name"></div>
-        <div class="fg"><label>Product type</label>
-          <select id="opt" onchange="oPTC()">
-            <option value="gamazine">Gamazine</option>
-            <option value="granite">Granite Coat</option>
-            <option value="undercoat">Undercoat</option>
-            <option value="cps">CPS</option>
-            <option value="clearcoat">Clearcoat</option>
-            <option value="waterproofing">Waterproofing</option>
-            <option value="fiberseal">Fiber Seal</option>
-            <option value="cm">Colour Match</option>
-          </select>
-        </div>
+        <div class="fg"><label>Product type</label><select id="opt" onchange="oPTC()">
+          <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+          <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
+          <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
+          <option value="fiberseal">Fiber Seal</option><option value="cm">Colour Match</option>
+        </select></div>
       </div>
       <div id="or-std">
         <div class="fr">
-          <div class="fg"><label>Formulation / colour</label><select id="orec" onchange="onFormSelect()"></select></div>
+          <div class="fg"><label>Formulation</label><select id="orec"></select></div>
           <div class="fg"><label>Quantity (buckets)</label><input type="number" id="oqty" value="1" min="1"></div>
         </div>
       </div>
-      <!-- Stone size choice for gamazine — reception chooses per order -->
-      <div id="or-stone" style="display:none" class="fg">
-        <label>Stone size (client choice)</label>
-        <select id="oss">
-          <option value="Stone 0.4mm">0.4mm</option>
-          <option value="Stone 0.8mm">0.8mm</option>
-          <option value="Stone 1.1mm" selected>1.1mm (most common)</option>
-          <option value="Stone 1-2mm">1-2mm</option>
-        </select>
+      <div id="or-stone" style="display:none" class="fg"><label>Stone size (client choice)</label>
+        <select id="oss"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm" selected>1.1mm (most common)</option><option value="Stone 1-2mm">1-2mm</option></select>
       </div>
-      <!-- Bucket type -->
-      <div id="or-bkt" style="display:none" class="fg">
-        <label>Bucket type</label>
-        <select id="obk">
-          <option value="20L Printed">20L Printed</option>
-          <option value="20L Titan Black">20L Titan Black</option>
-        </select>
+      <div id="or-bkt" style="display:none" class="fg"><label>Bucket type</label>
+        <select id="obk"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select>
       </div>
-      <!-- Secure lock -->
       <div id="or-sec" style="display:none" class="fr">
-        <div class="fg"><label>Bucket size</label>
-          <select id="osec"><option value="20">20L Secure Lock</option><option value="5">5L Secure Lock</option></select>
-        </div>
+        <div class="fg"><label>Bucket size</label><select id="osec"><option value="20">20L Secure Lock</option><option value="5">5L Secure Lock</option></select></div>
         <div class="fg"><label>Quantity</label><input type="number" id="oqsec" value="1" min="1"></div>
       </div>
-      <!-- Clearcoat size -->
-      <div id="or-cls" style="display:none" class="fg">
-        <label>Clearcoat size</label>
+      <div id="or-cls" style="display:none" class="fg"><label>Clearcoat size</label>
         <select id="ocls"><option value="20">20L</option><option value="10">10L</option><option value="5">5L</option></select>
       </div>
-      <!-- Colour match -->
       <div id="or-cm" style="display:none">
-        <div class="ib"><i class="ti ti-palette"></i> Colour match — enter tints used per bucket. Stock deducted on completion.</div>
+        <div class="ib"><i class="ti ti-palette"></i> Colour match — enter tints per bucket</div>
         <div class="fr">
-          <div class="fg"><label>Colour name / ref</label><input type="text" id="cmn" placeholder="e.g. Client Ref 007"></div>
-          <div class="fg"><label>Quantity (buckets)</label><input type="number" id="cmq" value="1" min="1"></div>
+          <div class="fg"><label>Colour ref</label><input type="text" id="cmn" placeholder="e.g. Client Ref 007"></div>
+          <div class="fg"><label>Quantity</label><input type="number" id="cmq" value="1" min="1"></div>
         </div>
         <div class="fr">
-          <div class="fg"><label>Stone size</label>
-            <select id="cms"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm">1.1mm</option><option value="Stone 1-2mm">1-2mm</option></select>
-          </div>
-          <div class="fg"><label>Bucket type</label>
-            <select id="cmb"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select>
-          </div>
+          <div class="fg"><label>Stone size</label><select id="cms"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm">1.1mm</option><option value="Stone 1-2mm">1-2mm</option></select></div>
+          <div class="fg"><label>Bucket type</label><select id="cmb"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select></div>
         </div>
-        <div style="font-size:12px;font-weight:500;margin-bottom:6px">Tints per bucket (shots &amp; Y):</div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:6px">Tints per bucket:</div>
         <div id="cmt"></div>
         <button class="btn btns" onclick="addCMT()" style="margin-bottom:0.75rem"><i class="ti ti-plus"></i> Add tint</button>
       </div>
       <div class="fg"><label>Delivery method</label>
         <select id="odl" onchange="tLN()"><option value="collection">Collection</option><option value="courier">Courier (lids included)</option></select>
       </div>
-      <div id="ln" style="display:none" class="ib"><i class="ti ti-info-circle"></i> Lids will be included for courier delivery</div>
+      <div id="ln" style="display:none" class="ib"><i class="ti ti-info-circle"></i> Lids included for courier</div>
       <div class="fg"><label>Order notes</label><input type="text" id="onn" placeholder="Optional notes for the factory"></div>
       <button class="btn btnp" onclick="bOrder()"><i class="ti ti-clipboard-check"></i> Build order &amp; generate slip</button>
     </div>
@@ -385,9 +372,11 @@ tr:hover td{background:#f8f9fa}
   <button class="mc" onclick="cM('m-am')"><i class="ti ti-x"></i></button><h3>Add raw material</h3>
   <div class="fr"><div class="fg"><label>Name</label><input type="text" id="mn"></div>
   <div class="fg"><label>Category</label><select id="mc2"><option value="resin">Resin</option><option value="chemical">Chemical</option><option value="sand">Sand</option><option value="stone">Stone</option><option value="granite">Granite</option><option value="tint">Tint</option><option value="other">Other</option></select></div></div>
-  <div class="fr"><div class="fg"><label>Supplier</label><input type="text" id="msu"></div><div class="fg"><label>Pack size</label><input type="text" id="mp"></div></div>
+  <div class="fr"><div class="fg"><label>Supplier</label><input type="text" id="msu"></div><div class="fg"><label>Pack size description</label><input type="text" id="mp"></div></div>
   <div class="fg"><label>Description</label><textarea id="md" rows="2"></textarea></div>
-  <div class="fr3"><div class="fg"><label>Stock</label><input type="number" id="mst" value="0" step="0.01"></div>
+  <div class="fr"><div class="fg"><label>Pack unit (drum/bag/bucket)</label><input type="text" id="mpu" placeholder="e.g. drum"></div>
+  <div class="fg"><label>Pack size (L or kg per pack)</label><input type="number" id="mpq" step="0.01" min="0" placeholder="e.g. 25"></div></div>
+  <div class="fr3"><div class="fg"><label>Current stock</label><input type="number" id="mst" value="0" step="0.01"></div>
   <div class="fg"><label>Unit</label><select id="mu"><option>L</option><option>kg</option><option>units</option><option>g</option></select></div>
   <div class="fg"><label>Alert below</label><input type="number" id="ma" value="0"></div></div>
   <div class="fe"><button class="btn" onclick="cM('m-am')">Cancel</button><button class="btn btnp" onclick="addMat()">Add</button></div>
@@ -396,33 +385,22 @@ tr:hover td{background:#f8f9fa}
 <div class="mbg" id="m-em" onclick="cBG(event,'m-em')"><div class="mod">
   <button class="mc" onclick="cM('m-em')"><i class="ti ti-x"></i></button><h3 id="emt">Edit material</h3>
   <input type="hidden" id="eid">
-  <div class="fr"><div class="fg"><label>Current stock</label><input type="number" id="est" step="0.01"></div>
-  <div class="fg"><label>Alert below</label><input type="number" id="eal"></div></div>
+  <div class="fr"><div class="fg"><label>Current stock (L or kg)</label><input type="number" id="est" step="0.01"></div>
+  <div class="fg"><label>Alert below (L or kg)</label><input type="number" id="eal"></div></div>
   <div class="fg"><label>Description</label><textarea id="ede" rows="2"></textarea></div>
   <div class="fg"><label>Supplier</label><input type="text" id="esu"></div>
+  <div class="fr"><div class="fg"><label>Pack unit (drum/bag/bucket)</label><input type="text" id="epu" placeholder="e.g. drum"></div>
+  <div class="fg"><label>Pack size (L or kg per pack)</label><input type="number" id="epq" step="0.01" min="0"></div></div>
+  <div id="edit-pack-hint" class="ib" style="display:none;font-size:11px"></div>
   <div class="fe"><button class="btn" onclick="cM('m-em')">Cancel</button><button class="btn btnp" onclick="saveMat()">Save</button></div>
 </div></div>
 
-<div class="mbg" id="m-nb" onclick="cBG(event,'m-nb')"><div class="mod">
-  <button class="mc" onclick="cM('m-nb')"><i class="ti ti-x"></i></button><h3>Add new base type</h3>
-  <div class="fr"><div class="fg"><label>Base name</label><input type="text" id="nbn"></div>
-  <div class="fg"><label>Batch size (L)</label><input type="number" id="nbb" value="200"></div></div>
-  <div class="fr"><div class="fg"><label>Initial stock (L)</label><input type="number" id="nbs" value="0"></div>
-  <div class="fg"><label>Alert below (L)</label><input type="number" id="nba" value="50"></div></div>
-  <div style="font-size:12px;font-weight:500;margin-bottom:5px">Formula ingredients:</div>
-  <div id="nbil"></div>
-  <button class="btn btns" onclick="addNBI()"><i class="ti ti-plus"></i> Add ingredient</button>
-  <div class="fe"><button class="btn" onclick="cM('m-nb')">Cancel</button><button class="btn btnp" onclick="saveNB()">Add base</button></div>
-</div></div>
-
-<div class="mbg" id="m-eb" onclick="cBG(event,'m-eb')"><div class="mod">
-  <button class="mc" onclick="cM('m-eb')"><i class="ti ti-x"></i></button><h3>Edit base formula</h3>
-  <div class="fr"><div class="fg"><label>Base</label><select id="ebs" onchange="lBE()"></select></div>
-  <div class="fg"><label>Alert below (L)</label><input type="number" id="eba"></div></div>
-  <div class="fg"><label>Current stock (L) — manual override</label><input type="number" id="ebs-stock" step="0.1" min="0"></div>
-  <div id="ber"></div>
-  <button class="btn btns" onclick="addBER()" style="margin-bottom:0.5rem"><i class="ti ti-plus"></i> Add ingredient</button>
-  <div class="fe"><button class="btn" onclick="cM('m-eb')">Cancel</button><button class="btn btnp" onclick="saveBE()">Save</button></div>
+<div class="mbg" id="m-qa" onclick="cBG(event,'m-qa')"><div class="mod" style="width:380px">
+  <button class="mc" onclick="cM('m-qa')"><i class="ti ti-x"></i></button>
+  <h3 id="qa-title">Quick add stock</h3><input type="hidden" id="qa-id">
+  <div id="qa-info" class="ib"></div>
+  <div class="fg"><label id="qa-lbl">Quantity to add</label><input type="number" id="qa-qty" min="1" step="1"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-qa')">Cancel</button><button class="btn btnp" onclick="doQA()"><i class="ti ti-plus"></i> Add to stock</button></div>
 </div></div>
 
 <div class="mbg" id="m-ep" onclick="cBG(event,'m-ep')"><div class="mod" style="width:360px">
@@ -433,38 +411,64 @@ tr:hover td{background:#f8f9fa}
   <div class="fe"><button class="btn" onclick="cM('m-ep')">Cancel</button><button class="btn btnp" onclick="savePkg()">Save</button></div>
 </div></div>
 
-<!-- FORMULATION MODAL — fully free ingredient system -->
+<div class="mbg" id="m-bo" onclick="cBG(event,'m-bo')"><div class="mod" style="width:420px">
+  <button class="mc" onclick="cM('m-bo')"><i class="ti ti-x"></i></button>
+  <h3 id="bo-title">Book out packaging</h3><input type="hidden" id="bo-key">
+  <div id="bo-info" class="ib"></div>
+  <div class="fg"><label>Quantity to book out</label><input type="number" id="bo-qty" min="1"></div>
+  <div class="fg"><label>Reason (optional)</label><input type="text" id="bo-reason" placeholder="e.g. Loose lid sale, trowels for job"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-bo')">Cancel</button><button class="btn btno" onclick="doBO()"><i class="ti ti-minus"></i> Book out</button></div>
+</div></div>
+
+<div class="mbg" id="m-batch" onclick="cBG(event,'m-batch')"><div class="mod">
+  <button class="mc" onclick="cM('m-batch')"><i class="ti ti-x"></i></button>
+  <h3 id="batch-title">Add batch recipe</h3><input type="hidden" id="batch-eid">
+  <div class="fr">
+    <div class="fg"><label>Recipe name</label><input type="text" id="batch-name" placeholder="e.g. Pastel Base"></div>
+    <div class="fg"><label>Produces (manufactured stock)</label><select id="batch-produces"><option value="">Select...</option></select></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Batch size (L)</label><input type="number" id="batch-size" value="200" min="1"></div>
+    <div class="fg"><label>Alert below (L)</label><input type="number" id="batch-alert" value="50" min="0"></div>
+  </div>
+  <div class="ing-section">
+    <div class="ing-section-title"><i class="ti ti-package" style="font-size:11px;margin-right:4px"></i>Ingredients per batch</div>
+    <div style="font-size:11px;color:#888;margin-bottom:8px">Choose from raw materials or other manufactured stock (e.g. Deep Base uses Pastel + Clear Base)</div>
+    <div id="batch-ings"></div>
+    <button class="btn btns" onclick="addBatchIng()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
+  </div>
+  <div class="fe"><button class="btn" onclick="cM('m-batch')">Cancel</button><button class="btn btnp" onclick="saveBatch()">Save recipe</button></div>
+</div></div>
+
+<div class="mbg" id="m-trigger" onclick="cBG(event,'m-trigger')"><div class="mod">
+  <button class="mc" onclick="cM('m-trigger')"><i class="ti ti-x"></i></button>
+  <h3 id="trig-title">Produce batch</h3>
+  <div id="trig-info" class="ib"></div>
+  <div class="fg"><label>Litres to produce</label><input type="number" id="trig-litres" value="200" min="1" oninput="updTrigPreview()"></div>
+  <div id="trig-preview" class="ib" style="font-size:11px;min-height:30px"></div>
+  <div id="trig-ded" style="margin:0.75rem 0"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-trigger')">Cancel</button><button class="btn btnw" onclick="confBatch()"><i class="ti ti-flask"></i> Produce &amp; deduct stock</button></div>
+</div></div>
+
 <div class="mbg" id="m-af" onclick="cBG(event,'m-af')"><div class="mod">
   <button class="mc" onclick="cM('m-af')"><i class="ti ti-x"></i></button>
-  <h3 id="fmtitle">Add formulation</h3>
-  <input type="hidden" id="feid">
+  <h3 id="fmtitle">Add formulation</h3><input type="hidden" id="feid">
   <div class="fr">
-    <div class="fg"><label>Colour / product name</label><input type="text" id="fn" placeholder="e.g. Green Valley"></div>
-    <div class="fg"><label>Product type</label>
-      <select id="ftype" onchange="onFTypeChange()">
-        <option value="gamazine">Gamazine</option>
-        <option value="granite">Granite Coat</option>
-        <option value="undercoat">Undercoat</option>
-        <option value="cps">CPS</option>
-        <option value="clearcoat">Clearcoat</option>
-        <option value="waterproofing">Waterproofing</option>
-        <option value="fiberseal">Fiber Seal</option>
-      </select>
-    </div>
+    <div class="fg"><label>Colour / product name</label><input type="text" id="fn"></div>
+    <div class="fg"><label>Product type</label><select id="ftype">
+      <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+      <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
+      <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
+      <option value="fiberseal">Fiber Seal</option>
+    </select></div>
   </div>
   <div class="fr">
-    <div class="fg">
-      <label>Sub-category</label>
-      <input type="text" id="fsubcat" placeholder="e.g. Standard, Essential" list="subcat-suggestions" autocomplete="off">
-      <datalist id="subcat-suggestions"></datalist>
-    </div>
+    <div class="fg"><label>Sub-category</label><input type="text" id="fsubcat" placeholder="e.g. Standard" list="subcat-list" autocomplete="off"><datalist id="subcat-list"></datalist></div>
     <div class="fg"><label>Selling price per bucket (R)</label><input type="number" id="fp" placeholder="e.g. 450.00" step="0.01" min="0"></div>
   </div>
-
-  <!-- INGREDIENTS SECTION -->
   <div class="ing-section">
-    <div class="ing-section-title"><i class="ti ti-package" style="font-size:11px;margin-right:4px"></i>Ingredients (raw materials, bases, etc.)</div>
-    <div style="font-size:11px;color:#888;margin-bottom:8px">Add any ingredient from your raw materials list. For stone ingredients, tick "Stone?" so reception can choose the size at order time.</div>
+    <div class="ing-section-title"><i class="ti ti-package" style="font-size:11px;margin-right:4px"></i>Ingredients per bucket</div>
+    <div style="font-size:11px;color:#888;margin-bottom:8px">Add raw materials or manufactured stock. Tick Stone? so reception can choose size at order time.</div>
     <div style="display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;margin-bottom:4px">
       <div style="font-size:10px;color:#888;font-weight:500">INGREDIENT</div>
       <div style="font-size:10px;color:#888;font-weight:500">QTY</div>
@@ -475,8 +479,6 @@ tr:hover td{background:#f8f9fa}
     <div id="f-ing-list"></div>
     <button class="btn btns" onclick="addIngRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
   </div>
-
-  <!-- TINTS SECTION -->
   <div class="ing-section">
     <div class="ing-section-title"><i class="ti ti-droplet" style="font-size:11px;margin-right:4px"></i>Tints per bucket (shots &amp; Y)</div>
     <div style="display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;margin-bottom:4px">
@@ -488,41 +490,177 @@ tr:hover td{background:#f8f9fa}
     <div id="f-tint-list"></div>
     <button class="btn btns" onclick="addTintRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add tint</button>
   </div>
-
-  <div class="fe">
-    <button class="btn" onclick="cM('m-af')">Cancel</button>
-    <button class="btn btnp" onclick="saveForm()">Save formulation</button>
-  </div>
+  <div class="fe"><button class="btn" onclick="cM('m-af')">Cancel</button><button class="btn btnp" onclick="saveForm()">Save formulation</button></div>
 </div></div>
 
-<!-- COMPLETE ORDER MODAL -->
 <div class="mbg" id="m-comp" onclick="cBG(event,'m-comp')"><div class="mod">
   <button class="mc" onclick="cM('m-comp')"><i class="ti ti-x"></i></button>
   <h3>Mark order as complete</h3>
-  <div id="comp-detail"></div>
-  <div id="comp-deductions" style="margin:0.75rem 0"></div>
-  <div class="ib" style="color:#854F0B;background:#FAEEDA;border-radius:8px"><i class="ti ti-alert-triangle"></i> Stock will be deducted automatically when you confirm.</div>
-  <div class="fe">
-    <button class="btn" onclick="cM('m-comp')">Cancel</button>
-    <button class="btn btnw" onclick="confComplete()"><i class="ti ti-circle-check"></i> Confirm complete &amp; deduct stock</button>
-  </div>
+  <div id="comp-detail"></div><div id="comp-ded" style="margin:0.75rem 0"></div>
+  <div class="ib" style="color:#854F0B;background:#FAEEDA"><i class="ti ti-alert-triangle"></i> Stock deducted automatically on confirm.</div>
+  <div class="fe"><button class="btn" onclick="cM('m-comp')">Cancel</button><button class="btn btnw" onclick="confComplete()"><i class="ti ti-circle-check"></i> Confirm complete &amp; deduct stock</button></div>
 </div></div>
 
-<!-- CONFIRM DIALOG -->
 <div class="mbg" id="m-conf"><div class="conf-wrap">
-  <h3 id="conf-title">Are you sure?</h3>
-  <p id="conf-msg">This action cannot be undone.</p>
+  <h3 id="conf-title">Are you sure?</h3><p id="conf-msg">This cannot be undone.</p>
   <div style="display:flex;gap:10px;justify-content:center">
     <button class="btn" onclick="cM('m-conf')">No, cancel</button>
     <button class="btn btnd" id="conf-yes" onclick="doConf()">Yes, continue</button>
   </div>
 </div></div>
 
-<!-- PDF MODAL -->
 <div class="mbg" id="m-pdf" onclick="cBG(event,'m-pdf')"><div class="mod">
   <button class="mc" onclick="cM('m-pdf')"><i class="ti ti-x"></i></button><h3>Export PDF report</h3>
-  <div class="ib">Select what to include in the PDF:</div>
-  <div id="pdfo"></div>
+  <div class="ib">Select what to include:</div><div id="pdfo"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-pdf')">Cancel</button><button class="btn btnp" onclick="xPDF()"><i class="ti ti-download"></i> Export PDF</button></div>
+</div></div>
+
+
+<!-- MODALS -->
+<div class="mbg" id="m-am" onclick="cBG(event,'m-am')"><div class="mod">
+  <button class="mc" onclick="cM('m-am')"><i class="ti ti-x"></i></button><h3>Add raw material</h3>
+  <div class="fr"><div class="fg"><label>Name</label><input type="text" id="mn"></div>
+  <div class="fg"><label>Category</label><select id="mc2"><option value="resin">Resin</option><option value="chemical">Chemical</option><option value="sand">Sand</option><option value="stone">Stone</option><option value="granite">Granite</option><option value="tint">Tint</option><option value="other">Other</option></select></div></div>
+  <div class="fr"><div class="fg"><label>Supplier</label><input type="text" id="msu"></div><div class="fg"><label>Pack size</label><input type="text" id="mp" placeholder="e.g. 25kg Bag"></div></div>
+  <div class="fg"><label>Description</label><textarea id="md" rows="2"></textarea></div>
+  <div class="fr"><div class="fg"><label>Pack unit (drum/bag/bucket)</label><input type="text" id="mpu" placeholder="e.g. drum"></div>
+  <div class="fg"><label>Pack size (L or kg per pack)</label><input type="number" id="mpq" step="0.01" min="0" placeholder="e.g. 25"></div></div>
+  <div class="fr3"><div class="fg"><label>Current stock</label><input type="number" id="mst" value="0" step="0.01"></div>
+  <div class="fg"><label>Unit</label><select id="mu"><option>L</option><option>kg</option><option>units</option><option>g</option></select></div>
+  <div class="fg"><label>Alert below</label><input type="number" id="ma" value="0"></div></div>
+  <div class="fe"><button class="btn" onclick="cM('m-am')">Cancel</button><button class="btn btnp" onclick="addMat()">Add</button></div>
+</div></div>
+
+<div class="mbg" id="m-em" onclick="cBG(event,'m-em')"><div class="mod">
+  <button class="mc" onclick="cM('m-em')"><i class="ti ti-x"></i></button><h3 id="emt">Edit material</h3>
+  <input type="hidden" id="eid">
+  <div class="fr"><div class="fg"><label>Current stock (L or kg)</label><input type="number" id="est" step="0.01"></div>
+  <div class="fg"><label>Alert below (L or kg)</label><input type="number" id="eal"></div></div>
+  <div class="fg"><label>Description</label><textarea id="ede" rows="2"></textarea></div>
+  <div class="fg"><label>Supplier</label><input type="text" id="esu"></div>
+  <div class="fr"><div class="fg"><label>Pack unit (drum/bag/bucket)</label><input type="text" id="epu"></div>
+  <div class="fg"><label>Pack size (L or kg per pack)</label><input type="number" id="epq" step="0.01" min="0"></div></div>
+  <div id="eph" class="ib" style="display:none;font-size:11px"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-em')">Cancel</button><button class="btn btnp" onclick="saveMat()">Save</button></div>
+</div></div>
+
+<div class="mbg" id="m-qa" onclick="cBG(event,'m-qa')"><div class="mod" style="width:380px">
+  <button class="mc" onclick="cM('m-qa')"><i class="ti ti-x"></i></button>
+  <h3 id="qa-title">Quick add stock</h3><input type="hidden" id="qa-id">
+  <div id="qa-info" class="ib"></div>
+  <div class="fg"><label id="qa-lbl">Quantity to add</label><input type="number" id="qa-qty" min="1" step="1"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-qa')">Cancel</button><button class="btn btnp" onclick="doQA()"><i class="ti ti-plus"></i> Add to stock</button></div>
+</div></div>
+
+<div class="mbg" id="m-ep" onclick="cBG(event,'m-ep')"><div class="mod" style="width:360px">
+  <button class="mc" onclick="cM('m-ep')"><i class="ti ti-x"></i></button><h3 id="ept">Edit packaging</h3>
+  <input type="hidden" id="epk">
+  <div class="fr"><div class="fg"><label>Stock</label><input type="number" id="eps"></div>
+  <div class="fg"><label>Alert below</label><input type="number" id="epa"></div></div>
+  <div class="fe"><button class="btn" onclick="cM('m-ep')">Cancel</button><button class="btn btnp" onclick="savePkg()">Save</button></div>
+</div></div>
+
+<div class="mbg" id="m-bo" onclick="cBG(event,'m-bo')"><div class="mod" style="width:420px">
+  <button class="mc" onclick="cM('m-bo')"><i class="ti ti-x"></i></button>
+  <h3 id="bo-title">Book out packaging</h3><input type="hidden" id="bo-key">
+  <div id="bo-info" class="ib"></div>
+  <div class="fg"><label>Quantity to book out</label><input type="number" id="bo-qty" min="1"></div>
+  <div class="fg"><label>Reason (optional)</label><input type="text" id="bo-reason" placeholder="e.g. Loose lid sale, trowels for job"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-bo')">Cancel</button><button class="btn btno" onclick="doBO()"><i class="ti ti-minus"></i> Book out</button></div>
+</div></div>
+
+<div class="mbg" id="m-batch" onclick="cBG(event,'m-batch')"><div class="mod">
+  <button class="mc" onclick="cM('m-batch')"><i class="ti ti-x"></i></button>
+  <h3 id="batch-title">Add batch recipe</h3><input type="hidden" id="batch-eid">
+  <div class="fr">
+    <div class="fg"><label>Recipe name</label><input type="text" id="batch-name" placeholder="e.g. Pastel Base"></div>
+    <div class="fg"><label>Produces (manufactured stock)</label><select id="batch-prod"><option value="">Select...</option></select></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Batch size (L)</label><input type="number" id="batch-size" value="200" min="1"></div>
+    <div class="fg"><label>Alert below (L)</label><input type="number" id="batch-alert" value="50" min="0"></div>
+  </div>
+  <div class="ing-section">
+    <div class="ing-section-title">Ingredients for this batch</div>
+    <div style="font-size:11px;color:#888;margin-bottom:8px">Choose from raw materials AND other manufactured stock (e.g. Deep Base uses Pastel Base + Clear Base)</div>
+    <div id="batch-ings"></div>
+    <button class="btn btns" onclick="addBatchIng()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
+  </div>
+  <div class="fe"><button class="btn" onclick="cM('m-batch')">Cancel</button><button class="btn btnp" onclick="saveBatch()">Save recipe</button></div>
+</div></div>
+
+<div class="mbg" id="m-trigger" onclick="cBG(event,'m-trigger')"><div class="mod">
+  <button class="mc" onclick="cM('m-trigger')"><i class="ti ti-x"></i></button>
+  <h3 id="trig-title">Produce a batch</h3>
+  <div id="trig-info" class="ib"></div>
+  <div class="fg"><label>Litres to produce</label><input type="number" id="trig-litres" value="200" min="1" oninput="updTrigPreview()"></div>
+  <div id="trig-preview" class="ib" style="font-size:11px;min-height:30px"></div>
+  <div id="trig-ded" style="margin:0.75rem 0"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-trigger')">Cancel</button><button class="btn btnw" onclick="confBatch()"><i class="ti ti-flask"></i> Produce &amp; deduct stock</button></div>
+</div></div>
+
+<div class="mbg" id="m-af" onclick="cBG(event,'m-af')"><div class="mod">
+  <button class="mc" onclick="cM('m-af')"><i class="ti ti-x"></i></button>
+  <h3 id="fmtitle">Add formulation</h3><input type="hidden" id="feid">
+  <div class="fr">
+    <div class="fg"><label>Colour / product name</label><input type="text" id="fn"></div>
+    <div class="fg"><label>Product type</label><select id="ftype">
+      <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+      <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
+      <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
+      <option value="fiberseal">Fiber Seal</option>
+    </select></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Sub-category</label><input type="text" id="fsubcat" placeholder="e.g. Standard" list="scs" autocomplete="off"><datalist id="scs"></datalist></div>
+    <div class="fg"><label>Selling price per bucket (R)</label><input type="number" id="fp" placeholder="e.g. 450.00" step="0.01" min="0"></div>
+  </div>
+  <div class="ing-section">
+    <div class="ing-section-title">Ingredients per bucket</div>
+    <div style="font-size:11px;color:#888;margin-bottom:8px">Add raw materials or manufactured stock. Tick Stone? for stone so reception chooses size at order time.</div>
+    <div style="display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;margin-bottom:4px">
+      <div style="font-size:10px;color:#888;font-weight:500">INGREDIENT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">QTY</div>
+      <div style="font-size:10px;color:#888;font-weight:500">UNIT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">STONE?</div>
+      <div></div>
+    </div>
+    <div id="f-ing-list"></div>
+    <button class="btn btns" onclick="addIngRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
+  </div>
+  <div class="ing-section">
+    <div class="ing-section-title">Tints per bucket (shots &amp; Y)</div>
+    <div style="display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;margin-bottom:4px">
+      <div style="font-size:10px;color:#888;font-weight:500">TINT</div>
+      <div style="font-size:10px;color:#888;font-weight:500">Y</div>
+      <div style="font-size:10px;color:#888;font-weight:500">SHOTS</div>
+      <div></div>
+    </div>
+    <div id="f-tint-list"></div>
+    <button class="btn btns" onclick="addTintRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add tint</button>
+  </div>
+  <div class="fe"><button class="btn" onclick="cM('m-af')">Cancel</button><button class="btn btnp" onclick="saveForm()">Save formulation</button></div>
+</div></div>
+
+<div class="mbg" id="m-comp" onclick="cBG(event,'m-comp')"><div class="mod">
+  <button class="mc" onclick="cM('m-comp')"><i class="ti ti-x"></i></button>
+  <h3>Mark order as complete</h3>
+  <div id="comp-det"></div><div id="comp-ded" style="margin:0.75rem 0"></div>
+  <div class="ib" style="color:#854F0B;background:#FAEEDA"><i class="ti ti-alert-triangle"></i> Stock will be deducted automatically on confirm.</div>
+  <div class="fe"><button class="btn" onclick="cM('m-comp')">Cancel</button><button class="btn btnw" onclick="confComplete()"><i class="ti ti-circle-check"></i> Confirm &amp; deduct stock</button></div>
+</div></div>
+
+<div class="mbg" id="m-conf"><div class="conf-wrap">
+  <h3 id="conf-title">Are you sure?</h3><p id="conf-msg">This cannot be undone.</p>
+  <div style="display:flex;gap:10px;justify-content:center">
+    <button class="btn" onclick="cM('m-conf')">No, cancel</button>
+    <button class="btn btnd" id="conf-yes" onclick="doConf()">Yes, continue</button>
+  </div>
+</div></div>
+
+<div class="mbg" id="m-pdf" onclick="cBG(event,'m-pdf')"><div class="mod">
+  <button class="mc" onclick="cM('m-pdf')"><i class="ti ti-x"></i></button><h3>Export PDF</h3>
+  <div class="ib">Select what to include:</div><div id="pdfo"></div>
   <div class="fe"><button class="btn" onclick="cM('m-pdf')">Cancel</button><button class="btn btnp" onclick="xPDF()"><i class="ti ti-download"></i> Export PDF</button></div>
 </div></div>
 
@@ -534,9 +672,9 @@ var userName=localStorage.getItem('lc_username');
 if(!token){window.location.href='/';throw new Error('No token');}
 
 var CC={resin:'#378ADD',chemical:'#7F77DD',sand:'#E5A823',stone:'#5AAB7B',granite:'#C46B2D',tint:'#D14F7C',other:'#888'};
-var WS={al:true,me:true,rv:true,st:true,ba:true,or:true,pk:true};
-var TV=false,CRT='gamazine',PRT='wk',pdfType='wk',pendingOrderId=null,confCB=null;
-var mats=[],bases={},pkgData={},forms=[],orders=[],collections={},NID=1001;
+var WS={al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true};
+var TV=false,CRT='gamazine',PRT='wk',pendingOrderId=null,pendingBatchId=null,confCB=null,pdfType='wk';
+var mats=[],mfgStock={},pkgData={},forms=[],orders=[],batchRecipes=[],collections={},NID=1001;
 
 function H(){return{'Authorization':'Bearer '+token,'Content-Type':'application/json'};}
 async function api(method,path,body){
@@ -544,38 +682,22 @@ async function api(method,path,body){
     var res=await fetch(API+path,{method:method,headers:H(),body:body?JSON.stringify(body):undefined});
     if(res.status===401){logout();return null;}
     return res.json();
-  }catch(e){console.error('API error:',e);return null;}
+  }catch(e){console.error(e);return null;}
 }
 
 async function loadAll(){
   try{
-    var results=await Promise.all([
-      api('GET','/materials'),
-      api('GET','/bases'),
-      api('GET','/packaging'),
-      api('GET','/formulations'),
-      api('GET','/orders')
+    var r=await Promise.all([
+      api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),
+      api('GET','/formulations'),api('GET','/orders'),api('GET','/batch-recipes')
     ]);
-    mats=results[0]||[];
-    var bs=results[1]||[];bases={};bs.forEach(function(b){bases[b.name]=b;});
-    var ps=results[2]||[];pkgData={};ps.forEach(function(p){pkgData[p.id]=p;});
-    forms=(results[3]||[]).map(function(f){
-      f.ingredients=f.ingredients||[];
-      f.tints=f.tints||[];
-      f.sub_category=f.sub_category||'Standard';
-      return f;
-    });
-    var rawOrders=results[4]||[];
-    orders=rawOrders.map(function(o){
-      return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,
-        bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,
-        nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[]};
-    });
-    if(orders.length){
-      var maxId=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));
-      NID=maxId+1;
-    }
-    // Build collections from existing formulations
+    mats=r[0]||[];
+    var ms=r[1]||[];mfgStock={};ms.forEach(function(m){mfgStock[m.name]=m;});
+    var ps=r[2]||[];pkgData={};ps.forEach(function(p){pkgData[p.id]=p;});
+    forms=(r[3]||[]).map(function(f){f.ingredients=f.ingredients||[];f.tints=f.tints||[];f.sub_category=f.sub_category||'Standard';return f;});
+    orders=(r[4]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[]};});
+    batchRecipes=r[5]||[];
+    if(orders.length){var mx=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));NID=mx+1;}
     buildCollections();
     document.getElementById('ls').style.display='none';
     document.getElementById('app').style.display='flex';
@@ -583,43 +705,33 @@ async function loadAll(){
     document.getElementById('un-display').textContent=userName;
     applyRole();
     nav('dash',document.querySelector('.ni[onclick*="dash"]'));
-  }catch(e){
-    console.error(e);
-    document.querySelector('#ls p').textContent='Error loading. Please refresh.';
-  }
-}
-
-function buildCollections(){
-  collections={};
-  var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
-  types.forEach(function(t){collections[t]=[];});
-  forms.forEach(function(f){
-    if(!collections[f.type])collections[f.type]=[];
-    var sub=f.sub_category||'Standard';
-    if(collections[f.type].indexOf(sub)===-1)collections[f.type].push(sub);
-  });
+  }catch(e){console.error(e);document.querySelector('#ls p').textContent='Error loading. Please refresh.';}
 }
 
 function logout(){localStorage.removeItem('lc_token');localStorage.removeItem('lc_role');localStorage.removeItem('lc_username');window.location.href='/';}
-function applyRole(){document.querySelectorAll('.ni').forEach(function(n){var r=n.getAttribute('data-r');n.style.display=(!r||r.indexOf(userRole)!==-1)?'flex':'none';});}
+function applyRole(){document.querySelectorAll('.ni').forEach(function(n){var r=n.getAttribute('data-r');n.style.display=(!r||r.indexOf(userRole)!==-1)?'flex':'none';});if(userRole==='admin'){var ab=document.getElementById('add-recipe-btn');if(ab)ab.style.display='';var rt=document.getElementById('recipes-tab');if(rt)rt.style.display='';}}
+function buildCollections(){collections={};['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'].forEach(function(t){collections[t]=[];});forms.forEach(function(f){if(!collections[f.type])collections[f.type]=[];var s=f.sub_category||'Standard';if(collections[f.type].indexOf(s)===-1)collections[f.type].push(s);});}
 
 function ml(s,y){return(s*0.625)+(y*30);}
-function pct(s,a){return Math.min(100,Math.round((s/(Math.max(a,1)*3))*100));}
+function pct(s,a){return Math.min(100,Math.round((s/Math.max(a*3,1))*100));}
 function stt(s,a){if(s<=0)return'cr';if(s<=a)return'lw';return'ok';}
 function bdg(s,a){var x=stt(s,a);return x==='cr'?'<span class="bdg bcrit">Critical</span>':x==='lw'?'<span class="bdg blow">Low</span>':'<span class="bdg bok">OK</span>';}
 function bc(s,a){return stt(s,a)==='cr'?'pbcr':stt(s,a)==='lw'?'pbow':'pbok';}
 function ptL(t){return{gamazine:'Gamazine',granite:'Granite Coat',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match'}[t]||t;}
 function fmt(n){return'R'+parseFloat(n||0).toFixed(2);}
-function mOpts(includeBase){
-  var opts='';
-  if(includeBase){Object.keys(bases).forEach(function(b){opts+='<option value="'+b+'">'+b+'</option>';});}
-  mats.forEach(function(m){opts+='<option value="'+m.name+'">'+m.name+' ('+m.unit+')</option>';});
-  return opts;
+function todayRev(){return orders.filter(function(o){return o.status==='done';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
+function dspStock(m){if(m.pack_unit&&m.pack_qty>0){var p=m.stock/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.stock.toFixed(1)+' '+m.unit;}
+function dspAlert(m){if(m.pack_unit&&m.pack_qty>0){var p=m.alert_level/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.alert_level+' '+m.unit;}
+function allIngOpts(){
+  var o='<optgroup label="Raw Materials">';
+  mats.forEach(function(m){o+='<option value="'+m.name+'">'+m.name+'</option>';});
+  o+='</optgroup><optgroup label="Manufactured Stock">';
+  Object.values(mfgStock).forEach(function(m){o+='<option value="'+m.name+'">'+m.name+'</option>';});
+  return o+'</optgroup>';
 }
 function tOpts(){return mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option>'+m.name+'</option>';}).join('');}
-function todayRev(){return orders.filter(function(o){return o.status==='done';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
 function showSucc(k,msg){var e=document.getElementById('s'+k),m=document.getElementById('s'+k+'m');if(e&&m){m.textContent=msg;e.style.display='flex';setTimeout(function(){e.style.display='none';},3000);}}
-function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').textContent=title;document.getElementById('conf-msg').textContent=msg;var btn=document.getElementById('conf-yes');btn.textContent=label||'Yes';btn.className='btn '+(cls||'btnd');confCB=cb;oM('m-conf');}
+function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').textContent=title;document.getElementById('conf-msg').textContent=msg;var b=document.getElementById('conf-yes');b.textContent=label||'Yes';b.className='btn '+(cls||'btnd');confCB=cb;oM('m-conf');}
 function doConf(){cM('m-conf');if(confCB)confCB();}
 
 function nav(id,el){
@@ -627,813 +739,255 @@ function nav(id,el){
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
   document.getElementById('pg-'+id).classList.add('active');
   if(el)el.classList.add('active');
-  var fn={dash:rDash,mats:rMats,bases:function(){rBases();pBS();sBF();},pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep};
+  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep};
   if(fn[id])fn[id]();
 }
 
 // DASHBOARD
 function tCP(){var p=document.getElementById('cp');p.style.display=p.style.display==='none'?'flex':'none';}
 function tW(k){WS[k]=!WS[k];var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);rDash();}
-function loadPreset(v){if(!v)return;var pr={stock:{al:true,me:true,rv:false,st:true,ba:true,or:false,pk:true},prod:{al:true,me:true,rv:true,st:false,ba:true,or:true,pk:false},full:{al:true,me:true,rv:true,st:true,ba:true,or:true,pk:true}};if(pr[v]){Object.assign(WS,pr[v]);Object.keys(WS).forEach(function(k){var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);});rDash();}}
+function loadPreset(v){if(!v)return;var pr={stock:{al:true,me:true,rv:false,st:true,ms:true,or:false,pk:true},prod:{al:true,me:true,rv:true,st:false,ms:true,or:true,pk:false},full:{al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true}};if(pr[v]){Object.assign(WS,pr[v]);Object.keys(WS).forEach(function(k){var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);});rDash();}}
+
+function mkDonut(val,max,col,sz){
+  sz=sz||100;var p=Math.min(100,Math.max(0,(val/Math.max(max,1))*100));
+  var r=40,circ=2*Math.PI*r,dash=p/100*circ;
+  var c=val<=max*0.25?'#E24B4A':val<=max*0.5?'#EF9F27':col||'#5B8FA8';
+  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 100 100">'+
+    '<circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="14"/>'+
+    '<circle cx="50" cy="50" r="40" fill="none" stroke="'+c+'" stroke-width="14" stroke-dasharray="'+dash+' '+circ+'" stroke-dashoffset="'+(circ/4)+'" stroke-linecap="round"/>'+
+    '<text x="50" y="46" text-anchor="middle" fill="white" font-size="14" font-weight="bold">'+val.toFixed(0)+'L</text>'+
+    '<text x="50" y="62" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">of '+max+'L</text></svg>';
+}
 
 function tTV(){
   TV=!TV;
   document.getElementById('sb').style.display=TV?'none':'flex';
   if(TV){
-    var lowA=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).map(function(m){return'⚠ '+m.name+': '+m.stock+' '+m.unit;}).join(' | ');
+    var m366=mats.find(function(m){return m.name==='Resin M366';});
     var done=orders.filter(function(o){return o.status==='done';});
     var active=orders.filter(function(o){return o.status==='pending';});
-    var h='<div style="padding:0.75rem 1rem;background:#fff;border-bottom:0.5px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">';
-    h+='<div style="display:flex;align-items:center;gap:8px"><span class="blink"></span><span style="font-size:16px;font-weight:500;color:#5B8FA8">Life Coats — Production Dashboard</span></div>';
-    h+='<div style="display:flex;align-items:center;gap:10px"><div style="background:#5B8FA8;color:#fff;padding:6px 14px;border-radius:8px;text-align:center"><div style="font-size:10px;opacity:0.8">Today\'s revenue</div><div style="font-size:22px;font-weight:500">'+fmt(todayRev())+'</div></div>';
-    h+='<button class="btn btns" onclick="tTV()" style="background:#333;color:#fff;border-color:#333"><i class="ti ti-x"></i> Exit TV</button></div></div>';
-    if(lowA){h+='<div style="background:#FCEBEB;padding:7px 1rem;font-size:11px;color:#A32D2D;overflow:hidden;white-space:nowrap;margin-bottom:0.75rem"><marquee>'+lowA+'</marquee></div>';}
-    h+='<div style="padding:0 1rem"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:0.75rem">';
-    h+=tvM('Active orders',active.length,'#378ADD')+tvM('Completed today',done.length,'#5B8FA8')+tvM('Stock alerts',mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).length,'#E24B4A')+tvM('Formulations',forms.length,'#7F77DD');
+    var lowM=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';});
+    var lowMfg=Object.values(mfgStock).filter(function(m){return m.stock<=m.alert_level;});
+    var allA=lowM.concat(lowMfg.map(function(m){return{name:m.name,stock:m.stock,alert_level:m.alert_level,unit:m.unit};}));
+    var ticker=allA.map(function(m){return'⚠ '+m.name+': '+m.stock.toFixed(1)+' '+m.unit+' left';}).join('   ·   ');
+    var h='<div class="tv-wrap">';
+    h+='<div class="tv-header"><div class="tv-title"><span class="blink"></span>Life Coats — Production Dashboard</div>';
+    h+='<div style="display:flex;align-items:center;gap:12px"><div class="tv-rev"><div class="tv-rl">Today\'s revenue</div><div class="tv-rv">'+fmt(todayRev())+'</div></div>';
+    h+='<button class="btn btns" onclick="tTV()" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)"><i class="ti ti-x"></i> Exit</button></div></div>';
+    if(allA.length)h+='<div class="tv-alert"><marquee>'+ticker+'</marquee></div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px">';
+    h+='<div class="tv-met"><div class="tv-mv" style="color:#378ADD">'+active.length+'</div><div class="tv-ml">Active orders</div></div>';
+    h+='<div class="tv-met"><div class="tv-mv" style="color:#5B8FA8">'+done.length+'</div><div class="tv-ml">Completed today</div></div>';
+    h+='<div class="tv-met"><div class="tv-mv" style="color:'+(allA.length>0?'#E24B4A':'#5B8FA8')+'">'+allA.length+'</div><div class="tv-ml">Stock alerts</div></div>';
+    h+='<div class="tv-met"><div class="tv-mv" style="color:#7F77DD">'+Object.values(mfgStock).length+'</div><div class="tv-ml">Manufactured products</div></div>';
     h+='</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
-    h+='<div class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Raw material stock</h3>';
-    ['resin','chemical','tint','sand','stone','granite'].forEach(function(cat){
-      var ms=mats.filter(function(m){return m.category===cat;});if(!ms.length)return;
+    h+='<div class="tv-widget"><div class="tv-wt">Raw material stock</div>';
+    var cats=['resin','chemical','tint','sand','stone','granite'];
+    cats.forEach(function(cat){
+      var ms2=mats.filter(function(m){return m.category===cat;});if(!ms2.length)return;
       var col=CC[cat]||'#888';
-      h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:7px 0 3px">'+cat+'</div>';
-      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%;background:'+col+'"></div></div><span class="bcv">'+m.stock.toFixed(1)+' '+m.unit+'</span></div>';});
+      h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.04em;margin:8px 0 4px">'+cat+'</div>';
+      if(cat==='resin'&&m366){
+        var fb1=Math.min(m366.stock,1000);var fb2=Math.max(0,m366.stock-1000);
+        h+='<div style="display:flex;gap:16px;align-items:center;margin-bottom:8px">';
+        h+='<div style="text-align:center">'+mkDonut(fb1,1000,'#378ADD',85)+'<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">Flowbin 1 · M366</div></div>';
+        h+='<div style="text-align:center">'+mkDonut(fb2,1000,'#378ADD',85)+'<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">Flowbin 2 · M366</div></div>';
+        h+='</div>';
+        ms2.filter(function(m){return m.name!=='Resin M366';}).forEach(function(m){
+          var bc2=stt(m.stock,m.alert_level)==='cr'?'#E24B4A':stt(m.stock,m.alert_level)==='lw'?'#EF9F27':col;
+          h+='<div class="tv-bar"><span class="tv-bn">'+m.name+'</span><div class="tv-bt"><div class="tv-bf" style="width:'+pct(m.stock,m.alert_level)+'%;background:'+bc2+'"></div></div><span class="tv-bv">'+dspStock(m)+'</span></div>';
+        });
+      }else{
+        ms2.forEach(function(m){
+          var bc2=stt(m.stock,m.alert_level)==='cr'?'#E24B4A':stt(m.stock,m.alert_level)==='lw'?'#EF9F27':col;
+          h+='<div class="tv-bar"><span class="tv-bn">'+m.name+'</span><div class="tv-bt"><div class="tv-bf" style="width:'+pct(m.stock,m.alert_level)+'%;background:'+bc2+'"></div></div><span class="tv-bv">'+dspStock(m)+'</span></div>';
+        });
+      }
     });
-    h+='</div><div><div class="card" style="margin-bottom:8px"><h3><i class="ti ti-flask" style="font-size:12px;margin-right:4px"></i>Base stock</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
-    Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div><div style="font-size:11px;font-weight:500">'+b.name+'</div><div class="bct" style="height:7px;margin:3px 0"><div class="bcf" style="width:'+pct(b.stock,b.alert_level)+'%;background:'+col+'"></div></div><div style="font-size:10px;color:#888">'+b.stock+'L</div></div>';});
-    h+='</div></div><div class="card"><h3><i class="ti ti-clipboard-list" style="font-size:12px;margin-right:4px"></i>Active orders</h3>';
-    h+=active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>';
+    h+='</div>';
+    h+='<div>';
+    h+='<div class="tv-widget" style="margin-bottom:10px"><div class="tv-wt">Manufactured stock</div>';
+    Object.values(mfgStock).forEach(function(m){var c=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div class="tv-bar"><span class="tv-bn">'+m.name+'</span><div class="tv-bt"><div class="tv-bf" style="width:'+pct(m.stock,m.alert_level)+'%;background:'+c+'"></div></div><span class="tv-bv">'+m.stock.toFixed(0)+'L</span></div>';});
+    h+='</div>';
+    h+='<div class="tv-widget"><div class="tv-wt">Active orders</div>';
+    h+=active.length?active.map(function(o){return'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:12px"><div><div style="font-size:10px;color:rgba(255,255,255,0.4)">'+o.id+'</div><div style="color:#fff">'+o.n+' ×'+o.qty+'</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">'+o.client+'</div></div><span class="bdg bblu">Pending</span></div>';}).join(''):'<div style="text-align:center;padding:1rem;color:rgba(255,255,255,0.3);font-size:12px">No active orders</div>';
     h+='</div></div></div></div>';
     document.getElementById('dc').innerHTML=h;
   }else{rDash();}
 }
-function tvM(l,v,col){return'<div class="met" style="cursor:default"><div class="ml">'+l+'</div><div class="mv" style="color:'+col+'">'+v+'</div></div>';}
 
 function rDash(){
-  if(TV)return;
-  var now=new Date();
-  var dtEl=document.getElementById('dt');
+  if(TV){tTV();return;}
+  var now=new Date();var dtEl=document.getElementById('dt');
   if(dtEl)dtEl.textContent=now.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   var lowM=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';});
-  var lowB=Object.values(bases).filter(function(b){return b.stock<=b.alert_level;});
+  var lowMfg=Object.values(mfgStock).filter(function(m){return m.stock<=m.alert_level;});
   var lowP=Object.values(pkgData).filter(function(p){return p.stock<=p.alert_level;});
-  var allA=lowM.length+lowB.length+lowP.length;
+  var allA=lowM.length+lowMfg.length+lowP.length;
   var active=orders.filter(function(o){return o.status==='pending';});
   var done=orders.filter(function(o){return o.status==='done';});
   var h='';
-  if(WS.al&&allA>0){
-    h+='<div class="card">';
-    lowM.forEach(function(m){h+='<div class="ab '+(stt(m.stock,m.alert_level)==='cr'?'acr':'')+'"><i class="ti ti-alert-triangle"></i><b>'+(stt(m.stock,m.alert_level)==='cr'?'Critical':'Low')+':</b> '+m.name+' — '+m.stock.toFixed(1)+' '+m.unit+' (alert: '+m.alert_level+')</div>';});
-    lowB.forEach(function(b){h+='<div class="ab"><i class="ti ti-flask"></i><b>Base low:</b> '+b.name+' — '+b.stock+'L (alert: '+b.alert_level+'L)</div>';});
-    lowP.forEach(function(p){h+='<div class="ab"><i class="ti ti-bucket"></i><b>Packaging low:</b> '+p.name+' — '+p.stock+' (alert: '+p.alert_level+')</div>';});
-    h+='</div>';
-  }
-  if(WS.me){h+='<div class="g4">'+tvM('Active orders',active.length,'#378ADD')+tvM('Stock alerts',allA,allA>0?'#E24B4A':'#5B8FA8')+tvM('Completed',done.length,'#5B8FA8')+tvM('Formulations',forms.length,'#7F77DD')+'</div>';}
+  if(WS.al&&allA>0){h+='<div class="card">';lowM.forEach(function(m){h+='<div class="ab '+(stt(m.stock,m.alert_level)==='cr'?'acr':'')+'"><i class="ti ti-alert-triangle"></i><b>'+(stt(m.stock,m.alert_level)==='cr'?'Critical':'Low')+':</b> '+m.name+' — '+dspStock(m)+' (alert: '+dspAlert(m)+')</div>';});lowMfg.forEach(function(m){h+='<div class="ab"><i class="ti ti-flask"></i><b>Manufactured low:</b> '+m.name+' — '+m.stock.toFixed(0)+m.unit+'</div>';});lowP.forEach(function(p){h+='<div class="ab"><i class="ti ti-bucket"></i><b>Packaging low:</b> '+p.name+' — '+p.stock+'</div>';});h+='</div>';}
+  if(WS.me){h+='<div class="g4">'+['Active orders,'+active.length+',#378ADD','Stock alerts,'+allA+','+(allA>0?'#E24B4A':'#5B8FA8'),'Completed,'+done.length+',#5B8FA8','Formulations,'+forms.length+',#7F77DD'].map(function(x){var p=x.split(',');return'<div class="met" style="cursor:default"><div class="ml">'+p[0]+'</div><div class="mv" style="color:'+p[2]+'">'+p[1]+'</div></div>';}).join('')+'</div>';}
   if(WS.rv){h+='<div class="rev"><div class="rvl"><i class="ti ti-currency-dollar"></i> Today\'s revenue</div><div class="rvv">'+fmt(todayRev())+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">From '+done.length+' completed order(s)</div></div>';}
-  if(WS.st){
-    h+='<div class="card"><h3><i class="ti ti-package" style="font-size:12px;margin-right:4px"></i>Raw material stock</h3>';
-    ['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){
-      var ms=mats.filter(function(m){return m.category===cat;});if(!ms.length)return;
-      var col=CC[cat]||'#888';
-      h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';
-      ms.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span class="bcv">'+m.stock.toFixed(1)+' '+m.unit+'</span>'+bdg(m.stock,m.alert_level)+'</div>';});
-    });
-    h+='</div>';
-  }
-  if(WS.ba){
-    h+='<div class="card"><h3><i class="ti ti-flask" style="font-size:12px;margin-right:4px"></i>Base stock</h3><div class="g4">';
-    Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div class="met"><div class="ml">'+b.name+'</div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'⚠ Low':'OK')+' · alert: '+b.alert_level+'L</div></div>';});
-    h+='</div></div>';
-  }
-  if(WS.or){
-    h+='<div class="g2"><div class="card"><h3>Active orders</h3>'+(active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>')+'</div>';
-    if(WS.pk){
-      h+='<div class="card"><h3>Packaging</h3>';
-      Object.values(pkgData).forEach(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});
-      h+='</div>';
-    }
-    h+='</div>';
-  }
+  if(WS.st){h+='<div class="card"><h3>Raw material stock</h3>';['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){var ms2=mats.filter(function(m){return m.category===cat;});if(!ms2.length)return;var col=CC[cat]||'#888';h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';ms2.forEach(function(m){h+='<div class="bci"><span class="bcn">'+m.name+'</span><div class="bct"><div class="bcf '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span class="bcv">'+dspStock(m)+'</span>'+bdg(m.stock,m.alert_level)+'</div>';});});h+='</div>';}
+  if(WS.ms){h+='<div class="card"><h3>Manufactured stock</h3><div class="g4">';Object.values(mfgStock).forEach(function(m){var col=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div class="met" onclick="editMfgStock(\''+m.name+'\')"><div class="ml">'+m.name+'</div><div class="mv" style="color:'+col+'">'+m.stock.toFixed(0)+'L</div><div class="ms">'+(m.stock<=m.alert_level?'⚠ Low':'OK')+' · alert: '+m.alert_level+'L</div></div>';});h+='</div></div>';}
+  if(WS.or){h+='<div class="g2"><div class="card"><h3>Active orders</h3>'+(active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>')+'</div>';if(WS.pk){h+='<div class="card"><h3>Packaging</h3>';Object.values(pkgData).forEach(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});h+='</div>';}h+='</div>';}
   document.getElementById('dc').innerHTML=h;
 }
+function editMfgStock(name){var m=mfgStock[name];if(!m)return;var v=prompt('Update stock for '+name+'\\nCurrent: '+m.stock+'L\\nNew level (litres):');if(v!==null&&v!==''&&!isNaN(v)){m.stock=parseFloat(v);api('PUT','/manufactured-stock/'+m.id,{stock:m.stock}).then(function(){rDash();});}}
 function oCard(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div><span class="bdg '+(o.status==='pending'?'bblu':'bok')+'">'+o.status+'</span></div>';}
 
 // MATERIALS
 function rMats(){
   var f=document.getElementById('mf')?document.getElementById('mf').value:'all';
-  var ms=f==='all'?mats:mats.filter(function(m){return m.category===f;});
-  document.getElementById('mt').innerHTML=ms.map(function(m){
+  var ms2=f==='all'?mats:mats.filter(function(m){return m.category===f;});
+  document.getElementById('mt').innerHTML=ms2.map(function(m){
     var col=CC[m.category]||'#888';
     return'<tr><td><b>'+m.name+'</b></td>'+
       '<td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col+';margin-right:3px"></span><span class="bdg bgry">'+m.category+'</span></td>'+
       '<td style="font-size:11px;color:#888">'+m.supplier+'</td>'+
-      '<td style="font-size:11px;color:#888">'+m.pack_size+'</td>'+
-      '<td style="font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(m.description||'')+'</td>'+
-      '<td><div style="display:flex;align-items:center;gap:5px"><div class="pw"><div class="pb '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span style="font-size:11px;min-width:45px">'+m.stock.toFixed(1)+'</span></div></td>'+
-      '<td>'+m.unit+'</td><td>'+m.alert_level+'</td><td>'+bdg(m.stock,m.alert_level)+'</td>'+
-      '<td><button class="btn btns" onclick="oEM('+m.id+')"><i class="ti ti-edit"></i></button></td></tr>';
-  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:1.5rem;color:#aaa">No materials</td></tr>';
+      '<td style="font-size:11px;color:#888">'+(m.pack_unit&&m.pack_qty>0?m.pack_qty+m.unit+'/'+m.pack_unit:m.pack_size||'')+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:5px"><div class="pw"><div class="pb '+bc(m.stock,m.alert_level)+'" style="width:'+pct(m.stock,m.alert_level)+'%"></div></div><span style="font-size:11px;min-width:70px">'+dspStock(m)+'</span></div></td>'+
+      '<td>'+dspAlert(m)+'</td><td>'+bdg(m.stock,m.alert_level)+'</td>'+
+      '<td style="white-space:nowrap"><button class="btn btns btnw" onclick="oQA('+m.id+')" style="margin-right:4px" title="Quick add stock"><i class="ti ti-plus"></i></button><button class="btn btns" onclick="oEM('+m.id+')"><i class="ti ti-edit"></i></button></td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:#aaa">No materials</td></tr>';
 }
-function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';oM('m-em');}
-async function saveMat(){
-  var id=parseInt(document.getElementById('eid').value);
-  var data={stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value};
-  await api('PUT','/materials/'+id,data);
-  var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);
-  cM('m-em');rMats();showSucc('m','Updated successfully');
-}
-async function addMat(){
-  var n=document.getElementById('mn').value.trim();if(!n){window.alert('Enter name');return;}
-  var data={name:n,category:document.getElementById('mc2').value,supplier:document.getElementById('msu').value||'',pack_size:document.getElementById('mp').value||'',description:document.getElementById('md').value||'',stock:parseFloat(document.getElementById('mst').value)||0,unit:document.getElementById('mu').value,alert_level:parseFloat(document.getElementById('ma').value)||0};
-  var res=await api('POST','/materials',data);
-  if(res){mats.push(res);cM('m-am');['mn','msu','mp','md','mst','ma'].forEach(function(i){document.getElementById(i).value='';});rMats();showSucc('m',n+' added');}
-}
+function oQA(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('qa-id').value=id;document.getElementById('qa-title').textContent='Add stock: '+m.name;if(m.pack_unit&&m.pack_qty>0){document.getElementById('qa-lbl').textContent='How many '+m.pack_unit+'s received?';document.getElementById('qa-info').textContent='Current: '+dspStock(m)+' · 1 '+m.pack_unit+' = '+m.pack_qty+m.unit;}else{document.getElementById('qa-lbl').textContent='Quantity to add ('+m.unit+')';document.getElementById('qa-info').textContent='Current: '+m.stock.toFixed(1)+' '+m.unit;}document.getElementById('qa-qty').value='';oM('m-qa');}
+async function doQA(){var id=parseInt(document.getElementById('qa-id').value);var qty=parseFloat(document.getElementById('qa-qty').value)||0;if(qty<=0){window.alert('Enter quantity');return;}var m=mats.find(function(x){return x.id===id;});if(!m)return;var add=qty;if(m.pack_unit&&m.pack_qty>0)add=qty*m.pack_qty;m.stock+=add;await api('PUT','/materials/'+id,{stock:m.stock});if(m.pack_unit&&m.pack_qty>0)await api('POST','/stock-receipts',{material_id:id,material_name:m.name,packs_received:qty,pack_unit:m.pack_unit,pack_qty:m.pack_qty,total_added:add,unit:m.unit,received_at:new Date().toISOString()});cM('m-qa');rMats();rDash();}
+function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';document.getElementById('epu').value=m.pack_unit||'';document.getElementById('epq').value=m.pack_qty||0;var h=document.getElementById('eph');if(m.pack_unit&&m.pack_qty>0){h.textContent='Currently '+dspStock(m)+' · Alert at '+dspAlert(m);h.style.display='block';}else h.style.display='none';oM('m-em');}
+async function saveMat(){var id=parseInt(document.getElementById('eid').value);var data={stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value,pack_unit:document.getElementById('epu').value||'',pack_qty:parseFloat(document.getElementById('epq').value)||0};await api('PUT','/materials/'+id,data);var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);cM('m-em');rMats();}
+async function addMat(){var n=document.getElementById('mn').value.trim();if(!n){window.alert('Enter name');return;}var data={name:n,category:document.getElementById('mc2').value,supplier:document.getElementById('msu').value||'',pack_size:document.getElementById('mp').value||'',description:document.getElementById('md').value||'',pack_unit:document.getElementById('mpu').value||'',pack_qty:parseFloat(document.getElementById('mpq').value)||0,stock:parseFloat(document.getElementById('mst').value)||0,unit:document.getElementById('mu').value,alert_level:parseFloat(document.getElementById('ma').value)||0};var res=await api('POST','/materials',data);if(res){mats.push(res);cM('m-am');['mn','msu','mp','md','mpu','mpq','mst','ma'].forEach(function(i){document.getElementById(i).value='';});rMats();}}
 
-// BASES
-function pBS(){
-  var opts=Object.keys(bases).map(function(b){return'<option>'+b+'</option>';}).join('');
-  ['bt','ebs'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=opts;});
-}
-function sBF(){
-  var type=document.getElementById('bt').value;
-  var l=parseFloat(document.getElementById('bl').value)||200;
-  var b=bases[type];if(!b)return;
-  var f=b.formula||[];var r=l/(b.batch_size||200);
-  document.getElementById('bfp').innerHTML='<b>Formula for '+l+'L:</b> '+f.map(function(x){return'<b>'+x.m+':</b> '+(x.q*r).toFixed(2)+' '+x.u;}).join(' · ');
-}
-function rBases(){
-  var h='';
-  Object.values(bases).forEach(function(b){
-    var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';
-    h+='<div class="met" onclick="editBaseStock(\''+b.name+'\')"><div class="ml">'+b.name+' <i class="ti ti-edit" style="font-size:10px"></i></div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'⚠ Low':'OK')+' · alert: '+b.alert_level+'L</div></div>';
+// RECEIVE STOCK
+function rReceive(){var sel=document.getElementById('rcv-mat');sel.innerHTML='<option value="">Select material...</option>';mats.forEach(function(m){sel.innerHTML+='<option value="'+m.id+'">'+m.name+'</option>';});rRcvLog();}
+function onRcvChange(){var id=parseInt(document.getElementById('rcv-mat').value);var m=mats.find(function(x){return x.id===id;});var info=document.getElementById('rcv-info');var lbl=document.getElementById('rcv-lbl');if(m&&m.pack_unit&&m.pack_qty>0){lbl.textContent='How many '+m.pack_unit+'s received?';info.textContent='Current: '+dspStock(m)+' · 1 '+m.pack_unit+' = '+m.pack_qty+' '+m.unit+' · Alert: '+dspAlert(m);info.style.display='block';}else if(m){lbl.textContent='Quantity received ('+m.unit+')';info.textContent='Current stock: '+m.stock.toFixed(1)+' '+m.unit;info.style.display='block';}else info.style.display='none';}
+async function receiveStock(){var id=parseInt(document.getElementById('rcv-mat').value);var qty=parseFloat(document.getElementById('rcv-qty').value)||0;if(!id){window.alert('Select a material');return;}if(qty<=0){window.alert('Enter quantity');return;}var m=mats.find(function(x){return x.id===id;});if(!m)return;var add=qty;if(m.pack_unit&&m.pack_qty>0)add=qty*m.pack_qty;m.stock+=add;await api('PUT','/materials/'+id,{stock:m.stock});await api('POST','/stock-receipts',{material_id:id,material_name:m.name,packs_received:qty,pack_unit:m.pack_unit||m.unit,pack_qty:m.pack_qty||1,total_added:add,unit:m.unit,received_at:new Date().toISOString()});document.getElementById('rcv-qty').value='';document.getElementById('rcv-notes').value='';document.getElementById('rcv-info').style.display='none';document.getElementById('rcv-mat').value='';rRcvLog();rMats();}
+async function rRcvLog(){var log=await api('GET','/stock-receipts')||[];document.getElementById('rcv-log').innerHTML=log.length?log.slice(0,20).map(function(l){var dt=new Date(l.received_at);return'<div class="stock-row"><div style="flex:1"><div style="font-weight:500">'+l.material_name+'</div><div style="font-size:11px;color:#888">'+dt.toLocaleDateString('en-ZA')+' '+dt.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div></div><span class="bdg bok">+'+l.packs_received+' '+(l.pack_unit||l.unit)+'(s) = '+l.total_added.toFixed(1)+' '+l.unit+'</span></div>';}).join(''):'<div class="es">No deliveries logged yet</div>';}
+
+// BATCH PRODUCTION
+function rBatches(){rBatchProduce();}
+function sBT(tab,el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='log')rBatchLog();}
+function rBatchProduce(){
+  var h='<div class="card"><h3>Select a batch to produce</h3>';
+  if(!batchRecipes.length){h+='<div class="es">No batch recipes yet. Admin can add them under Recipes tab.</div></div>';document.getElementById('bt-produce').innerHTML=h;return;}
+  h+='<div class="ib">Click a recipe to produce. Both admin and reception can trigger batches.</div>';
+  batchRecipes.forEach(function(r){
+    var mfg=mfgStock[r.name];var stock=mfg?mfg.stock:0;var al=mfg?mfg.alert_level:0;
+    var col=stock<=al?'#E24B4A':stock<=(al*2)?'#EF9F27':'#5B8FA8';
+    h+='<div class="batch-card"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:500">'+r.name+'</div><div style="font-size:12px;color:#888">'+r.batch_size+'L per batch</div>';
+    var ings=r.ingredients||[];if(ings.length)h+='<div style="font-size:11px;color:#aaa;margin-top:3px">'+ings.map(function(i){return i.name+' ('+i.qty+i.unit+')';}).join(' · ')+'</div>';
+    h+='</div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:'+col+'">'+stock.toFixed(0)+'L</span><button class="btn btns btnw" onclick="openTrigger('+r.id+')"><i class="ti ti-flask"></i> Produce</button></div></div></div>';
   });
-  document.getElementById('bsc').innerHTML=h;
-  document.getElementById('bfd').innerHTML=Object.values(bases).map(function(b){
-    var f=b.formula||[];
-    return'<div style="margin-bottom:0.9rem"><div style="font-size:12px;font-weight:500;margin-bottom:3px">'+b.name+' (per '+(b.batch_size||200)+'L batch) · alert: '+b.alert_level+'L</div>'+f.map(function(x){return'<div class="ir"><span>'+x.m+'</span><span class="il">'+x.q+' '+x.u+'</span></div>';}).join('')+'</div>';
-  }).join('');
-  document.getElementById('blog').innerHTML=[];
+  h+='</div>';document.getElementById('bt-produce').innerHTML=h;
 }
-function editBaseStock(name){
-  var b=bases[name];if(!b)return;
-  var v=prompt('Update stock for '+name+'\nCurrent: '+b.stock+'L\nEnter new stock level (litres):');
-  if(v!==null&&v!==''&&!isNaN(v)){b.stock=parseFloat(v);api('PUT','/bases/'+b.id,{stock:b.stock}).then(function(){rBases();});}
+function rBatchRecipes(){
+  var h='<div class="card"><h3>Batch recipes</h3>';
+  if(!batchRecipes.length){h+='<div class="es">No recipes yet.</div></div>';document.getElementById('bt-recipes').innerHTML=h;return;}
+  batchRecipes.forEach(function(r){var ings=r.ingredients||[];h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+r.name+'</b><span class="bdg bgry" style="margin-left:5px">'+r.batch_size+'L batch</span></div><div style="display:flex;gap:5px"><button class="btn btns" onclick="editBatch('+r.id+')"><i class="ti ti-edit"></i></button><button class="btn btns btnd" onclick="showConf(\'Delete recipe\',\'Delete '+r.name+'?\',\'Yes\',\'btnd\',function(){delBatch('+r.id+');})"><i class="ti ti-trash"></i></button></div></div>'+ings.map(function(i){return'<div class="ir"><span>'+i.name+'</span><span class="il">'+i.qty+' '+i.unit+' per batch</span></div>';}).join('')+'</div>';});
+  h+='</div>';document.getElementById('bt-recipes').innerHTML=h;
 }
-async function lBase(){
-  var type=document.getElementById('bt').value;
-  var l=parseFloat(document.getElementById('bl').value);
-  if(!l||l<=0){window.alert('Enter litres to produce');return;}
-  var b=bases[type];if(!b)return;
-  var r=l/(b.batch_size||200);
-  var f=b.formula||[];
-  for(var i=0;i<f.length;i++){
-    var ing=f[i];
-    if(bases[ing.m]){bases[ing.m].stock=Math.max(0,bases[ing.m].stock-(ing.q*r));await api('PUT','/bases/'+bases[ing.m].id,{stock:bases[ing.m].stock});}
-    else{var m=mats.find(function(x){return x.name===ing.m;});if(m){m.stock=Math.max(0,m.stock-(ing.q*r));await api('PUT','/materials/'+m.id,{stock:m.stock});}}
-  }
-  b.stock+=l;
-  await api('PUT','/bases/'+b.id,{stock:b.stock});
-  await api('POST','/base-logs',{base_name:type,litres:l});
-  document.getElementById('bl').value=200;
-  rBases();sBF();
-}
-function oBaseEdit(){pBS();lBE();oM('m-eb');}
-function lBE(){
-  var type=document.getElementById('ebs').value;
-  var b=bases[type];if(!b)return;
-  document.getElementById('eba').value=b.alert_level;
-  document.getElementById('ebs-stock').value=b.stock;
-  var f=b.formula||[];
-  document.getElementById('ber').innerHTML=f.map(function(x){
-    return'<div class="fr3" style="margin-bottom:5px"><div class="fg" style="margin:0"><input type="text" value="'+x.m+'" placeholder="Ingredient"></div><div class="fg" style="margin:0"><input type="number" value="'+x.q+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(x.u==='L'?' selected':'')+'>L</option><option'+(x.u==='kg'?' selected':'')+'>kg</option></select></div></div>';
-  }).join('');
-}
-function addBER(){
-  var row=document.createElement('div');row.className='fr3';row.style.marginBottom='5px';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+mOpts(true)+'</select></div><div class="fg" style="margin:0"><input type="number" value="0" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option>L</option><option>kg</option></select></div>';
-  document.getElementById('ber').appendChild(row);
-}
-async function saveBE(){
-  var type=document.getElementById('ebs').value;var b=bases[type];if(!b)return;
-  b.alert_level=parseFloat(document.getElementById('eba').value)||0;
-  b.stock=parseFloat(document.getElementById('ebs-stock').value)||0;
-  var rows=document.getElementById('ber').children;var f=[];
-  for(var i=0;i<rows.length;i++){
-    var sels=rows[i].querySelectorAll('select');var ins=rows[i].querySelectorAll('input');
-    var mat=(sels[0]?sels[0].value:'')||(ins[0]?ins[0].value.trim():'');
-    var q=ins[0]?parseFloat(ins[0].value)||0:0;
-    var qu=ins[1]?parseFloat(ins[1].value)||0:0;
-    var u=sels[1]?sels[1].value:'L';
-    if(mat.trim())f.push({m:mat.trim(),q:qu||q,u:u});
-  }
-  b.formula=f;
-  await api('PUT','/bases/'+b.id,{alert_level:b.alert_level,stock:b.stock,formula:f});
-  cM('m-eb');rBases();
-}
-function addNBI(){
-  var c=document.getElementById('nbil');
-  var row=document.createElement('div');row.className='fr3';row.style.marginBottom='5px';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+mOpts(false)+'</select></div><div class="fg" style="margin:0"><input type="number" value="0" step="0.01" min="0" placeholder="Qty"></div><div class="fg" style="margin:0"><select><option>L</option><option>kg</option><option>g</option></select></div>';
-  c.appendChild(row);
-}
-async function saveNB(){
-  var n=document.getElementById('nbn').value.trim();if(!n){window.alert('Enter name');return;}
-  if(bases[n]){window.alert('Already exists');return;}
-  var rows=document.getElementById('nbil').children;var f=[];
-  for(var i=0;i<rows.length;i++){
-    var sels=rows[i].querySelectorAll('select');var ins=rows[i].querySelectorAll('input');
-    var mat=sels[0]?sels[0].value:'';var q=ins[0]?parseFloat(ins[0].value)||0:0;var u=sels[1]?sels[1].value:'L';
-    if(mat)f.push({m:mat,q:q,u:u});
-  }
-  var data={name:n,stock:parseFloat(document.getElementById('nbs').value)||0,alert_level:parseFloat(document.getElementById('nba').value)||50,batch_size:parseFloat(document.getElementById('nbb').value)||200,formula:f};
-  var res=await api('POST','/bases',data);
-  if(res){bases[n]=res;cM('m-nb');pBS();rBases();sBF();}
-}
+async function rBatchLog(){var logs=await api('GET','/batch-logs')||[];var h='<div class="card"><h3>Production log</h3>';h+=logs.length?logs.map(function(l){var dt=new Date(l.created_at);return'<div class="stock-row"><div style="flex:1"><div style="font-weight:500">'+l.recipe_name+'</div><div style="font-size:11px;color:#888">'+dt.toLocaleDateString('en-ZA')+' '+dt.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · by '+l.triggered_by+'</div></div><span class="bdg bok">+'+l.litres_produced+'L</span></div>';}).join(''):'<div class="es">No batches yet</div>';h+='</div>';document.getElementById('bt-log').innerHTML=h;}
+function openAddBatch(){populateBatchProd();document.getElementById('batch-eid').value='';document.getElementById('batch-title').textContent='Add batch recipe';document.getElementById('batch-name').value='';document.getElementById('batch-size').value=200;document.getElementById('batch-alert').value=50;document.getElementById('batch-ings').innerHTML='';oM('m-batch');}
+function editBatch(id){var r=batchRecipes.find(function(x){return x.id===id;});if(!r)return;populateBatchProd();document.getElementById('batch-eid').value=id;document.getElementById('batch-title').textContent='Edit: '+r.name;document.getElementById('batch-name').value=r.name;document.getElementById('batch-size').value=r.batch_size;var mfg=Object.values(mfgStock).find(function(m){return m.name===r.name;});if(mfg){document.getElementById('batch-alert').value=mfg.alert_level;document.getElementById('batch-prod').value=mfg.id;}document.getElementById('batch-ings').innerHTML='';(r.ingredients||[]).forEach(function(i){addBatchIng(i.name,i.qty,i.unit);});oM('m-batch');}
+function populateBatchProd(){var sel=document.getElementById('batch-prod');sel.innerHTML='<option value="">Select...</option>';Object.values(mfgStock).forEach(function(m){sel.innerHTML+='<option value="'+m.id+'">'+m.name+'</option>';});}
+function addBatchIng(name,qty,unit){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';row.innerHTML='<div class="fg" style="margin:0"><select>'+allIngOpts()+'</select></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0" placeholder="Qty per batch"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option></select></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';document.getElementById('batch-ings').appendChild(row);if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
+async function saveBatch(){var n=document.getElementById('batch-name').value.trim();if(!n){window.alert('Enter recipe name');return;}var rows=document.getElementById('batch-ings').children;var ings=[];for(var i=0;i<rows.length;i++){var sels=rows[i].querySelectorAll('select');var ins=rows[i].querySelectorAll('input');var name=sels[0]?sels[0].value:'';var qty=ins[0]?parseFloat(ins[0].value)||0:0;var unit=sels[1]?sels[1].value:'L';if(name)ings.push({name:name,qty:qty,unit:unit});}var mfgId=parseInt(document.getElementById('batch-prod').value)||null;var bsz=parseFloat(document.getElementById('batch-size').value)||200;var al=parseFloat(document.getElementById('batch-alert').value)||50;var data={name:n,batch_size:bsz,ingredients:ings,manufactured_stock_id:mfgId};var eid=document.getElementById('batch-eid').value;if(eid){var res=await api('PUT','/batch-recipes/'+eid,data);if(res){var idx=batchRecipes.findIndex(function(r){return r.id===parseInt(eid);});if(idx!==-1)batchRecipes[idx]=res;}}else{var res2=await api('POST','/batch-recipes',data);if(res2)batchRecipes.push(res2);}if(mfgId)await api('PUT','/manufactured-stock/'+mfgId,{alert_level:al});cM('m-batch');rBatches();}
+async function delBatch(id){await api('DELETE','/batch-recipes/'+id);batchRecipes=batchRecipes.filter(function(r){return r.id!==id;});rBatchRecipes();}
+function openTrigger(id){var r=batchRecipes.find(function(x){return x.id===id;});if(!r)return;pendingBatchId=id;document.getElementById('trig-title').textContent='Produce: '+r.name;document.getElementById('trig-info').textContent='Standard batch: '+r.batch_size+'L';document.getElementById('trig-litres').value=r.batch_size;updTrigPreview();oM('m-trigger');}
+function updTrigPreview(){var id=pendingBatchId;if(!id)return;var r=batchRecipes.find(function(x){return x.id===id;});if(!r)return;var l=parseFloat(document.getElementById('trig-litres').value)||r.batch_size;var ratio=l/r.batch_size;var ings=r.ingredients||[];document.getElementById('trig-preview').innerHTML='<b>Ingredients for '+l+'L:</b> '+ings.map(function(i){return'<b>'+i.name+':</b> '+(i.qty*ratio).toFixed(2)+' '+i.unit;}).join(' · ');document.getElementById('trig-ded').innerHTML='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>'+ings.map(function(i){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+i.name+'</span><span style="color:#E24B4A;font-weight:500">−'+(i.qty*ratio).toFixed(2)+' '+i.unit+'</span></div>';}).join('');}
+async function confBatch(){var id=pendingBatchId;var r=batchRecipes.find(function(x){return x.id===id;});if(!r)return;var l=parseFloat(document.getElementById('trig-litres').value)||r.batch_size;var ratio=l/r.batch_size;var ings=r.ingredients||[];for(var i=0;i<ings.length;i++){var ing=ings[i];var amt=ing.qty*ratio;var mat=mats.find(function(x){return x.name===ing.name;});if(mat){mat.stock=Math.max(0,mat.stock-amt);await api('PUT','/materials/'+mat.id,{stock:mat.stock});}else if(mfgStock[ing.name]){mfgStock[ing.name].stock=Math.max(0,mfgStock[ing.name].stock-amt);await api('PUT','/manufactured-stock/'+mfgStock[ing.name].id,{stock:mfgStock[ing.name].stock});}}if(mfgStock[r.name]){mfgStock[r.name].stock+=l;await api('PUT','/manufactured-stock/'+mfgStock[r.name].id,{stock:mfgStock[r.name].stock});}await api('POST','/batch-logs',{recipe_name:r.name,litres_produced:l,triggered_by:userName});cM('m-trigger');rBatches();rDash();}
 
 // PACKAGING
-function rPkg(){
-  document.getElementById('pkgc').innerHTML=Object.values(pkgData).map(function(p){
-    var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';
-    return'<div class="met" onclick="oPE(\''+p.id+'\')"><div class="ml" style="font-size:11px">'+p.name+'</div><div class="mv" style="color:'+col+'">'+p.stock+'</div><div class="ms">'+(p.stock<=p.alert_level?'⚠ Low':'OK')+' · alert: '+p.alert_level+' <i class="ti ti-edit" style="font-size:10px"></i></div></div>';
-  }).join('');
-}
+function rPkg(){document.getElementById('pkgc').innerHTML=Object.values(pkgData).map(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';return'<div class="met"><div onclick="oPE(\''+p.id+'\')" style="cursor:pointer"><div class="ml" style="font-size:11px">'+p.name+'</div><div class="mv" style="color:'+col+'">'+p.stock+'</div><div class="ms">'+(p.stock<=p.alert_level?'⚠ Low':'OK')+' · alert: '+p.alert_level+'</div></div><button class="btn btns btno" onclick="oBO(\''+p.id+'\')" style="margin-top:6px;width:100%;font-size:11px"><i class="ti ti-minus"></i> Book out</button></div>';}).join('');rBOLog();}
 function oPE(key){var p=pkgData[key];if(!p)return;document.getElementById('epk').value=key;document.getElementById('ept').textContent='Edit: '+p.name;document.getElementById('eps').value=p.stock;document.getElementById('epa').value=p.alert_level;oM('m-ep');}
 async function savePkg(){var key=document.getElementById('epk').value;var data={stock:parseInt(document.getElementById('eps').value)||0,alert_level:parseInt(document.getElementById('epa').value)||0};await api('PUT','/packaging/'+key,data);Object.assign(pkgData[key],data);cM('m-ep');rPkg();}
-async function addPkg(){var key=document.getElementById('pi').value;var qty=parseInt(document.getElementById('pq').value)||0;if(qty<=0){window.alert('Enter quantity');return;}if(!pkgData[key]){window.alert('Item not found in database');return;}pkgData[key].stock+=qty;await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});document.getElementById('pq').value='';rPkg();}
+async function addPkg(){var key=document.getElementById('pi').value;var qty=parseInt(document.getElementById('pq').value)||0;if(qty<=0){window.alert('Enter quantity');return;}if(!pkgData[key]){window.alert('Item not found');return;}pkgData[key].stock+=qty;await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});document.getElementById('pq').value='';rPkg();}
+function oBO(key){var p=pkgData[key];if(!p)return;document.getElementById('bo-key').value=key;document.getElementById('bo-title').textContent='Book out: '+p.name;document.getElementById('bo-info').textContent='Current stock: '+p.stock+' units';document.getElementById('bo-qty').value='';document.getElementById('bo-reason').value='';oM('m-bo');}
+async function doBO(){var key=document.getElementById('bo-key').value;var qty=parseInt(document.getElementById('bo-qty').value)||0;var reason=document.getElementById('bo-reason').value;if(qty<=0){window.alert('Enter quantity');return;}if(!pkgData[key])return;if(qty>pkgData[key].stock){if(!confirm('Exceeds current stock of '+pkgData[key].stock+'. Continue?'))return;}pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});await api('POST','/packaging-bookouts',{item_id:key,item_name:pkgData[key].name,quantity:qty,reason:reason});cM('m-bo');rPkg();}
+async function rBOLog(){var log=await api('GET','/packaging-bookouts')||[];document.getElementById('bo-log').innerHTML=log.length?log.slice(0,15).map(function(l){var dt=new Date(l.created_at);return'<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><div style="flex:1"><div style="font-weight:500">'+l.item_name+'</div><div style="font-size:11px;color:#888">'+(l.reason||'Manual bookout')+' · '+dt.toLocaleDateString('en-ZA')+'</div></div><span class="bdg bcrit">−'+l.quantity+'</span></div>';}).join(''):'<div class="es">No bookings yet</div>';}
 
-// FORMULATIONS — fully database-driven
-function sFT(tab,el){
-  CRT=tab;
-  document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});
-  if(el)el.classList.add('active');
-  rForms();
-}
-
+// FORMULATIONS
+function sFT(tab,el){CRT=tab;document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');rForms();}
 function rForms(){
-  // Update tab counts
   var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
   var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
-  document.querySelectorAll('#ftabs .tab').forEach(function(tab,i){
-    var type=types[i];if(!type)return;
-    var count=forms.filter(function(f){return f.type===type;}).length;
-    tab.innerHTML=labels[type]+(count>0?' <span style="font-size:10px;background:#E8F4F9;color:#3a6e87;padding:1px 5px;border-radius:10px;font-weight:500">'+count+'</span>':'');
-  });
-
+  document.querySelectorAll('#ftabs .tab').forEach(function(tab,i){var type=types[i];if(!type)return;var count=forms.filter(function(f){return f.type===type;}).length;tab.innerHTML=labels[type]+(count>0?' <span style="font-size:10px;background:#E8F4F9;color:#3a6e87;padding:1px 5px;border-radius:10px;font-weight:500">'+count+'</span>':'');});
   var fs=forms.filter(function(f){return f.type===CRT;});
-  if(!fs.length){document.getElementById('fl').innerHTML='<div class="es card">No formulations for this type yet. Click Add formulation above.</div>';return;}
-
-  // Group by sub-category, sorted alphabetically
-  var groups={};
-  fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});
+  if(!fs.length){document.getElementById('fl').innerHTML='<div class="es card">No formulations yet. Click Add formulation above.</div>';return;}
+  var groups={};fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});
   Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});
   var sortedSubs=Object.keys(groups).sort();
-
   var h='';
   sortedSubs.forEach(function(sub){
-    var subForms=groups[sub];
-    h+='<div class="sub-group"><div class="sub-group-header"><span>'+sub+'</span><span class="sub-count">'+subForms.length+'</span></div>';
-    subForms.forEach(function(f){
+    var sf=groups[sub];
+    h+='<div class="sub-group"><div class="sub-group-header"><span>'+sub+'</span><span class="sub-count">'+sf.length+'</span></div>';
+    sf.forEach(function(f){
       var pr=f.price?'<span class="bdg bteal" style="margin-left:5px">'+fmt(f.price)+'/bucket</span>':'';
-      var ings=(f.ingredients||[]).map(function(ing){
-        return'<div class="ir"><span>'+ing.name+(ing.is_stone?' <span class="bdg bblu" style="font-size:10px">stone</span>':'')+'</span><span class="il">'+ing.qty+' '+ing.unit+'</span></div>';
-      }).join('');
-      var tints=(f.tints||[]).map(function(t){
-        return'<div class="ir"><span>'+t.n+'</span><span class="il">'+t.y+'Y + '+t.s+' shots ('+ml(t.s,t.y).toFixed(2)+'ml)</span></div>';
-      }).join('');
-      h+='<div class="fc"><div class="fb" style="margin-bottom:8px">'+
-        '<div><b>'+f.name+'</b><span class="bdg bgry" style="margin-left:5px">'+ptL(f.type)+'</span>'+pr+'</div>'+
+      var ings=(f.ingredients||[]).map(function(ing){return'<div class="ir"><span>'+ing.name+(ing.is_stone?' <span class="bdg bblu" style="font-size:10px">stone</span>':'')+'</span><span class="il">'+ing.qty+' '+ing.unit+'</span></div>';}).join('');
+      var tints=(f.tints||[]).map(function(t){return'<div class="ir"><span>'+t.n+'</span><span class="il">'+t.y+'Y + '+t.s+' shots ('+ml(t.s,t.y).toFixed(2)+'ml)</span></div>';}).join('');
+      var en=f.name.replace(/'/g,"\'");
+      h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+f.name+'</b><span class="bdg bgry" style="margin-left:5px">'+ptL(f.type)+'</span>'+pr+'</div>'+
         '<div style="display:flex;gap:5px">'+
-        '<button class="btn btns" title="Copy formulation" onclick="copyForm('+f.id+')"><i class="ti ti-copy"></i></button>'+
-        '<button class="btn btns" title="Edit formulation" onclick="showConf(\'Edit formulation\',\'Are you sure you want to edit '+f.name.replace(/'/g,"\\'")+' ? Changes will affect future orders.\',\'Yes, edit\',\'btnp\',function(){oEF('+f.id+');})"><i class="ti ti-edit"></i></button>'+
-        '<button class="btn btns btnd" title="Delete formulation" onclick="showConf(\'Delete formulation\',\'Are you sure you want to delete '+f.name.replace(/'/g,"\\'")+' ? This cannot be undone.\',\'Yes, delete\',\'btnd\',function(){dForm('+f.id+');})"><i class="ti ti-trash"></i></button>'+
+        '<button class="btn btns" title="Copy" onclick="copyForm('+f.id+')"><i class="ti ti-copy"></i></button>'+
+        '<button class="btn btns" title="Edit" onclick="showConf(\'Edit formulation\',\'Edit '+en+'? Changes affect future orders.\',\'Yes, edit\',\'btnp\',function(){oEF('+f.id+');})"><i class="ti ti-edit"></i></button>'+
+        '<button class="btn btns btnd" title="Delete" onclick="showConf(\'Delete formulation\',\'Delete '+en+'? Cannot be undone.\',\'Yes, delete\',\'btnd\',function(){dForm('+f.id+');})"><i class="ti ti-trash"></i></button>'+
         '</div></div>';
-      if(ings)h+=ings;
-      if(tints)h+=tints;
+      if(ings)h+=ings;if(tints)h+=tints;
       h+='</div>';
     });
     h+='</div>';
   });
   document.getElementById('fl').innerHTML=h;
 }
-
-async function dForm(id){
-  await api('DELETE','/formulations/'+id);
-  forms=forms.filter(function(f){return f.id!==id;});
-  buildCollections();rForms();
-}
-
-function copyForm(id){
-  var f=forms.find(function(x){return x.id===id;});if(!f)return;
-  var copy=JSON.parse(JSON.stringify(f));
-  copy.name=f.name+' (copy)';
-  delete copy.id;
-  api('POST','/formulations',copy).then(function(res){
-    if(res){
-      res.ingredients=res.ingredients||[];
-      res.tints=res.tints||[];
-      res.sub_category=res.sub_category||'Standard';
-      forms.push(res);
-      buildCollections();rForms();
-    }
-  });
-}
-
-// Formulation modal — ingredient rows
+async function dForm(id){await api('DELETE','/formulations/'+id);forms=forms.filter(function(f){return f.id!==id;});buildCollections();rForms();}
+function copyForm(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;var copy=JSON.parse(JSON.stringify(f));copy.name=f.name+' (copy)';delete copy.id;api('POST','/formulations',copy).then(function(res){if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';forms.push(res);buildCollections();rForms();}});}
+function oAddForm(){document.getElementById('feid').value='';document.getElementById('fmtitle').textContent='Add formulation';document.getElementById('fn').value='';document.getElementById('fp').value='';document.getElementById('fsubcat').value='Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';document.getElementById('ftype').value=CRT;updateSCS();oM('m-af');}
+function updateSCS(){var type=document.getElementById('ftype').value;var subs=collections[type]||[];document.getElementById('scs').innerHTML=subs.map(function(s){return'<option value="'+s+'">'+s+'</option>';}).join('');}
+function oEF(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;document.getElementById('feid').value=id;document.getElementById('fmtitle').textContent='Edit: '+f.name;document.getElementById('fn').value=f.name;document.getElementById('fp').value=f.price||'';document.getElementById('ftype').value=f.type;document.getElementById('fsubcat').value=f.sub_category||'Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';(f.ingredients||[]).forEach(function(ing){addIngRow(ing.name,ing.qty,ing.unit,ing.is_stone);});(f.tints||[]).forEach(function(t){addTintRow(t.n,t.y,t.s);});updateSCS();oM('m-af');}
 function addIngRow(name,qty,unit,isStone){
-  var row=document.createElement('div');
-  row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';
-  var opts=mOpts(true);
-  var stoneChecked=isStone?'checked':'';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+opts+'</select></div>'+
-    '<div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0" placeholder="Qty"></div>'+
-    '<div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div>'+
-    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" '+stoneChecked+' style="width:auto;margin:0 auto;display:block"></div>'+
-    '<button class="btn btns" onclick="this.parentElement.remove()" style="margin-bottom:0"><i class="ti ti-x"></i></button>';
+  var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';
+  if(isStone){row.innerHTML='<div class="fg" style="margin:0"><input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px"></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div><div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" checked onchange="toggleStone(this)" style="width:auto;margin:0 auto;display:block"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';}
+  else{row.innerHTML='<div class="fg" style="margin:0"><select>'+allIngOpts()+'</select></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div><div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" onchange="toggleStone(this)" style="width:auto;margin:0 auto;display:block"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
   document.getElementById('f-ing-list').appendChild(row);
-  if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}
 }
-
-function addTintRow(name,y,s){
-  var row=document.createElement('div');
-  row.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;align-items:end;margin-bottom:6px';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div>'+
-    '<div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(y||0)+'" min="0"></div>'+
-    '<div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(s||0)+'" min="0"></div>'+
-    '<button class="btn btns" onclick="this.parentElement.remove()" style="margin-bottom:0"><i class="ti ti-x"></i></button>';
-  document.getElementById('f-tint-list').appendChild(row);
-  if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}
-}
-
-function updateSubcatSuggestions(){
-  var type=document.getElementById('ftype').value;
-  var subs=collections[type]||[];
-  document.getElementById('subcat-suggestions').innerHTML=subs.map(function(s){return'<option value="'+s+'">'+s+'</option>';}).join('');
-}
-
-function onFTypeChange(){updateSubcatSuggestions();}
-
-function oAddForm(){
-  document.getElementById('feid').value='';
-  document.getElementById('fmtitle').textContent='Add formulation';
-  document.getElementById('fn').value='';
-  document.getElementById('fp').value='';
-  document.getElementById('fsubcat').value='Standard';
-  document.getElementById('f-ing-list').innerHTML='';
-  document.getElementById('f-tint-list').innerHTML='';
-  document.getElementById('ftype').value=CRT;
-  updateSubcatSuggestions();
-  oM('m-af');
-}
-
-function oEF(id){
-  var f=forms.find(function(x){return x.id===id;});if(!f)return;
-  document.getElementById('feid').value=id;
-  document.getElementById('fmtitle').textContent='Edit: '+f.name;
-  document.getElementById('fn').value=f.name;
-  document.getElementById('fp').value=f.price||'';
-  document.getElementById('ftype').value=f.type;
-  document.getElementById('fsubcat').value=f.sub_category||'Standard';
-  document.getElementById('f-ing-list').innerHTML='';
-  document.getElementById('f-tint-list').innerHTML='';
-  (f.ingredients||[]).forEach(function(ing){addIngRow(ing.name,ing.qty,ing.unit,ing.is_stone);});
-  (f.tints||[]).forEach(function(t){addTintRow(t.n,t.y,t.s);});
-  updateSubcatSuggestions();
-  oM('m-af');
-}
-
-function getIngredients(){
-  var ings=[];
-  document.querySelectorAll('#f-ing-list > div').forEach(function(row){
-    var sels=row.querySelectorAll('select');
-    var ins=row.querySelectorAll('input');
-    var cb=row.querySelector('input[type="checkbox"]');
-    var name=sels[0]?sels[0].value:'';
-    var qty=ins[0]?parseFloat(ins[0].value)||0:0;
-    var unit=sels[1]?sels[1].value:'L';
-    var isStone=cb?cb.checked:false;
-    if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});
-  });
-  return ings;
-}
-
-function getTints(){
-  var tints=[];
-  document.querySelectorAll('#f-tint-list > div').forEach(function(row){
-    var sels=row.querySelectorAll('select');
-    var ins=row.querySelectorAll('input');
-    if(sels[0])tints.push({n:sels[0].value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});
-  });
-  return tints;
-}
-
-async function saveForm(){
-  var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a formulation name');return;}
-  var sub=document.getElementById('fsubcat').value.trim()||'Standard';
-  var data={
-    name:n,
-    type:document.getElementById('ftype').value,
-    sub_category:sub,
-    price:parseFloat(document.getElementById('fp').value)||0,
-    ingredients:getIngredients(),
-    tints:getTints(),
-    // Keep old fields for backward compatibility
-    other_ingredients:[],
-    cps_ingredients:{},
-    granite_ingredients:{},
-    base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0
-  };
-  var eid=document.getElementById('feid').value;
-  if(eid){
-    var res=await api('PUT','/formulations/'+eid,data);
-    if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}
-  }else{
-    var res2=await api('POST','/formulations',data);
-    if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}
-  }
-  cM('m-af');buildCollections();rForms();
-}
+function toggleStone(cb){var row=cb.parentElement.parentElement;var fc=row.children[0];if(cb.checked){fc.innerHTML='<input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px;width:100%">';}else{fc.innerHTML='<select>'+allIngOpts()+'</select>';}}
+function addTintRow(name,y,s){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;align-items:end;margin-bottom:6px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(y||0)+'" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(s||0)+'" min="0"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';document.getElementById('f-tint-list').appendChild(row);if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
+function getIngs(){var ings=[];document.querySelectorAll('#f-ing-list > div').forEach(function(row){var cb=row.querySelector('input[type="checkbox"]');var isStone=cb?cb.checked:false;var name='';if(isStone){name='__stone__';}else{var sel=row.querySelector('select');name=sel?sel.value:'';}var ins=row.querySelectorAll('input[type="number"]');var us=row.querySelectorAll('select')[1];var qty=ins[0]?parseFloat(ins[0].value)||0:0;var unit=us?us.value:'kg';if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});});return ings;}
+function getTints(){var tints=[];document.querySelectorAll('#f-tint-list > div').forEach(function(row){var sels=row.querySelectorAll('select');var ins=row.querySelectorAll('input');if(sels[0])tints.push({n:sels[0].value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});return tints;}
+async function saveForm(){var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a name');return;}var data={name:n,type:document.getElementById('ftype').value,sub_category:document.getElementById('fsubcat').value.trim()||'Standard',price:parseFloat(document.getElementById('fp').value)||0,ingredients:getIngs(),tints:getTints(),other_ingredients:[],cps_ingredients:{},granite_ingredients:{},base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0};var eid=document.getElementById('feid').value;if(eid){var res=await api('PUT','/formulations/'+eid,data);if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}}else{var res2=await api('POST','/formulations',data);if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}}cM('m-af');buildCollections();rForms();}
 
 // ORDERS
-function rRecStock(){
-  var show=userRole==='reception';
-  document.getElementById('rec-stock').style.display=show?'block':'none';
-  if(!show)return;
-  var h='<div class="fr">';
-  h+='<div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Bases</div>';
-  Object.values(bases).forEach(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+b.name+'</span><span style="font-weight:500;color:'+col+'">'+b.stock+'L</span></div>';});
-  h+='</div><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Packaging</div>';
-  ['pr20','ti20','sl20','sl5','bags'].forEach(function(k){var p=pkgData[k];if(!p)return;var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});
-  h+='</div></div>';
-  document.getElementById('rsc').innerHTML=h;
-}
-
-function oPTC(){
-  var t=document.getElementById('opt').value;
-  var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
-  var isGam=t==='gamazine';
-  var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
-  var isCM=t==='cm';
-
-  document.getElementById('or-std').style.display=(!isCM)?'block':'none';
-  document.getElementById('or-stone').style.display=isGam?'block':'none';
-  document.getElementById('or-bkt').style.display=(isBkt&&!isCM)?'block':'none';
-  document.getElementById('or-sec').style.display=(isSec&&!isCM)?'grid':'none';
-  document.getElementById('or-cls').style.display=(t==='clearcoat'&&!isCM)?'block':'none';
-  document.getElementById('or-cm').style.display=isCM?'block':'none';
-
-  if(!isCM){
-    // Build grouped dropdown for formulations
-    var fs=forms.filter(function(f){return f.type===t;});
-    var groups={};
-    fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});
-    Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});
-    var sortedSubs=Object.keys(groups).sort();
-    var opts='';
-    if(sortedSubs.length===0){opts='<option value="">No formulations yet</option>';}
-    else if(sortedSubs.length===1&&sortedSubs[0]==='Standard'){
-      // Single group — no optgroup needed
-      groups['Standard'].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});
-    }else{
-      sortedSubs.forEach(function(sub){
-        opts+='<optgroup label="'+sub+'">';
-        groups[sub].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});
-        opts+='</optgroup>';
-      });
-    }
-    document.getElementById('orec').innerHTML=opts;
-    onFormSelect();
-  }
-}
-
-function onFormSelect(){
-  // Check if selected formulation has a stone ingredient — show stone size selector
-  var t=document.getElementById('opt').value;
-  if(t!=='gamazine')return;
-  // Gamazine always shows stone size selector
-  document.getElementById('or-stone').style.display='block';
-}
-
+function rRecStock(){var show=userRole==='reception';document.getElementById('rec-stock').style.display=show?'block':'none';if(!show)return;var h='<div class="fr"><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Manufactured stock</div>';Object.values(mfgStock).forEach(function(m){var col=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+m.name+'</span><span style="font-weight:500;color:'+col+'">'+m.stock.toFixed(0)+'L</span></div>';});h+='</div><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Packaging</div>';['pr20','ti20','sl20','sl5','bags'].forEach(function(k){var p=pkgData[k];if(!p)return;var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});h+='</div></div>';document.getElementById('rsc').innerHTML=h;}
+function oPTC(){var t=document.getElementById('opt').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;var isCM=t==='cm';document.getElementById('or-std').style.display=(!isCM)?'block':'none';document.getElementById('or-stone').style.display=isGam?'block':'none';document.getElementById('or-bkt').style.display=(isBkt&&!isCM)?'block':'none';document.getElementById('or-sec').style.display=(isSec&&!isCM)?'grid':'none';document.getElementById('or-cls').style.display=(t==='clearcoat'&&!isCM)?'block':'none';document.getElementById('or-cm').style.display=isCM?'block':'none';if(!isCM){var fs=forms.filter(function(f){return f.type===t;});var groups={};fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});var subs=Object.keys(groups).sort();var opts='';if(!subs.length){opts='<option value="">No formulations yet</option>';}else if(subs.length===1&&subs[0]==='Standard'){groups['Standard'].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});}else{subs.forEach(function(sub){opts+='<optgroup label="'+sub+'">';groups[sub].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});opts+='</optgroup>';});}document.getElementById('orec').innerHTML=opts;}}
 function tLN(){document.getElementById('ln').style.display=document.getElementById('odl').value==='courier'?'block':'none';}
-
-function addCMT(){
-  var row=document.createElement('div');
-  row.style.cssText='display:grid;grid-template-columns:1fr 70px 70px;gap:6px;margin-bottom:5px';
-  row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="0" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="0" min="0"></div>';
-  document.getElementById('cmt').appendChild(row);
-}
-
-async function bOrder(){
-  var t=document.getElementById('opt').value;
-  var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}
-  var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;
-  var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
-  var isCM=t==='cm';var isGam=t==='gamazine';
-  var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
-  var oN,qty,bkt='',fid=null,cmTi=[],stK='';
-
-  if(isCM){
-    oN=document.getElementById('cmn').value.trim()||'Colour Match';
-    qty=parseInt(document.getElementById('cmq').value)||1;
-    stK=document.getElementById('cms').value;
-    bkt=document.getElementById('cmb').value;
-    document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});
-  }else if(isSec){
-    var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);
-    qty=parseInt(document.getElementById('oqsec').value)||1;
-    bkt=sz===5?'5L Secure Lock':'20L Secure Lock';
-    fid=parseInt(document.getElementById('orec').value);
-    var f=forms.find(function(x){return x.id===fid;});
-    oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);
-  }else{
-    fid=parseInt(document.getElementById('orec').value);
-    var fm=forms.find(function(f){return f.id===fid;});
-    if(!fm){window.alert('Select a formulation');return;}
-    oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;
-    if(isGam)stK=document.getElementById('oss').value;
-    if(isBkt)bkt=document.getElementById('obk').value;
-  }
-
-  var lid=dl==='courier'||isSec;
-  var oid='ORD-'+NID++;
-  var orderData={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi};
-  var res=await api('POST','/orders',orderData);
-  if(res){
-    var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi};
-    orders.push(o);
-    var fm3=fid?forms.find(function(f){return f.id===fid;}):null;
-    document.getElementById('sc').innerHTML=bSlip(o,fm3);
-    document.getElementById('sarea').style.display='block';
-  }
-}
-
-function bSlip(o,f){
-  var qr=mkQR(o.id);
-  var rows=
-    '<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div>'+
-    '<div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div>'+
-    '<div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div>'+
-    '<div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div>'+
-    '<div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+
-    (o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+
-    (o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+
-    '<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div>'+
-    '<div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+
-    (o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');
-
-  // INGREDIENTS TOTALS FOR FULL ORDER
-  if(f&&(f.ingredients||[]).length>0){
-    rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';
-    (f.ingredients||[]).forEach(function(ing){
-      var name=ing.name;
-      // If stone ingredient, replace with chosen stone size
-      if(ing.is_stone&&o.stK)name=o.stK;
-      rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty).toFixed(2)+' '+ing.unit+'</span></div>';
-    });
-  }
-
-  // TINT TOTALS FOR FULL ORDER
-  var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);
-  if(tints.length){
-    rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';
-    tints.forEach(function(t){
-      var totalY=t.y*o.qty;var totalS=t.s*o.qty;var totalMl=ml(t.s,t.y)*o.qty;
-      rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+totalY+'Y + '+totalS+' shots<br>('+totalMl.toFixed(1)+'ml total)</span></div>';
-    });
-  }
-
-  return'<div class="slip">'+
-    '<div class="shr"><div style="font-size:14px;font-weight:bold;letter-spacing:1px">LIFE COATS</div>'+
-    '<div style="font-size:9px;letter-spacing:0.5px">WE\'VE GOT YOU COVERED</div></div>'+
-    '<div style="text-align:center;margin:6px 0 3px">'+qr+'</div>'+
-    '<div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div>'+
-    '<hr class="sdv">'+rows+
-    '<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';
-}
-
-function mkQR(text){
-  var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';
-  for(var r=0;r<cells;r++)for(var cc=0;cc<cells;cc++){
-    var fill=(r<7&&cc<7)||(r<7&&cc>cells-8)||(r>cells-8&&cc<7)?((r===0||r===6||cc===0||cc===6||(r>=2&&r<=4&&cc>=2&&cc<=4))?1:0):((r+cc+(text.charCodeAt(0)||65))%3===0?1:0);
-    if(fill)rcts+='<rect x="'+(cc*c)+'" y="'+(r*c)+'" width="'+c+'" height="'+c+'" fill="#000"/>';
-  }
-  return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+rcts+'</svg>';
-}
-
+function addCMT(){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 70px 70px;gap:6px;margin-bottom:5px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="0" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="0" min="0"></div>';document.getElementById('cmt').appendChild(row);}
+async function bOrder(){var t=document.getElementById('opt').value;var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isCM=t==='cm';var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;var oN,qty,bkt='',fid=null,cmTi=[],stK='';if(isCM){oN=document.getElementById('cmn').value.trim()||'Colour Match';qty=parseInt(document.getElementById('cmq').value)||1;stK=document.getElementById('cms').value;bkt=document.getElementById('cmb').value;document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});}else if(isSec){var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);qty=parseInt(document.getElementById('oqsec').value)||1;bkt=sz===5?'5L Secure Lock':'20L Secure Lock';fid=parseInt(document.getElementById('orec').value);var f=forms.find(function(x){return x.id===fid;});oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);}else{fid=parseInt(document.getElementById('orec').value);var fm=forms.find(function(f){return f.id===fid;});if(!fm){window.alert('Select a formulation');return;}oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;if(isGam)stK=document.getElementById('oss').value;if(isBkt)bkt=document.getElementById('obk').value;}var lid=dl==='courier'||isSec;var oid='ORD-'+NID++;var od={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi};var res=await api('POST','/orders',od);if(res){var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi};orders.push(o);var fm3=fid?forms.find(function(f){return f.id===fid;}):null;document.getElementById('sc').innerHTML=bSlip(o,fm3);document.getElementById('sarea').style.display='block';}}
+function bSlip(o,f){var qr=mkQR(o.id);var rows='<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div><div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div><div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div><div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div><div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+(o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+(o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+'<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div><div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+(o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');if(f&&(f.ingredients||[]).length>0){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;var name=ing.is_stone?o.stK:ing.name;rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty).toFixed(2)+' '+ing.unit+'</span></div>';});}var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);if(tints.length){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';tints.forEach(function(t){var tY=t.y*o.qty;var tS=t.s*o.qty;var tM=ml(t.s,t.y)*o.qty;rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+tY+'Y + '+tS+' shots ('+tM.toFixed(1)+'ml)</span></div>';});}return'<div class="slip"><div class="shr"><div style="font-size:14px;font-weight:bold;letter-spacing:1px">LIFE COATS</div><div style="font-size:9px;letter-spacing:0.5px">WE\'VE GOT YOU COVERED</div></div><div style="text-align:center;margin:6px 0 3px">'+qr+'</div><div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div><hr class="sdv">'+rows+'<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';}
+function mkQR(text){var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';for(var r=0;r<cells;r++)for(var cc=0;cc<cells;cc++){var fill=(r<7&&cc<7)||(r<7&&cc>cells-8)||(r>cells-8&&cc<7)?((r===0||r===6||cc===0||cc===6||(r>=2&&r<=4&&cc>=2&&cc<=4))?1:0):((r+cc+(text.charCodeAt(0)||65))%3===0?1:0);if(fill)rcts+='<rect x="'+(cc*c)+'" y="'+(r*c)+'" width="'+c+'" height="'+c+'" fill="#000"/>';}return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+rcts+'</svg>';}
 function cOC(){document.getElementById('sarea').style.display='none';document.getElementById('oc').value='';document.getElementById('onn').value='';sOT('active',null);}
-
-function sOT(tab,el){
-  if(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}
-  document.getElementById('ot-new').style.display=tab==='new'?'block':'none';
-  document.getElementById('ot-active').style.display=tab==='active'?'block':'none';
-  document.getElementById('ot-done').style.display=tab==='done'?'block':'none';
-  rOLists();
-}
-
-function rOLists(){
-  var p=orders.filter(function(o){return o.status==='pending';});
-  var d=orders.filter(function(o){return o.status==='done';});
-  var countEl=document.getElementById('active-count');
-  if(countEl)countEl.textContent=p.length>0?p.length:'';
-  document.getElementById('aol').innerHTML=p.length?p.map(function(o){
-    return'<div class="oc"><div class="oi">'+
-      '<div class="oid">'+o.id+'</div>'+
-      '<div class="on">'+o.n+' ×'+o.qty+'</div>'+
-      '<div class="od">'+o.client+' · '+ptL(o.t)+(o.bkt?' · '+o.bkt:'')+(o.stK?' · '+o.stK:'')+'</div>'+
-      '</div>'+
-      '<button class="btn btns btnw" onclick="oComplete(\''+o.id+'\')"><i class="ti ti-circle-check"></i> Mark complete</button></div>';
-  }).join(''):'<div class="es card">No active orders</div>';
-  document.getElementById('dol').innerHTML=d.length?d.map(function(o){
-    return'<div class="oc"><div class="oi">'+
-      '<div class="oid">'+o.id+'</div>'+
-      '<div class="on">'+o.n+' ×'+o.qty+'</div>'+
-      '<div class="od">'+o.client+' · '+ptL(o.t)+'</div>'+
-      '</div><span class="bdg bok"><i class="ti ti-circle-check"></i> Complete</span></div>';
-  }).join(''):'<div class="es card">No completed orders yet</div>';
-}
-
-function oComplete(id){
-  var o=orders.find(function(x){return x.id===id;});if(!o)return;
-  pendingOrderId=id;
-  var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
-  document.getElementById('comp-detail').innerHTML=
-    '<div class="oc" style="margin-bottom:0.75rem"><div class="oi">'+
-    '<div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div>'+
-    '<div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';
-
-  function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}
-
-  var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';
-
-  if(f){
-    // Deduct from ingredients
-    (f.ingredients||[]).forEach(function(ing){
-      var name=ing.name;
-      if(ing.is_stone&&o.stK)name=o.stK;
-      dd+=dl(name,ing.qty*o.qty,ing.unit);
-    });
-    // Deduct tints
-    (f.tints||[]).forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});
-  }
-  // Colour match tints
-  if(o.cmTi&&o.cmTi.length)o.cmTi.forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});
-  // Packaging
-  if(o.bkt){
-    if(o.bkt.includes('Printed'))dd+=dl('20L Printed Buckets',o.qty,'units');
-    else if(o.bkt.includes('Titan'))dd+=dl('20L Titan Black Buckets',o.qty,'units');
-    else if(o.bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',o.qty,'units');
-    else if(o.bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',o.qty,'units');
-  }
-  if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)dd+=dl('Plastic Bags',o.qty,'units');
-  if(o.lid)dd+=dl('Lids',o.qty,'units');
-
-  document.getElementById('comp-deductions').innerHTML=dd;
-  oM('m-comp');
-}
-
-async function confComplete(){
-  var id=pendingOrderId;
-  var o=orders.find(function(x){return x.id===id;});if(!o)return;
-  var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
-
-  async function dm(name,qty,unit){
-    // Check if it's a base first
-    if(bases[name]){bases[name].stock=Math.max(0,bases[name].stock-qty);await api('PUT','/bases/'+bases[name].id,{stock:bases[name].stock});return;}
-    var m=mats.find(function(x){return x.name===name;});
-    if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}
-  }
-  async function dp(key,qty){
-    if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}
-  }
-
-  if(f){
-    for(var i=0;i<(f.ingredients||[]).length;i++){
-      var ing=f.ingredients[i];
-      var name=ing.name;
-      if(ing.is_stone&&o.stK)name=o.stK;
-      await dm(name,ing.qty*o.qty,ing.unit);
-    }
-    for(var j=0;j<(f.tints||[]).length;j++){
-      var t=f.tints[j];
-      await dm(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');
-    }
-  }
-  if(o.cmTi)for(var k=0;k<o.cmTi.length;k++){await dm(o.cmTi[k].n,(ml(o.cmTi[k].s,o.cmTi[k].y)/1000)*o.qty,'L');}
-
-  if(o.bkt){
-    if(o.bkt.includes('Printed'))await dp('pr20',o.qty);
-    else if(o.bkt.includes('Titan'))await dp('ti20',o.qty);
-    else if(o.bkt.includes('5L Secure'))await dp('sl5',o.qty);
-    else if(o.bkt.includes('20L Secure'))await dp('sl20',o.qty);
-  }
-  if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)await dp('bags',o.qty);
-  if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}
-
-  await api('PUT','/orders/'+id,{status:'done'});
-  o.status='done';
-  cM('m-comp');rOLists();rDash();
-}
+function sOT(tab,el){if(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}document.getElementById('ot-new').style.display=tab==='new'?'block':'none';document.getElementById('ot-active').style.display=tab==='active'?'block':'none';document.getElementById('ot-done').style.display=tab==='done'?'block':'none';rOLists();}
+function rOLists(){var p=orders.filter(function(o){return o.status==='pending';});var d=orders.filter(function(o){return o.status==='done';});var ce=document.getElementById('active-count');if(ce)ce.textContent=p.length>0?p.length:'';document.getElementById('aol').innerHTML=p.length?p.map(function(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+(o.bkt?' · '+o.bkt:'')+(o.stK?' · '+o.stK:'')+'</div></div><button class="btn btns btnw" onclick="oComplete(\''+o.id+'\')"><i class="ti ti-circle-check"></i> Mark complete</button></div>';}).join(''):'<div class="es card">No active orders</div>';document.getElementById('dol').innerHTML=d.length?d.map(function(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div><span class="bdg bok"><i class="ti ti-circle-check"></i> Complete</span></div>';}).join(''):'<div class="es card">No completed orders yet</div>';}
+function oComplete(id){var o=orders.find(function(x){return x.id===id;});if(!o)return;pendingOrderId=id;var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;document.getElementById('comp-det').innerHTML='<div class="oc" style="margin-bottom:0.75rem"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';if(f){(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;var name=ing.is_stone?o.stK:ing.name;dd+=dl(name,ing.qty*o.qty,ing.unit);});(f.tints||[]).forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});}if(o.cmTi&&o.cmTi.length)o.cmTi.forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});if(o.bkt){if(o.bkt.includes('Printed'))dd+=dl('20L Printed Buckets',o.qty,'units');else if(o.bkt.includes('Titan'))dd+=dl('20L Titan Black',o.qty,'units');else if(o.bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',o.qty,'units');else if(o.bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',o.qty,'units');}if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)dd+=dl('Plastic Bags',o.qty,'units');if(o.lid)dd+=dl('Lids',o.qty,'units');document.getElementById('comp-ded').innerHTML=dd;oM('m-comp');}
+async function confComplete(){var id=pendingOrderId;var o=orders.find(function(x){return x.id===id;});if(!o)return;var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}if(f){for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!o.stK)continue;var name=ing.is_stone?o.stK:ing.name;await dm(name,ing.qty*o.qty);}for(var j=0;j<(f.tints||[]).length;j++){var t=f.tints[j];await dm(t.n,(ml(t.s,t.y)/1000)*o.qty);}}if(o.cmTi)for(var k=0;k<o.cmTi.length;k++)await dm(o.cmTi[k].n,(ml(o.cmTi[k].s,o.cmTi[k].y)/1000)*o.qty);if(o.bkt){if(o.bkt.includes('Printed'))await dp('pr20',o.qty);else if(o.bkt.includes('Titan'))await dp('ti20',o.qty);else if(o.bkt.includes('5L Secure'))await dp('sl5',o.qty);else if(o.bkt.includes('20L Secure'))await dp('sl20',o.qty);}if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)await dp('bags',o.qty);if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}await api('PUT','/orders/'+id,{status:'done'});o.status='done';cM('m-comp');rOLists();rDash();}
 
 // REPORTS
 function rRep(){rWk();}
-function sRT(tab,el){
-  PRT=tab;
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  if(el)el.classList.add('active');
-  ['wk','mo','pr'].forEach(function(t){document.getElementById('rt-'+t).style.display=t===tab?'block':'none';});
-  if(tab==='wk')rWk();if(tab==='mo')rMo();if(tab==='pr')rPr();
-}
-
-function rWk(){
-  var done=orders.filter(function(o){return o.status==='done';});
-  var bk=done.reduce(function(a,o){return a+o.qty;},0);
-  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
-  var lw=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).length;
-  var now=new Date();var wk=new Date(now);wk.setDate(now.getDate()-7);
-  document.getElementById('rt-wk').innerHTML=
-    '<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+wk.toDateString()+' – '+now.toDateString()+'</p>'+
-    '<div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'wk\')"><i class="ti ti-file-text"></i> Export PDF</button></div>'+
-    '<div class="rev"><div class="rvl">Est. weekly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div>'+
-    '<div class="g3" style="margin-bottom:0.75rem">'+
-    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+done.length+'</div><div style="font-size:11px;color:#888">Orders completed</div></div>'+
-    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+bk+'</div><div style="font-size:11px;color:#888">Buckets produced</div></div>'+
-    '<div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:'+(lw>0?'#E24B4A':'#5B8FA8')+'">'+lw+'</div><div style="font-size:11px;color:#888">Low stock alerts</div></div></div>'+
-    '<div class="card"><h3>Raw material stock</h3><div style="overflow-x:auto"><table><thead><tr><th>Material</th><th>Cat</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th></tr></thead><tbody>'+
-    mats.map(function(m){return'<tr><td>'+m.name+'</td><td><span class="bdg bgry">'+m.category+'</span></td><td>'+m.stock.toFixed(1)+'</td><td>'+m.unit+'</td><td>'+m.alert_level+'</td><td>'+bdg(m.stock,m.alert_level)+'</td></tr>';}).join('')+'</tbody></table></div></div>'+
-    '<div class="card"><h3>Base stock</h3><div class="g4">'+
-    Object.values(bases).map(function(b){var col=b.stock<=b.alert_level?'#E24B4A':b.stock<=(b.alert_level*2)?'#EF9F27':'#5B8FA8';return'<div class="met" style="cursor:default"><div class="ml">'+b.name+'</div><div class="mv" style="color:'+col+'">'+b.stock+'L</div><div class="ms">'+(b.stock<=b.alert_level?'Low':'OK')+'</div></div>';}).join('')+
-    '</div></div>'+
-    '<div class="card"><h3>Orders completed</h3>'+
-    (done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr></thead><tbody>'+
-    done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+
-    '</tbody></table></div>':'<div class="es">No orders yet</div>')+'</div>';
-}
-
-function rMo(){
-  var now=new Date();var ms=new Date(now.getFullYear(),now.getMonth(),1);var me=new Date(now.getFullYear(),now.getMonth()+1,0);
-  var done=orders.filter(function(o){return o.status==='done';});
-  var bk=done.reduce(function(a,o){return a+o.qty;},0);
-  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
-  var byT={};done.forEach(function(o){byT[o.t]=(byT[o.t]||0)+o.qty;});
-  document.getElementById('rt-mo').innerHTML=
-    '<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+ms.toDateString()+' – '+me.toDateString()+'</p>'+
-    '<div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'mo\')"><i class="ti ti-file-text"></i> Export PDF</button></div>'+
-    '<div class="rev"><div class="rvl">Est. monthly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div>'+
-    '<div class="card"><h3>Buckets by product type</h3>'+
-    Object.keys(byT).map(function(t){return'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+ptL(t)+'</span><span class="bdg bteal">'+byT[t]+' buckets</span></div>';}).join('')+
-    (Object.keys(byT).length===0?'<div class="es">No orders this month</div>':'')+'</div>'+
-    '<div class="card"><h3>Revenue by colour</h3>'+
-    (done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>'+
-    done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var pr=f&&f.price?f.price:0;return'<tr><td>'+o.n+'</td><td>'+ptL(o.t)+'</td><td>'+o.qty+'</td><td>'+fmt(pr)+'</td><td><b>'+fmt(pr*o.qty)+'</b></td></tr>';}).join('')+
-    '</tbody></table></div>':'<div class="es">No orders this month</div>')+'</div>';
-}
-
-function rPr(){
-  document.getElementById('rt-pr').innerHTML=
-    '<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Selling prices per colour</h3><span style="font-size:11px;color:#888">Admin only</span></div>'+
-    '<div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Sub-category</th><th>Price/bucket</th><th></th></tr></thead><tbody>'+
-    forms.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(f){
-      return'<tr><td><b>'+f.name+'</b></td><td><span class="bdg bgry">'+ptL(f.type)+'</span></td><td>'+f.sub_category+'</td><td><b>'+fmt(f.price||0)+'</b></td>'+
-      '<td><button class="btn btns" onclick="eP('+f.id+')"><i class="ti ti-edit"></i></button></td></tr>';
-    }).join('')+'</tbody></table></div></div>';
-}
-
-async function eP(id){
-  var f=forms.find(function(x){return x.id===id;});if(!f)return;
-  var v=prompt('Price for '+f.name+'\nCurrent: '+fmt(f.price||0)+'\nEnter price per bucket in Rands:');
-  if(v!==null&&v!==''&&!isNaN(v)){f.price=parseFloat(v);await api('PUT','/formulations/'+id,{price:f.price});rPr();}
-}
-
-function oPDF(type){
-  pdfType=type;
-  var opts=[{id:'pdr',l:'Revenue totals',c:true},{id:'pdo',l:'Orders completed',c:true},{id:'pds',l:'Raw material stock',c:true},{id:'pdb',l:'Base stock levels',c:true},{id:'pdp',l:'Packaging stock',c:false}];
-  document.getElementById('pdfo').innerHTML=opts.map(function(o){return'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><input type="checkbox" id="'+o.id+'"'+(o.c?' checked':'')+' style="width:auto"><label for="'+o.id+'" style="cursor:pointer;margin-left:4px">'+o.l+'</label></div>';}).join('');
-  oM('m-pdf');
-}
-
-function xPDF(){
-  var done=orders.filter(function(o){return o.status==='done';});
-  var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);
-  var now=new Date();
-  var iR=document.getElementById('pdr').checked,iO=document.getElementById('pdo').checked,iS=document.getElementById('pds').checked,iB=document.getElementById('pdb').checked,iP=document.getElementById('pdp').checked;
-  var h='<html><head><title>Life Coats Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#333;padding:2rem}h1{color:#5B8FA8;font-size:19px}h2{font-size:14px;margin:1.25rem 0 0.4rem;border-bottom:1px solid #eee;padding-bottom:3px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:5px 7px;font-size:10px;border-bottom:1px solid #ddd;text-transform:uppercase}td{padding:6px 7px;border-bottom:1px solid #eee;font-size:11px}.rv{background:#E8F4F9;padding:0.75rem;border-radius:5px;margin-bottom:0.75rem}.rvv{font-size:22px;font-weight:bold;color:#3a6e87}.ok{color:#3B6D11}.lw{color:#854F0B}.cr{color:#A32D2D}</style></head><body>';
-  h+='<h1>Life Coats — '+pdfType.toUpperCase()+' Report</h1><p style="font-size:11px;color:#666">Generated: '+now.toDateString()+'</p>';
-  if(iR)h+='<div class="rv"><div style="font-size:11px;color:#3a6e87">Estimated revenue</div><div class="rvv">'+fmt(rev)+'</div></div>';
-  if(iO&&done.length)h+='<h2>Orders completed</h2><table><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr>'+done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+'</table>';
-  if(iS)h+='<h2>Raw material stock</h2><table><tr><th>Material</th><th>Stock</th><th>Unit</th><th>Alert</th><th>Status</th></tr>'+mats.map(function(m){var s=stt(m.stock,m.alert_level);return'<tr><td>'+m.name+'</td><td>'+m.stock.toFixed(1)+'</td><td>'+m.unit+'</td><td>'+m.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
-  if(iB)h+='<h2>Base stock</h2><table><tr><th>Base</th><th>Stock (L)</th><th>Alert (L)</th><th>Status</th></tr>'+Object.values(bases).map(function(b){var s=stt(b.stock,b.alert_level);return'<tr><td>'+b.name+'</td><td>'+b.stock+'</td><td>'+b.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
-  if(iP)h+='<h2>Packaging stock</h2><table><tr><th>Item</th><th>Stock</th><th>Alert</th><th>Status</th></tr>'+Object.values(pkgData).map(function(p){var s=stt(p.stock,p.alert_level);return'<tr><td>'+p.name+'</td><td>'+p.stock+'</td><td>'+p.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';
-  h+='</body></html>';
-  var w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(function(){w.print();},500);}
-  cM('m-pdf');
-}
+function sRT(tab,el){PRT=tab;document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['wk','mo','pr'].forEach(function(t){document.getElementById('rt-'+t).style.display=t===tab?'block':'none';});if(tab==='wk')rWk();if(tab==='mo')rMo();if(tab==='pr')rPr();}
+function rWk(){var done=orders.filter(function(o){return o.status==='done';});var bk=done.reduce(function(a,o){return a+o.qty;},0);var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);var lw=mats.filter(function(m){return stt(m.stock,m.alert_level)!=='ok';}).length;var now=new Date();var wk=new Date(now);wk.setDate(now.getDate()-7);document.getElementById('rt-wk').innerHTML='<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+wk.toDateString()+' – '+now.toDateString()+'</p><div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'wk\')"><i class="ti ti-file-text"></i> Export PDF</button></div><div class="rev"><div class="rvl">Est. weekly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div><div class="g3" style="margin-bottom:0.75rem"><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+done.length+'</div><div style="font-size:11px;color:#888">Orders completed</div></div><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+bk+'</div><div style="font-size:11px;color:#888">Buckets produced</div></div><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:'+(lw>0?'#E24B4A':'#5B8FA8')+'">'+lw+'</div><div style="font-size:11px;color:#888">Low stock alerts</div></div></div><div class="card"><h3>Raw material stock</h3><div style="overflow-x:auto"><table><thead><tr><th>Material</th><th>Cat</th><th>Stock</th><th>Alert</th><th>Status</th></tr></thead><tbody>'+mats.map(function(m){return'<tr><td>'+m.name+'</td><td><span class="bdg bgry">'+m.category+'</span></td><td>'+dspStock(m)+'</td><td>'+dspAlert(m)+'</td><td>'+bdg(m.stock,m.alert_level)+'</td></tr>';}).join('')+'</tbody></table></div></div><div class="card"><h3>Manufactured stock</h3><div class="g4">'+Object.values(mfgStock).map(function(m){var col=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';return'<div class="met" style="cursor:default"><div class="ml">'+m.name+'</div><div class="mv" style="color:'+col+'">'+m.stock.toFixed(0)+'L</div><div class="ms">'+(m.stock<=m.alert_level?'Low':'OK')+'</div></div>';}).join('')+'</div></div><div class="card"><h3>Orders completed</h3>'+(done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr></thead><tbody>'+done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+'</tbody></table></div>':'<div class="es">No orders yet</div>')+'</div>';}
+function rMo(){var now=new Date();var ms2=new Date(now.getFullYear(),now.getMonth(),1);var me=new Date(now.getFullYear(),now.getMonth()+1,0);var done=orders.filter(function(o){return o.status==='done';});var bk=done.reduce(function(a,o){return a+o.qty;},0);var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);var byT={};done.forEach(function(o){byT[o.t]=(byT[o.t]||0)+o.qty;});document.getElementById('rt-mo').innerHTML='<p style="font-size:11px;color:#888;margin-bottom:0.75rem">'+ms2.toDateString()+' – '+me.toDateString()+'</p><div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="oPDF(\'mo\')"><i class="ti ti-file-text"></i> Export PDF</button></div><div class="rev"><div class="rvl">Est. monthly revenue</div><div class="rvv">'+fmt(rev)+'</div><div style="font-size:11px;color:#3a6e87;margin-top:2px">'+bk+' buckets · '+done.length+' orders</div></div><div class="card"><h3>Buckets by product type</h3>'+Object.keys(byT).map(function(t){return'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+ptL(t)+'</span><span class="bdg bteal">'+byT[t]+' buckets</span></div>';}).join('')+(Object.keys(byT).length===0?'<div class="es">No orders this month</div>':'')+'</div><div class="card"><h3>Revenue by colour</h3>'+(done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>'+done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null
+;var pr=f&&f.price?f.price:0;return'<tr><td>'+o.n+'</td><td>'+ptL(o.t)+'</td><td>'+o.qty+'</td><td>'+fmt(pr)+'</td><td><b>'+fmt(pr*o.qty)+'</b></td></tr>';}).join('')+'</tbody></table></div>':'<div class="es">No orders this month</div>')+'</div>';}
+function rPr(){document.getElementById('rt-pr').innerHTML='<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Selling prices</h3><span style="font-size:11px;color:#888">Admin only</span></div><div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Sub-category</th><th>Price/bucket</th><th></th></tr></thead><tbody>'+forms.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(f){return'<tr><td><b>'+f.name+'</b></td><td><span class="bdg bgry">'+ptL(f.type)+'</span></td><td>'+f.sub_category+'</td><td><b>'+fmt(f.price||0)+'</b></td><td><button class="btn btns" onclick="eP('+f.id+')"><i class="ti ti-edit"></i></button></td></tr>';}).join('')+'</tbody></table></div></div>';}
+async function eP(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;var v=prompt('Price for '+f.name+'\nCurrent: '+fmt(f.price||0)+'\nRands per bucket:');if(v!==null&&v!==''&&!isNaN(v)){f.price=parseFloat(v);await api('PUT','/formulations/'+id,{price:f.price});rPr();}}
+function oPDF(type){pdfType=type;var opts=[{id:'pdr',l:'Revenue totals',c:true},{id:'pdo',l:'Orders completed',c:true},{id:'pds',l:'Raw material stock',c:true},{id:'pdm',l:'Manufactured stock',c:true},{id:'pdp',l:'Packaging stock',c:false}];document.getElementById('pdfo').innerHTML=opts.map(function(o){return'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><input type="checkbox" id="'+o.id+'"'+(o.c?' checked':'')+' style="width:auto"><label for="'+o.id+'" style="cursor:pointer;margin-left:4px">'+o.l+'</label></div>';}).join('');oM('m-pdf');}
+function xPDF(){var done=orders.filter(function(o){return o.status==='done';});var rev=done.reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);var now=new Date();var iR=document.getElementById('pdr').checked,iO=document.getElementById('pdo').checked,iS=document.getElementById('pds').checked,iM=document.getElementById('pdm').checked,iP=document.getElementById('pdp').checked;var h='<html><head><title>Life Coats Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#333;padding:2rem}h1{color:#5B8FA8;font-size:19px}h2{font-size:14px;margin:1.25rem 0 0.4rem;border-bottom:1px solid #eee;padding-bottom:3px}table{width:100%;border-collapse:collapse}th{text-align:left;padding:5px 7px;font-size:10px;border-bottom:1px solid #ddd;text-transform:uppercase}td{padding:6px 7px;border-bottom:1px solid #eee;font-size:11px}.rv{background:#E8F4F9;padding:0.75rem;border-radius:5px;margin-bottom:0.75rem}.rvv{font-size:22px;font-weight:bold;color:#3a6e87}.ok{color:#3B6D11}.lw{color:#854F0B}.cr{color:#A32D2D}</style></head><body>';h+='<h1>Life Coats — '+pdfType.toUpperCase()+' Report</h1><p style="font-size:11px;color:#666">Generated: '+now.toDateString()+'</p>';if(iR)h+='<div class="rv"><div style="font-size:11px;color:#3a6e87">Estimated revenue</div><div class="rvv">'+fmt(rev)+'</div></div>';if(iO&&done.length)h+='<h2>Orders completed</h2><table><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr>'+done.map(function(o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;var rv=f&&f.price?f.price*o.qty:0;return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+'</table>';if(iS)h+='<h2>Raw material stock</h2><table><tr><th>Material</th><th>Stock</th><th>Alert</th><th>Status</th></tr>'+mats.map(function(m){var s=stt(m.stock,m.alert_level);return'<tr><td>'+m.name+'</td><td>'+dspStock(m)+'</td><td>'+dspAlert(m)+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';if(iM)h+='<h2>Manufactured stock</h2><table><tr><th>Product</th><th>Stock (L)</th><th>Alert (L)</th><th>Status</th></tr>'+Object.values(mfgStock).map(function(m){var s=stt(m.stock,m.alert_level);return'<tr><td>'+m.name+'</td><td>'+m.stock.toFixed(0)+'</td><td>'+m.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';if(iP)h+='<h2>Packaging stock</h2><table><tr><th>Item</th><th>Stock</th><th>Alert</th><th>Status</th></tr>'+Object.values(pkgData).map(function(p){var s=stt(p.stock,p.alert_level);return'<tr><td>'+p.name+'</td><td>'+p.stock+'</td><td>'+p.alert_level+'</td><td class="'+s+'">'+s.toUpperCase()+'</td></tr>';}).join('')+'</table>';h+='</body></html>';var w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(function(){w.print();},500);}cM('m-pdf');}
 
 function oM(id){document.getElementById(id).classList.add('show');}
 function cM(id){document.getElementById(id).classList.remove('show');}
 function cBG(e,id){if(e.target===document.getElementById(id))cM(id);}
 
 loadAll();
-setInterval(function(){
-  if(!TV){var el=document.getElementById('dt');if(el){var n=new Date();el.textContent=n.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}}
-},60000);
+setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n=new Date();el.textContent=n.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}}},60000);
 </script>
 </body>
 </html>
