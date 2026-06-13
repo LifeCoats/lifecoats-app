@@ -993,7 +993,7 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </html>
 
 <!-- =======================================================
-     LIFE COATS DASHBOARD v1.5 AUTOMATIC OVERRIDE BLOCK
+     LIFE COATS DASHBOARD v1.6 AUTOMATIC OVERRIDE BLOCK
      ======================================================= -->
 <style>
     /* Force all dashboard workspace cards to clean uniform white */
@@ -1004,17 +1004,41 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
 
-    /* TV Mode High-Contrast Preset Override */
-    body.tv-mode-active {
-        background: #0f172a !important;
-        color: #f8fafc !important;
+    /* Force Claude's custom Fullscreen/TV view containers to adapt */
+    div[style*="background-color: #1e2538"], 
+    div[style*="background: #1e2538"],
+    .tv-mode-active, 
+    #tvModeContainer {
+        background-color: #0f172a !important; /* Premium Dark High-Contrast for 32" TV */
     }
-    body.tv-mode-active #dc, 
-    body.tv-mode-active .card, 
-    body.tv-mode-active .widget-card {
-        background: #1e293b !important;
-        color: #ffffff !important;
-        border: 1px solid #334155 !important;
+
+    /* Keep alerts list neat and compact */
+    .alert-scroll-box {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    /* Mini Pinning Control Panel styling */
+    .pin-manager-drawer {
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 14px;
+        margin-top: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: none;
+    }
+    .pin-manager-drawer.open {
+        display: block;
+    }
+    .pin-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
     }
 
     /* Giant Flowbin Donut Charts Configuration for 32" TV Monitor */
@@ -1037,10 +1061,6 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         margin-bottom: 20px;
         border: 1px solid #e2e8f0;
     }
-    body.tv-mode-active .preset-toolbar {
-        background: #1e293b;
-        border-color: #334155;
-    }
 
     /* Pulsing Emergency Alert Zone */
     .critical-pulse-alert {
@@ -1051,10 +1071,6 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         margin-bottom: 20px;
         box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
         animation: criticalPulse 2s infinite alternate;
-    }
-    body.tv-mode-active .critical-pulse-alert {
-        background: #7f1d1d;
-        border-color: #f87171;
     }
     @keyframes criticalPulse {
         0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); border-color: #ef4444; }
@@ -1089,6 +1105,12 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
     let pinnedMaterials = JSON.parse(localStorage.getItem('lc_pinned_materials')) || [];
     let pinnedPackaging = JSON.parse(localStorage.getItem('lc_pinned_packaging')) || [];
     let activeGaugeStyle = localStorage.getItem('lc_gauge_style') || 'bar'; 
+
+    // Toggle Pin Drawer Visibility
+    function togglePinDrawer() {
+        const drawer = document.getElementById('pinManagerPanel');
+        if (drawer) drawer.classList.toggle('open');
+    }
 
     // Supabase Presets Integration
     async function saveDashboardPreset(customName) {
@@ -1145,7 +1167,7 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         updateDashboardView();
     }
 
-    // Emergency Stock Level Sweeper
+    // Emergency Stock Level Sweeper (Now Compact and Scrollable)
     function checkEmergencyOverrides() {
         let alertContent = '';
         if (typeof materialsArray !== 'undefined') {
@@ -1162,7 +1184,7 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
                 }
             });
         }
-        return alertContent !== '' ? `<div class="critical-pulse-alert"><h3 style="margin-bottom: 6px; font-size: 15px; color: #b91c1c; display: flex; align-items: center; gap: 8px;">🚨 EMERGENCY STOCK OVERRIDE ACTIVE</h3>${alertContent}</div>` : '';
+        return alertContent !== '' ? `<div class="critical-pulse-alert"><h3 style="margin-bottom: 6px; font-size: 15px; color: #b91c1c; display: flex; align-items: center; gap: 8px;">🚨 EMERGENCY STOCK OVERRIDE ACTIVE</h3><div class="alert-scroll-box">${alertContent}</div></div>` : '';
     }
 
     // Dynamic Gauge Rendering Engine
@@ -1203,14 +1225,6 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         }
     }
 
-    // Pinning Hook Triggers
-    function generateStarMarkup(id, isPackagingElement = false) {
-        const isCurrentlyPinned = isPackagingElement ? pinnedPackaging.includes(id) : pinnedMaterials.includes(id);
-        return `<span onclick="executePinToggle('${id}', ${isPackagingElement})" style="cursor: pointer; font-size: 18px; margin-right: 8px; color: ${isCurrentlyPinned ? '#f59e0b' : '#cbd5e1'};">
-            ${isCurrentlyPinned ? '★' : '☆'}
-        </span>`;
-    }
-
     function executePinToggle(id, isPackagingElement) {
         if (isPackagingElement) {
             pinnedPackaging = pinnedPackaging.includes(id) ? pinnedPackaging.filter(x => x !== id) : [...pinnedPackaging, id];
@@ -1219,9 +1233,10 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
             pinnedMaterials = pinnedMaterials.includes(id) ? pinnedMaterials.filter(x => x !== id) : [...pinnedMaterials, id];
             localStorage.setItem('lc_pinned_materials', JSON.stringify(pinnedMaterials));
         }
-        if (typeof renderMaterials === 'function') renderMaterials();
-        if (typeof renderPackaging === 'function') renderPackaging();
         updateDashboardView();
+        // Keep drawer open when interacting
+        const drawer = document.getElementById('pinManagerPanel');
+        if (drawer) drawer.classList.add('open');
     }
 
     // Main Workspace Engine Injection
@@ -1229,15 +1244,39 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
         const container = document.getElementById('dc');
         if (!container) return;
 
+        // Build list for the Pinning Selector Panel
+        let materialRows = '';
+        if (typeof materialsArray !== 'undefined') {
+            materialsArray.forEach(m => {
+                const isPinned = pinnedMaterials.includes(m.id || m.name);
+                materialRows += `<div class="pin-item-row"><span>💧 ${m.name}</span><button onclick="executePinToggle('${m.id || m.name}', false)" style="background:none; border:none; cursor:pointer; font-size:16px; color:${isPinned?'#f59e0b':'#cbd5e1'};">${isPinned?'★':'☆'}</button></div>`;
+            });
+        }
+        let packagingRows = '';
+        if (typeof packagingData !== 'undefined') {
+            Object.values(packagingData).forEach(p => {
+                const isPinned = pinnedPackaging.includes(p.id || p.name);
+                packagingRows += `<div class="pin-item-row"><span>📦 ${p.name}</span><button onclick="executePinToggle('${p.id || p.name}', true)" style="background:none; border:none; cursor:pointer; font-size:16px; color:${isPinned?'#f59e0b':'#cbd5e1'};">${isPinned?'★':'☆'}</button></div>`;
+            });
+        }
+
         let toolbarHTML = `
             <div class="preset-toolbar">
                 <div style="font-weight: 600; color: #475569; font-size: 13px;">📊 WORKSPACE PRESETS:</div>
                 <select id="presetDropdown" onchange="applySavedPreset(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; background: white; max-width: 200px;"></select>
                 <button onclick="saveDashboardPreset()" style="padding: 6px 12px; background: #5B8FA8; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">Save Layout</button>
+                <button onclick="togglePinDrawer()" style="padding: 6px 12px; background: #475569; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">✨ Pin Items</button>
                 <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
                     <span style="font-size: 12px; font-weight: 500; color: #64748b;">Gauge Style:</span>
                     <button onclick="activeGaugeStyle='bar'; localStorage.setItem('lc_gauge_style','bar'); updateDashboardView();" style="padding: 4px 10px; background: ${activeGaugeStyle==='bar'?'#475569':'#e2e8f0'}; color: ${activeGaugeStyle==='bar'?'white':'#475569'}; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Bars</button>
                     <button onclick="activeGaugeStyle='ring'; localStorage.setItem('lc_gauge_style','ring'); updateDashboardView();" style="padding: 4px 10px; background: ${activeGaugeStyle==='ring'?'#475569':'#e2e8f0'}; color: ${activeGaugeStyle==='ring'?'white':'#475569'}; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Rings</button>
+                </div>
+            </div>
+            <div id="pinManagerPanel" class="pin-manager-drawer">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px; color:#1e293b;">Select High-Velocity Stock to Pin:</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div><strong>Raw Materials</strong>${materialRows || '<p style="color:#94a3b8; font-size:12px;">None loaded</p>'}</div>
+                    <div><strong>Packaging</strong>${packagingRows || '<p style="color:#94a3b8; font-size:12px;">None loaded</p>'}</div>
                 </div>
             </div>
         `;
@@ -1263,7 +1302,7 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
             });
         }
         if (!hasPinnedItems) {
-            pinnedStockHTML += '<p style="color: #94a3b8; font-size: 13px;">No stock items pinned yet. Go to Raw Materials or Packaging tables and click the star outline (☆) to pin them here.</p>';
+            pinnedStockHTML += '<p style="color: #94a3b8; font-size: 13px;">No stock items pinned yet. Click "✨ Pin Items" above to add high-velocity stock tracks.</p>';
         }
         pinnedStockHTML += '</div></div>';
 
