@@ -67,6 +67,16 @@ app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
   res.json(data);
 });
 
+// TV SETTINGS
+app.get('/api/tv-settings', auth, async (req, res) => {
+  const { data } = await supabase.from('tv_settings').select('*').eq('setting_key','main').single();
+  res.json(data || { selected_items: [] });
+});
+app.put('/api/tv-settings', auth, async (req, res) => {
+  const { data } = await supabase.from('tv_settings').upsert({ setting_key:'main', selected_items: req.body.selected_items, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' }).select().single();
+  res.json(data);
+});
+
 // MANUFACTURED STOCK
 app.get('/api/manufactured-stock', auth, async (req, res) => {
   const { data } = await supabase.from('manufactured_stock').select('*').order('id');
