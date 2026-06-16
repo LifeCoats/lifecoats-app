@@ -769,8 +769,10 @@ function tCP(){var p=document.getElementById('cp');p.style.display=p.style.displ
 function tW(k){WS[k]=!WS[k];var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);rDash();}
 function loadPreset(v){if(!v)return;var pr={stock:{al:true,me:true,rv:false,st:true,ms:true,or:false,pk:true},prod:{al:true,me:true,rv:true,st:false,ms:true,or:true,pk:false},full:{al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true}};if(pr[v]){Object.assign(WS,pr[v]);Object.keys(WS).forEach(function(k){var el=document.getElementById('wt-'+k);if(el)el.classList.toggle('on',WS[k]);});rDash();}}
 
-// ============ TV MODE V3 ============
-var tvSettings={selected_items:[]};
+// ============================================================
+// TV MODE V4 — Groups + Flowbin fix + Universal split x2
+// ============================================================
+var tvSettings={selected_items:[],groups:[]};
 
 function allTVItems(){
   var items=[];
@@ -783,187 +785,393 @@ function findTVItem(key){return allTVItems().find(function(i){return i.key===key
 
 async function loadTVSettings(){
   var res=await api('GET','/tv-settings');
-  tvSettings.selected_items=(res&&res.selected_items)||[];
+  if(res){
+    tvSettings.selected_items=(res.selected_items)||[];
+    tvSettings.groups=(res.groups)||[];
+  }
 }
 
+// ---- SETTINGS PANEL ----
 function oTVSettings(){
-  var all=allTVItems();
-  var selMap={};tvSettings.selected_items.forEach(function(s,i){selMap[s.key]=Object.assign({order:i},s);});
-  var byCat={};all.forEach(function(it){if(!byCat[it.cat])byCat[it.cat]=[];byCat[it.cat].push(it);});
-  var h='';
-  Object.keys(byCat).forEach(function(cat){
-    h+='<div style="font-size:11px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.05em;margin:10px 0 5px">'+cat+'</div>';
-    byCat[cat].forEach(function(it){
-      var sel=selMap[it.key];
-      var checked=sel?'checked':'';
-      var style=sel?sel.style:'bar';
-      var size=sel?sel.size:'medium';
-      var split=sel&&sel.split?'checked':'';
-      h+='<div class="tvset-row" data-key="'+it.key+'" style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px">';
-      h+='<input type="checkbox" class="tvset-chk" '+checked+' style="width:auto">';
-      h+='<span style="flex:1">'+it.label+'</span>';
-      h+='<select class="tvset-style" style="font-size:11px;padding:3px 6px;border-radius:6px;border:0.5px solid #ddd">';
-      ['bar','donut','number','tank'].forEach(function(s){h+='<option value="'+s+'"'+(style===s?' selected':'')+'>'+({bar:'Bar',donut:'Donut',number:'Number Card',tank:'Tank'}[s])+'</option>';});
-      h+='</select>';
-      h+='<select class="tvset-size" style="font-size:11px;padding:3px 6px;border-radius:6px;border:0.5px solid #ddd">';
-      ['small','medium','large'].forEach(function(s){h+='<option value="'+s+'"'+(size===s?' selected':'')+'>'+(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';});
-      h+='</select>';
-      h+='<label style="display:flex;align-items:center;gap:3px;font-size:11px;color:#888;white-space:nowrap"><input type="checkbox" class="tvset-split" '+split+' style="width:auto"> Split x2</label>';
-      h+='<button class="btn btns" onclick="moveTVItem(this,-1)" title="Move up"><i class="ti ti-chevron-up"></i></button>';
-      h+='<button class="btn btns" onclick="moveTVItem(this,1)" title="Move down"><i class="ti ti-chevron-down"></i></button>';
-      h+='</div>';
-    });
-  });
-  document.getElementById('tvset-list').innerHTML=h;
+  renderTVSettingsPanel();
   oM('m-tvset');
 }
 
-function moveTVItem(btn,dir){
-  var row=btn.closest('.tvset-row');
-  if(dir<0){var prev=row.previousElementSibling;if(prev&&prev.classList.contains('tvset-row'))row.parentNode.insertBefore(row,prev);}
-  else{var next=row.nextElementSibling;if(next){row.parentNode.insertBefore(next,row);}}
+function renderTVSettingsPanel(){
+  var all=allTVItems();
+  var selMap={};
+  tvSettings.selected_items.forEach(function(s){selMap[s.key]=s;});
+
+  // Build group name list for the assign dropdown
+  var groupOpts='<option value="">No group</option>';
+  tvSettings.groups.forEach(function(g){groupOpts+='<option value="'+g.id+'">'+g.name+'</option>';});
+
+  var h='';
+
+  // Groups header + add group button
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+  h+='<span style="font-size:12px;font-weight:500;color:#444">Groups</span>';
+  h+='<button class="btn btns btnp" onclick="addTVGroup()"><i class="ti ti-plus"></i> Add group</button>';
+  h+='</div>';
+
+  // Render groups
+  tvSettings.groups.forEach(function(g,gi){
+    h+='<div class="tvset-group" data-gid="'+g.id+'" style="background:#E8F4F9;border-radius:8px;padding:8px;margin-bottom:8px">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+    h+='<span style="font-size:13px;font-weight:500;color:#3a6e87;flex:1">'+g.name+'</span>';
+    h+='<button class="btn btns" onclick="moveTVGroup('+gi+',-1)"><i class="ti ti-chevron-up"></i></button>';
+    h+='<button class="btn btns" onclick="moveTVGroup('+gi+',1)"><i class="ti ti-chevron-down"></i></button>';
+    h+='<button class="btn btns btnd" onclick="removeTVGroup(\''+g.id+'\')"><i class="ti ti-trash"></i></button>';
+    h+='</div>';
+    // Items in this group
+    var groupItems=tvSettings.selected_items.filter(function(s){return s.group_id===g.id;});
+    if(groupItems.length){
+      groupItems.forEach(function(s,si){
+        var item=findTVItem(s.key);
+        if(!item)return;
+        h+=tvSetRow(s,item,groupOpts,true,g.id,si,groupItems.length);
+      });
+    }else{
+      h+='<div style="font-size:11px;color:#888;padding:4px 0">No items in this group yet. Tick items below and click Add to group.</div>';
+    }
+    h+='</div>';
+  });
+
+  // Ungrouped items by category
+  h+='<div style="font-size:12px;font-weight:500;color:#444;margin:10px 0 6px">Ungrouped items</div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px;background:#f8f9fa;border-radius:8px">';
+  h+='<span style="font-size:12px;color:#666;flex:1">Tick items below then:</span>';
+  h+='<select id="tvset-assign-group" style="font-size:12px;padding:4px 8px;border-radius:6px;border:0.5px solid #ddd">'+groupOpts+'</select>';
+  h+='<button class="btn btns btnp" onclick="assignToGroup()"><i class="ti ti-corner-down-right"></i> Add to group</button>';
+  h+='</div>';
+
+  var byCat={};
+  all.forEach(function(it){
+    // Only show items that are either ungrouped or not yet selected
+    var sel=selMap[it.key];
+    var inGroup=sel&&sel.group_id;
+    if(inGroup)return; // already shown in group above
+    if(!byCat[it.cat])byCat[it.cat]=[];
+    byCat[it.cat].push(it);
+  });
+
+  Object.keys(byCat).forEach(function(cat){
+    h+='<div style="font-size:11px;font-weight:500;color:#5B8FA8;text-transform:uppercase;letter-spacing:0.05em;margin:8px 0 4px">'+cat+'</div>';
+    byCat[cat].forEach(function(it){
+      var sel=selMap[it.key]||{};
+      h+=tvSetRow(sel,it,groupOpts,false,null,0,0);
+    });
+  });
+
+  document.getElementById('tvset-list').innerHTML=h;
 }
 
-async function saveTVSettings(){
+function tvSetRow(sel,item,groupOpts,inGroup,groupId,idx,total){
+  var checked=sel&&sel.key?'checked':'';
+  var style=sel.style||'bar';
+  var size=sel.size||'medium';
+  var split=sel.split?'checked':'';
+  var cap=sel.capacity||1000;
+  var key=item?item.key:(sel.key||'');
+  var label=item?item.label:(sel.label||sel.key||'');
+
+  var h='<div class="tvset-row" data-key="'+key+'" style="display:flex;align-items:center;gap:6px;padding:5px '+(inGroup?'4px':'0px')+';border-bottom:0.5px solid #e0e0e0;font-size:12px;flex-wrap:wrap">';
+  if(!inGroup)h+='<input type="checkbox" class="tvset-chk" '+checked+' style="width:auto">';
+  h+='<span style="min-width:120px;flex:1">'+label+'</span>';
+  h+='<select class="tvset-style" style="font-size:11px;padding:3px 6px;border-radius:6px;border:0.5px solid #ddd">';
+  ['bar','donut','number','tank'].forEach(function(s){h+='<option value="'+s+'"'+(style===s?' selected':'')+'>'+({bar:'Bar',donut:'Donut',number:'Number Card',tank:'Tank'}[s])+'</option>';});
+  h+='</select>';
+  h+='<select class="tvset-size" style="font-size:11px;padding:3px 6px;border-radius:6px;border:0.5px solid #ddd">';
+  ['small','medium','large'].forEach(function(s){h+='<option value="'+s+'"'+(size===s?' selected':'')+'>'+(s.charAt(0).toUpperCase()+s.slice(1))+'</option>';});
+  h+='</select>';
+  h+='<label style="display:flex;align-items:center;gap:3px;font-size:11px;color:#888;white-space:nowrap"><input type="checkbox" class="tvset-split" '+split+' onchange="toggleCapField(this)" style="width:auto"> x2</label>';
+  h+='<input type="number" class="tvset-cap" value="'+cap+'" placeholder="Cap/unit" style="width:70px;font-size:11px;padding:3px 6px;border-radius:6px;border:0.5px solid #ddd;display:'+(sel.split?'block':'none')+'" title="Capacity per unit (L)">';
+  if(inGroup){
+    h+='<button class="btn btns" onclick="moveTVGroupItem(\''+groupId+'\','+idx+',-1)"><i class="ti ti-chevron-up"></i></button>';
+    h+='<button class="btn btns" onclick="moveTVGroupItem(\''+groupId+'\','+idx+',1)"><i class="ti ti-chevron-down"></i></button>';
+    h+='<button class="btn btns btnd" onclick="removeFromGroup(\''+key+'\')"><i class="ti ti-x"></i></button>';
+  }else{
+    h+='<button class="btn btns" onclick="moveUngroupedItem(this,-1)"><i class="ti ti-chevron-up"></i></button>';
+    h+='<button class="btn btns" onclick="moveUngroupedItem(this,1)"><i class="ti ti-chevron-down"></i></button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function toggleCapField(cb){
+  var row=cb.closest('.tvset-row');
+  var capField=row.querySelector('.tvset-cap');
+  if(capField)capField.style.display=cb.checked?'block':'none';
+}
+
+function moveUngroupedItem(btn,dir){
+  var row=btn.closest('.tvset-row');
+  if(dir<0){var prev=row.previousElementSibling;if(prev&&prev.classList.contains('tvset-row'))row.parentNode.insertBefore(row,prev);}
+  else{var next=row.nextElementSibling;if(next&&next.classList.contains('tvset-row')){row.parentNode.insertBefore(next,row);}}
+}
+
+function moveTVGroup(idx,dir){
+  var ni=idx+dir;
+  if(ni<0||ni>=tvSettings.groups.length)return;
+  var tmp=tvSettings.groups[idx];tvSettings.groups[idx]=tvSettings.groups[ni];tvSettings.groups[ni]=tmp;
+  renderTVSettingsPanel();
+}
+
+function moveTVGroupItem(groupId,idx,dir){
+  var items=tvSettings.selected_items.filter(function(s){return s.group_id===groupId;});
+  var ni=idx+dir;if(ni<0||ni>=items.length)return;
+  var tmp=items[idx];items[idx]=items[ni];items[ni]=tmp;
+  // Reorder in main array
+  var others=tvSettings.selected_items.filter(function(s){return s.group_id!==groupId;});
+  tvSettings.selected_items=others.concat(items);
+  renderTVSettingsPanel();
+}
+
+function addTVGroup(){
+  var name=window.prompt('Enter group name:');
+  if(!name||!name.trim())return;
+  var id='grp_'+Date.now();
+  tvSettings.groups.push({id:id,name:name.trim()});
+  renderTVSettingsPanel();
+}
+
+function removeTVGroup(gid){
+  if(!confirm('Remove this group? Items will move back to ungrouped.'))return;
+  tvSettings.groups=tvSettings.groups.filter(function(g){return g.id!==gid;});
+  tvSettings.selected_items.forEach(function(s){if(s.group_id===gid)delete s.group_id;});
+  renderTVSettingsPanel();
+}
+
+function removeFromGroup(key){
+  var item=tvSettings.selected_items.find(function(s){return s.key===key;});
+  if(item)delete item.group_id;
+  renderTVSettingsPanel();
+}
+
+function assignToGroup(){
+  var gid=document.getElementById('tvset-assign-group').value;
+  if(!gid){window.alert('Select a group first');return;}
   var rows=document.querySelectorAll('.tvset-row');
-  var selected=[];
+  var added=0;
   rows.forEach(function(row){
     var chk=row.querySelector('.tvset-chk');
     if(chk&&chk.checked){
-      selected.push({
-        key:row.getAttribute('data-key'),
+      var key=row.getAttribute('data-key');
+      var existing=tvSettings.selected_items.find(function(s){return s.key===key;});
+      if(existing){existing.group_id=gid;}
+      else{
+        var item=findTVItem(key);
+        if(item)tvSettings.selected_items.push({key:key,label:item.label,style:'bar',size:'medium',split:false,capacity:1000,group_id:gid});
+      }
+      added++;
+    }
+  });
+  if(added===0){window.alert('Tick at least one item first');return;}
+  renderTVSettingsPanel();
+}
+
+function collectTVSettings(){
+  // Collect ungrouped rows from the panel
+  var rows=document.querySelectorAll('#tvset-list .tvset-row');
+  var ungroupedSel=[];
+  rows.forEach(function(row){
+    // Only process rows that have a checkbox (ungrouped items have one)
+    var chk=row.querySelector('.tvset-chk');
+    if(!chk)return;
+    var key=row.getAttribute('data-key');
+    if(!key)return;
+    var already=tvSettings.selected_items.find(function(s){return s.key===key&&s.group_id;});
+    if(already)return; // skip grouped items
+    if(chk.checked){
+      var item=findTVItem(key);
+      ungroupedSel.push({
+        key:key,label:item?item.label:key,
         style:row.querySelector('.tvset-style').value,
         size:row.querySelector('.tvset-size').value,
-        split:row.querySelector('.tvset-split').checked
+        split:row.querySelector('.tvset-split').checked,
+        capacity:parseFloat(row.querySelector('.tvset-cap').value)||1000
       });
     }
   });
-  tvSettings.selected_items=selected;
-  await api('PUT','/tv-settings',{selected_items:selected});
+  // Update grouped items' style/size/split/cap from the panel
+  var groupRows=document.querySelectorAll('.tvset-group .tvset-row');
+  groupRows.forEach(function(row){
+    var key=row.getAttribute('data-key');
+    var item=tvSettings.selected_items.find(function(s){return s.key===key;});
+    if(!item)return;
+    var styleEl=row.querySelector('.tvset-style');
+    var sizeEl=row.querySelector('.tvset-size');
+    var splitEl=row.querySelector('.tvset-split');
+    var capEl=row.querySelector('.tvset-cap');
+    if(styleEl)item.style=styleEl.value;
+    if(sizeEl)item.size=sizeEl.value;
+    if(splitEl)item.split=splitEl.checked;
+    if(capEl)item.capacity=parseFloat(capEl.value)||1000;
+  });
+  // Merge: grouped first (preserve order), then ungrouped
+  var grouped=tvSettings.selected_items.filter(function(s){return s.group_id;});
+  return grouped.concat(ungroupedSel);
+}
+
+async function saveTVSettings(){
+  tvSettings.selected_items=collectTVSettings();
+  await api('PUT','/tv-settings',{selected_items:tvSettings.selected_items,groups:tvSettings.groups});
   cM('m-tvset');
   if(TV)renderTV();
 }
 
-// Render a single style at a given pixel size — returns inner HTML (no card wrapper)
+// ---- RENDERING ----
 function tvStylePiece(val,max,alert2,unit,style,px){
   var isLow=val<=alert2;
   var col=isLow?(val<=alert2*0.5?'#E24B4A':'#EF9F27'):'#5B8FA8';
   if(style==='number'){
-    return'<div style="font-size:'+(px*0.22)+'px;font-weight:600;color:'+col+';text-align:center">'+val.toFixed(unit==='L'||unit==='kg'?0:0)+' '+unit+'</div>';
-  }
+    return'<div style="font-size:'+(px*0.22)+'px;font-weight:600;color:'+col+';text-align:center;padding:4px">'+val.toFixed(0)+' '+unit+'</div>';}
   if(style==='donut'){
-    var pctV=Math.min(100,Math.max(0,(val/Math.max(max,1))*100));
-    var r=40,circ=2*Math.PI*r,dash=pctV/100*circ;
+    var pct=Math.min(100,Math.max(0,(val/Math.max(max,1))*100));
+    var r=40,circ=2*Math.PI*r,dash=pct/100*circ;
     return'<svg width="'+px+'" height="'+px+'" viewBox="0 0 100 100">'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="#f0f0f0" stroke-width="14"/>'+
       '<circle cx="50" cy="50" r="40" fill="none" stroke="'+col+'" stroke-width="14" stroke-dasharray="'+dash+' '+circ+'" stroke-dashoffset="'+(circ/4)+'" stroke-linecap="round"/>'+
       '<text x="50" y="55" text-anchor="middle" fill="#1a1a1a" font-size="15" font-weight="bold">'+val.toFixed(0)+'</text>'+
-      '</svg>';
-  }
+      '</svg>';}
   if(style==='tank'){
-    var pctV2=Math.min(100,Math.max(0,(val/Math.max(max,1))*100));
-    return'<div style="text-align:center"><div style="width:'+(px*0.45)+'px;height:'+px+'px;border:3px solid #ddd;border-radius:8px;margin:0 auto;position:relative;overflow:hidden;background:#f8f9fa">'+
-      '<div style="position:absolute;bottom:0;left:0;right:0;background:'+col+';height:'+pctV2+'%;transition:height 0.4s"></div>'+
+    var pct2=Math.min(100,Math.max(0,(val/Math.max(max,1))*100));
+    return'<div style="text-align:center">'+
+      '<div style="width:'+(px*0.5)+'px;height:'+px+'px;border:3px solid #ddd;border-radius:8px;margin:0 auto;position:relative;overflow:hidden;background:#f8f9fa">'+
+      '<div style="position:absolute;bottom:0;left:0;right:0;background:'+col+';height:'+pct2+'%"></div>'+
       '</div>'+
       '<div style="font-size:'+(px*0.13)+'px;font-weight:600;margin-top:4px;color:'+col+'">'+val.toFixed(0)+' '+unit+'</div>'+
-      '</div>';
-  }
+      '</div>';}
   // bar
-  var pctV3=Math.min(100,Math.round((val/Math.max(alert2*3,1))*100));
-  return'<div style="width:100%"><div style="height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;margin-bottom:5px">'+
-    '<div style="height:100%;width:'+pctV3+'%;background:'+col+';border-radius:7px"></div></div>'+
-    '<div style="font-size:'+(px*0.14)+'px;font-weight:600;color:'+col+'">'+val.toFixed(0)+' '+unit+'</div>'+
+  var pct3=Math.min(100,Math.round((val/Math.max(alert2*3,1))*100));
+  return'<div style="width:100%">'+
+    '<div style="height:12px;background:#f0f0f0;border-radius:6px;overflow:hidden;margin-bottom:4px">'+
+    '<div style="height:100%;width:'+pct3+'%;background:'+col+';border-radius:6px"></div></div>'+
+    '<div style="font-size:'+(px*0.13)+'px;font-weight:600;color:'+col+'">'+val.toFixed(0)+' '+unit+'</div>'+
     '</div>';
 }
 
-// Render a full tile (card + label + 1 or 2 pieces)
-function tvTile(item,style,size,split){
+function tvTile(item,style,size,split,capacity){
   var val=item.getVal(),max=item.getMax(),alert2=item.getAlert(),unit=item.getUnit();
   var isLow=item.low();
-  var sizeMap={small:{px:60,span:1,lfs:13},medium:{px:85,span:1,lfs:15},large:{px:115,span:2,lfs:17}};
+  var sizeMap={small:{px:60,span:1,lfs:12},medium:{px:85,span:1,lfs:14},large:{px:115,span:2,lfs:16}};
   var sc=sizeMap[size]||sizeMap.medium;
-
   var inner;
   if(split){
-    var half=max/2;
-    var v1=Math.min(val,half),v2=Math.max(0,val-half);
-    var a1=Math.min(alert2,half),a2=Math.max(0,alert2-half)||a1;
+    var cap=capacity||1000;
+    // Tank 1 fills first to cap, then Tank 2 starts
+    var v1=Math.min(val,cap);
+    var v2=Math.max(0,val-cap);
     inner='<div style="display:flex;gap:10px;justify-content:center;align-items:flex-end">'+
-      tvStylePiece(v1,half,a1,unit,style,sc.px)+
-      tvStylePiece(v2,half,a2,unit,style,sc.px)+
+      '<div>'+tvStylePiece(v1,cap,alert2,unit,style,sc.px)+'<div style="font-size:10px;color:#888;text-align:center;margin-top:2px">Unit 1</div></div>'+
+      '<div>'+tvStylePiece(v2,cap,alert2,unit,style,sc.px)+'<div style="font-size:10px;color:#888;text-align:center;margin-top:2px">Unit 2</div></div>'+
       '</div>';
   }else{
     inner='<div style="display:flex;justify-content:center">'+tvStylePiece(val,max,alert2,unit,style,sc.px)+'</div>';
   }
+  return'<div class="card" style="grid-column:span '+(split?Math.max(sc.span,2):sc.span)+';padding:0.65rem;text-align:center'+(isLow?';border-color:#E24B4A;border-width:2px':'')+'">'+
+    '<div style="font-size:'+sc.lfs+'px;font-weight:500;color:#333;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+item.label+'">'+item.label+'</div>'+
+    inner+'</div>';
+}
 
-  return'<div class="card" style="grid-column:span '+(split?Math.max(sc.span,2):sc.span)+';padding:0.7rem;text-align:center'+(isLow?';border-color:#E24B4A':'')+'">'+
-    '<div style="font-size:'+sc.lfs+'px;font-weight:500;color:#333;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.label+'</div>'+
-    inner+
-    '</div>';
+function tvGroupTile(group,items){
+  if(!items.length)return'';
+  var h='<div class="card" style="grid-column:span 6;padding:0.75rem">';
+  h+='<div style="font-size:13px;font-weight:600;color:#5B8FA8;margin-bottom:8px;border-bottom:0.5px solid #e0e0e0;padding-bottom:5px">'+group.name+'</div>';
+  h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">';
+  items.forEach(function(sel){
+    var item=findTVItem(sel.key);
+    if(!item)return;
+    var val=item.getVal(),max=item.getMax(),alert2=item.getAlert(),unit=item.getUnit();
+    var isLow=item.low();
+    var sizeMap={small:{px:55,lfs:11},medium:{px:75,lfs:13},large:{px:100,lfs:15}};
+    var sc=sizeMap[sel.size||'medium']||sizeMap.medium;
+    var col=isLow?(val<=alert2*0.5?'#E24B4A':'#EF9F27'):'#5B8FA8';
+    h+='<div style="text-align:center;min-width:'+(sc.px+20)+'px'+(isLow?';background:#FCEBEB;border-radius:8px;padding:4px':'')+'">'+
+      '<div style="font-size:'+sc.lfs+'px;font-weight:500;color:#444;margin-bottom:5px;white-space:nowrap">'+item.label+'</div>';
+    if(sel.split){
+      var cap=sel.capacity||1000;
+      var v1=Math.min(val,cap),v2=Math.max(0,val-cap);
+      h+='<div style="display:flex;gap:6px;justify-content:center;align-items:flex-end">'+
+        '<div>'+tvStylePiece(v1,cap,alert2,unit,sel.style||'bar',sc.px)+'<div style="font-size:9px;color:#888">Unit 1</div></div>'+
+        '<div>'+tvStylePiece(v2,cap,alert2,unit,sel.style||'bar',sc.px)+'<div style="font-size:9px;color:#888">Unit 2</div></div>'+
+        '</div>';
+    }else{
+      h+=tvStylePiece(val,max,alert2,unit,sel.style||'bar',sc.px);
+    }
+    h+='</div>';
+  });
+  h+='</div></div>';
+  return h;
 }
 
 function tTV(){
   TV=!TV;
   document.getElementById('app').style.display=TV?'none':'flex';
-  var existing=document.getElementById('tv-fullscreen');
+  var ex=document.getElementById('tv-fullscreen');
   if(TV){
-    if(!existing){
-      var div=document.createElement('div');
-      div.id='tv-fullscreen';
-      div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f4f7;overflow-y:auto;padding:1rem;z-index:50';
-      document.body.appendChild(div);
-    }
+    if(!ex){var div=document.createElement('div');div.id='tv-fullscreen';div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f4f7;overflow-y:auto;padding:1rem;z-index:50';document.body.appendChild(div);}
     renderTV();
   }else{
-    if(existing)existing.remove();
+    if(ex)ex.remove();
   }
 }
 
 function renderTV(){
-  var container=document.getElementById('tv-fullscreen');
-  if(!container)return;
+  var container=document.getElementById('tv-fullscreen');if(!container)return;
   var done=orders.filter(function(o){return o.status==='done';});
   var active=orders.filter(function(o){return o.status==='pending';});
-
   var allItems=allTVItems();
   var lowItems=allItems.filter(function(i){return i.low();});
-  var ticker=lowItems.map(function(i){return '⚠ '+i.label+': '+i.dsp()+' left';}).join('   ·   ');
+  var ticker=lowItems.map(function(i){return'⚠ '+i.label+': '+i.dsp()+' left';}).join('   ·   ');
 
   var h='';
   h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">';
   h+='<div style="display:flex;align-items:center;gap:8px"><span class="blink"></span><span style="font-size:15px;font-weight:500;color:#5B8FA8">Life Coats — Production Dashboard</span><span style="font-size:11px;color:#888">'+new Date().toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'})+'</span></div>';
-  h+='<div style="display:flex;align-items:center;gap:8px">';
-  h+='<button class="btn btns" onclick="oTVSettings()"><i class="ti ti-settings"></i> Customise</button>';
-  h+='<button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-x"></i> Exit TV</button>';
-  h+='</div></div>';
+  h+='<div style="display:flex;gap:8px"><button class="btn btns" onclick="oTVSettings()"><i class="ti ti-settings"></i> Customise</button><button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-x"></i> Exit TV</button></div>';
+  h+='</div>';
 
   if(lowItems.length)h+='<div class="al" style="white-space:nowrap;overflow:hidden;margin-bottom:0.75rem"><i class="ti ti-alert-triangle"></i><marquee>'+ticker+'</marquee></div>';
 
   h+='<div class="g3" style="margin-bottom:0.75rem">';
-  h+='<div class="rev"><div class="rvl"><i class="ti ti-cash"></i> Cash revenue</div><div class="rvv">'+fmt(cashRev())+'</div></div>';
-  h+='<div class="rev"><div class="rvl"><i class="ti ti-credit-card"></i> Card / EFT revenue</div><div class="rvv">'+fmt(cardRev())+'</div></div>';
-  h+='<div class="rev"><div class="rvl"><i class="ti ti-currency-dollar"></i> Total revenue</div><div class="rvv">'+fmt(todayRev())+'</div></div>';
+  h+='<div class="rev"><div class="rvl"><i class="ti ti-cash"></i> Cash</div><div class="rvv" style="font-size:22px">'+fmt(cashRev())+'</div></div>';
+  h+='<div class="rev"><div class="rvl"><i class="ti ti-credit-card"></i> Card / EFT</div><div class="rvv" style="font-size:22px">'+fmt(cardRev())+'</div></div>';
+  h+='<div class="rev"><div class="rvl"><i class="ti ti-currency-dollar"></i> Total revenue</div><div class="rvv" style="font-size:22px">'+fmt(todayRev())+'</div></div>';
   h+='</div>';
 
   h+='<div class="g4" style="margin-bottom:0.75rem">';
   h+='<div class="met" style="cursor:default"><div class="ml">Active orders</div><div class="mv" style="color:#378ADD">'+active.length+'</div></div>';
   h+='<div class="met" style="cursor:default"><div class="ml">Completed today</div><div class="mv" style="color:#5B8FA8">'+done.length+'</div></div>';
   h+='<div class="met" style="cursor:default"><div class="ml">Stock alerts</div><div class="mv" style="color:'+(lowItems.length>0?'#E24B4A':'#5B8FA8')+'">'+lowItems.length+'</div></div>';
-  h+='<div class="met" style="cursor:default"><div class="ml">Manufactured products</div><div class="mv" style="color:#7F77DD">'+Object.values(mfgStock).length+'</div></div>';
+  h+='<div class="met" style="cursor:default"><div class="ml">Manufactured</div><div class="mv" style="color:#7F77DD">'+Object.values(mfgStock).length+'</div></div>';
   h+='</div>';
 
-  if(tvSettings.selected_items.length){
+  if(!tvSettings.selected_items.length&&!tvSettings.groups.length){
+    h+='<div class="card es">No items selected. Click Customise to set up your TV dashboard.</div>';
+  }else{
     h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:0.75rem">';
-    tvSettings.selected_items.forEach(function(sel){
+    // Render groups first in their saved order
+    var renderedGroups={};
+    // Build a render order: walk selected_items and groups in order
+    // Groups appear when first encountered
+    var groupOrder=tvSettings.groups.map(function(g){return g.id;});
+    groupOrder.forEach(function(gid){
+      if(renderedGroups[gid])return;
+      renderedGroups[gid]=true;
+      var grp=tvSettings.groups.find(function(g){return g.id===gid;});
+      if(!grp)return;
+      var gItems=tvSettings.selected_items.filter(function(s){return s.group_id===gid;});
+      h+=tvGroupTile(grp,gItems);
+    });
+    // Ungrouped items
+    tvSettings.selected_items.filter(function(s){return !s.group_id;}).forEach(function(sel){
       var item=findTVItem(sel.key);
-      if(item)h+=tvTile(item,sel.style||'bar',sel.size||'medium',sel.split||false);
+      if(item)h+=tvTile(item,sel.style||'bar',sel.size||'medium',sel.split||false,sel.capacity||1000);
     });
     h+='</div>';
-  }else{
-    h+='<div class="card es">No items selected for TV display. Click Customise to choose what to show.</div>';
   }
 
-  h+='<div class="card"><h3>Active orders</h3>';
+  h+='<div class="card"><h3 style="font-size:13px">Active orders</h3>';
   h+=active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>';
   h+='</div>';
 
