@@ -73,7 +73,7 @@ app.get('/api/tv-settings', auth, async (req, res) => {
   res.json(data || { selected_items: [] });
 });
 app.put('/api/tv-settings', auth, async (req, res) => {
-  const { data } = await supabase.from('tv_settings').upsert({ setting_key:'main', selected_items: req.body.selected_items, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' }).select().single();
+  const { data } = await supabase.from('tv_settings').upsert({ setting_key:'main', selected_items: req.body.selected_items, groups: req.body.groups||[], updated_at: new Date().toISOString() }, { onConflict: 'setting_key' }).select().single();
   res.json(data);
 });
 
