@@ -67,6 +67,23 @@ app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
   res.json(data);
 });
 
+// CLIENTS
+app.get('/api/clients', auth, async (req, res) => {
+  const { q } = req.query;
+  let query = supabase.from('clients').select('*').order('name');
+  if (q) query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%`);
+  const { data } = await query.limit(20);
+  res.json(data || []);
+});
+app.post('/api/clients', auth, async (req, res) => {
+  const { data } = await supabase.from('clients').insert(req.body).select().single();
+  res.json(data);
+});
+app.get('/api/clients/:id/orders', auth, async (req, res) => {
+  const { data } = await supabase.from('orders').select('*').eq('client_id', req.params.id).order('created_at', { ascending: false });
+  res.json(data || []);
+});
+
 // RECEPTION SETTINGS
 app.get('/api/reception-settings', auth, async (req, res) => {
   const { data } = await supabase.from('reception_settings').select('*').eq('setting_key','dashboard').single();
