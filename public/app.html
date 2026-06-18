@@ -159,6 +159,7 @@ tr:hover td{background:#f8f9fa}
   <div class="ns">Reports</div>
   <div class="ni" onclick="nav('rep',this)" data-r="admin"><i class="ti ti-chart-bar"></i>Reports</div>
   <div class="ns">Settings</div>
+  <div class="ni" onclick="nav('clients',this)" data-r="admin"><i class="ti ti-users"></i>Clients</div>
   <div class="ni" onclick="nav('recset',this)" data-r="admin"><i class="ti ti-device-tablet"></i>Reception setup</div>
   <div class="user-info">
     <p>Logged in as</p><span id="un-display"></span>
@@ -354,6 +355,20 @@ tr:hover td{background:#f8f9fa}
   </div>
   <div id="ot-active" style="display:none"><div id="aol"></div></div>
   <div id="ot-done" style="display:none"><div id="dol"></div></div>
+</div>
+
+<!-- CLIENTS -->
+<div class="pg" id="pg-clients">
+  <div class="ph"><div><h1>Clients</h1><p>Search client history and order records</p></div></div>
+  <div class="card">
+    <div class="fr">
+      <div class="fg"><label>Search by name or phone</label><input type="text" id="cl-search" placeholder="Start typing..." oninput="searchClients()"></div>
+      <div class="fg"><label>Date range (optional)</label><input type="date" id="cl-date"></div>
+    </div>
+    <button class="btn btnp btns" onclick="searchClients()"><i class="ti ti-search"></i> Search</button>
+  </div>
+  <div id="cl-results"></div>
+  <div id="cl-orders" style="display:none"></div>
 </div>
 
 <!-- RECEPTION SETUP -->
@@ -776,7 +791,7 @@ function nav(id,el){
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
   document.getElementById('pg-'+id).classList.add('active');
   if(el)el.classList.add('active');
-  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset};
+  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset,clients:function(){document.getElementById('cl-results').innerHTML='';document.getElementById('cl-orders').style.display='none';}};
   if(fn[id])fn[id]();
 }
 
@@ -1424,6 +1439,34 @@ function recRender(){
   });
   h+='</div>';
   ui.innerHTML=h;
+}
+
+// CLIENT LOOKUP (admin)
+async function searchClients(){
+  var q=document.getElementById('cl-search').value.trim();
+  var res=await api('GET','/clients'+(q?'?q='+encodeURIComponent(q):''));
+  var clients=res||[];
+  document.getElementById('cl-orders').style.display='none';
+  if(!clients.length){document.getElementById('cl-results').innerHTML='<div class="card es">No clients found</div>';return;}
+  document.getElementById('cl-results').innerHTML='<div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Since</th><th></th></tr></thead><tbody>'+
+    clients.map(function(c){return'<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||'—')+'</td><td>'+(c.address||'—')+'</td><td style="font-size:11px;color:#888">'+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'—')+'</td><td><button class="btn btns" onclick="viewClientOrders('+c.id+',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-history"></i> History</button></td></tr>';}).join('')+
+    '</tbody></table></div>';
+}
+async function viewClientOrders(id,name){
+  var res=await api('GET','/clients/'+id+'/orders');
+  var clientOrders=res||[];
+  var el=document.getElementById('cl-orders');
+  el.style.display='block';
+  var h='<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Order history — '+name+'</h3><button class="btn btns" onclick="document.getElementById(\'cl-orders\').style.display=\'none\'"><i class="ti ti-x"></i></button></div>';
+  if(!clientOrders.length){h+='<div class="es">No orders found for this client</div>';h+='</div>';el.innerHTML=h;return;}
+  h+='<div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Product</th><th>Qty</th><th>Payment</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody>';
+  clientOrders.forEach(function(o){
+    var dt=o.created_at?new Date(o.created_at).toLocaleDateString('en-ZA'):'—';
+    h+='<tr><td style="font-size:11px">'+o.id+'</td><td>'+o.name+'</td><td>'+o.quantity+'</td><td><span class="bdg bgry">'+(o.payment_method||'—')+'</span></td><td>'+(o.order_total>0?fmt(o.order_total):'—')+'</td><td><span class="bdg '+(o.status==='done'?'bok':o.status==='pending'?'bblu':'bgry')+'">'+o.status+'</span></td><td style="font-size:11px;color:#888">'+dt+'</td></tr>';
+  });
+  h+='</tbody></table></div></div>';
+  el.innerHTML=h;
+  el.scrollIntoView({behavior:'smooth'});
 }
 
 function recTab(tab){REC.activeTab=tab;recRender();}
