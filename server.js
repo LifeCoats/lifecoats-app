@@ -94,6 +94,22 @@ app.put('/api/reception-settings', auth, async (req, res) => {
   res.json(data);
 });
 
+// COMPANY SETTINGS
+app.get('/api/company-settings', auth, async (req, res) => {
+  const { data } = await supabase.from('company_settings').select('*');
+  const settings = {};
+  (data || []).forEach(s => { settings[s.setting_key] = s.value; });
+  res.json(settings);
+});
+app.put('/api/company-settings', auth, async (req, res) => {
+  const updates = req.body;
+  const promises = Object.keys(updates).map(key =>
+    supabase.from('company_settings').upsert({ setting_key: key, value: updates[key], updated_at: new Date().toISOString() }, { onConflict: 'setting_key' })
+  );
+  await Promise.all(promises);
+  res.json({ success: true });
+});
+
 // TV SETTINGS
 app.get('/api/tv-settings', auth, async (req, res) => {
   const { data } = await supabase.from('tv_settings').select('*').eq('setting_key','main').single();
