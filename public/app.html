@@ -164,6 +164,7 @@ tr:hover td{background:#f8f9fa}
   <div class="user-info">
     <p>Logged in as</p><span id="un-display"></span>
     <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
+    <div style="font-size:10px;color:#bbb;margin-top:8px">v1.9.0</div>
   </div>
 </div>
 <div class="main" id="main">
@@ -180,6 +181,7 @@ tr:hover td{background:#f8f9fa}
         <option value="prod">Production focus</option><option value="full">Full view</option>
       </select>
       <button class="btn btns" onclick="oTVSettings()"><i class="ti ti-settings"></i> Customise TV</button>
+      <button class="btn btns" onclick="downloadDailyReport()"><i class="ti ti-file-download"></i> Daily report</button>
       <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-tv"></i> TV Mode</button>
     </div>
   </div>
@@ -582,7 +584,7 @@ async function loadAll(){
     var ms=r[1]||[];mfgStock={};ms.forEach(function(m){mfgStock[m.name]=m;});
     var ps=r[2]||[];pkgData={};ps.forEach(function(p){pkgData[p.id]=p;});
     forms=(r[3]||[]).map(function(f){f.ingredients=f.ingredients||[];f.tints=f.tints||[];f.sub_category=f.sub_category||'Standard';return f;});
-    orders=(r[4]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash'};});
+    orders=(r[4]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,cashAmt:o.cash_amount||0,cardAmt:o.card_amount||0,orderTotal:o.order_total||0,items:o.items||null};});
     batchRecipes=r[5]||[];
     await loadTVSettings();
     if(orders.length){var mx=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));NID=mx+1;}
@@ -597,6 +599,8 @@ async function loadAll(){
     }else{
       nav('dash',document.querySelector('.ni[onclick*="dash"]'));
     }
+    // Force a repaint in case the browser doesn't immediately render content after display:none -> flex
+    requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.style.zoom=1;});});
   }catch(e){console.error(e);document.querySelector('#ls p').textContent='Error loading. Please refresh.';}
 }
 
@@ -611,9 +615,46 @@ function bdg(s,a){var x=stt(s,a);return x==='cr'?'<span class="bdg bcrit">Critic
 function bc(s,a){return stt(s,a)==='cr'?'pbcr':stt(s,a)==='lw'?'pbow':'pbok';}
 function ptL(t){return{gamazine:'Gamazine',granite:'Granite Coat',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match'}[t]||t;}
 function fmt(n){return'R'+parseFloat(n||0).toFixed(2);}
-function todayRev(){return orders.filter(function(o){return o.status==='done';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
-function cashRev(){return orders.filter(function(o){return o.status==='done'&&(o.pm||'cash')==='cash';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
-function cardRev(){return orders.filter(function(o){return o.status==='done'&&(o.pm||'cash')==='card';}).reduce(function(a,o){var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;return a+(f&&f.price?f.price*o.qty:0);},0);}
+function isToday(dateStr){
+  if(!dateStr)return false;
+  var d=new Date(dateStr);var now=new Date();
+  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();
+}
+function orderRevenue(o){
+  if(o.orderTotal&&o.orderTotal>0)return o.orderTotal;
+  var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
+  return f&&f.price?f.price*o.qty:0;
+}
+function orderCashAmt(o){
+  if(o.cashAmt)return o.cashAmt;
+  return (o.pm||'cash')==='cash'?orderRevenue(o):0;
+}
+function orderCardAmt(o){
+  if(o.cardAmt)return o.cardAmt;
+  return (o.pm||'cash')==='card'?orderRevenue(o):0;
+}
+function todayRev(){return orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);}).reduce(function(a,o){return a+orderRevenue(o);},0);}
+function cashRev(){return orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);}).reduce(function(a,o){return a+orderCashAmt(o);},0);}
+function cardRev(){return orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);}).reduce(function(a,o){return a+orderCardAmt(o);},0);}
+function downloadDailyReport(){
+  var todayDone=orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);});
+  var now=new Date();
+  var rows=[['Order ID','Client','Product','Qty','Payment method','Cash','Card/EFT','Total']];
+  todayDone.forEach(function(o){
+    rows.push([o.id,o.client,o.n,o.qty,o.pm||'cash',orderCashAmt(o).toFixed(2),orderCardAmt(o).toFixed(2),orderRevenue(o).toFixed(2)]);
+  });
+  rows.push([]);
+  rows.push(['','','','','','Cash total',cashRev().toFixed(2)]);
+  rows.push(['','','','','','Card/EFT total',cardRev().toFixed(2)]);
+  rows.push(['','','','','','Grand total',todayRev().toFixed(2)]);
+  var csv=rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='Life-Coats-Daily-Report-'+now.toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 function dspStock(m){if(m.pack_unit&&m.pack_qty>0){var p=m.stock/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.stock.toFixed(1)+' '+m.unit;}
 function dspAlert(m){if(m.pack_unit&&m.pack_qty>0){var p=m.alert_level/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.alert_level+' '+m.unit;}
 function allIngOpts(){
