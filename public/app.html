@@ -573,7 +573,7 @@ async function api(method,path,body){
     return res.json();
   }catch(e){console.error(e);return null;}
 }
-
+// ---- Auto Load Data ---- //
 async function loadAll(){
   try{
     var r=await Promise.all([
@@ -675,7 +675,27 @@ function nav(id,el){
   document.getElementById('pg-'+id).classList.add('active');
   if(el)el.classList.add('active');
   var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset,clients:function(){document.getElementById('cl-results').innerHTML='';document.getElementById('cl-orders').style.display='none';}};
+  function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
+  function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
   if(fn[id])fn[id]();
+}
+
+function rRecset(){
+  var all=allTVItems();
+  var rs=document.getElementById('recset-list');
+  if(!rs)return;
+  var savedKeys=(REC&&REC.dashItems?REC.dashItems:[]).map(function(s){return s.key;});
+  rs.innerHTML=all.map(function(it){
+    var chk=savedKeys.indexOf(it.key)!==-1;
+    return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+' <span style="font-size:11px;color:#888">'+it.cat+'</span></label></div>';
+  }).join('');
+}
+async function saveRecSettings(){
+  var all=allTVItems();
+  var sel=all.filter(function(it){var cb=document.getElementById('rs-'+it.key);return cb&&cb.checked;}).map(function(it){return{key:it.key,label:it.label};});
+  await api('POST','/reception-settings',{selected_items:sel});
+  if(REC)REC.dashItems=sel;
+  alert('Reception dashboard saved!');
 }
 
 // DASHBOARD
