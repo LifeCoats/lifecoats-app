@@ -1972,16 +1972,12 @@ function recReprint(id){
 }
 
 function recComplete(id){
-  oComplete(id);
-  // Temporarily override confComplete so after completing the order the
-  // reception UI refreshes and goes back to the Active tab.
-  var _orig=confComplete;
-  confComplete=async function(){
-    await _orig();
-    confComplete=_orig;
+  if(!window.confirm('Mark this order as complete and deduct stock?'))return;
+  pendingOrderId=id;
+  confComplete().then(function(){
     REC.activeTab='active';
     recRender();
-  };
+  });
 }
 
 // ---- DONE ----
