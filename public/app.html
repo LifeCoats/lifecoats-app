@@ -597,10 +597,10 @@ async function loadAll(){
     if(userRole==='reception'){
       await loadReceptionUI();
     }else{
-      nav('dash',document.querySelector('.ni[onclick*="dash"]'));
+      requestAnimationFrame(function(){
+        nav('dash',document.querySelector('.ni[onclick*="dash"]'));
+      });
     }
-    // Force a repaint in case the browser doesn't immediately render content after display:none -> flex
-    requestAnimationFrame(function(){requestAnimationFrame(function(){document.body.style.zoom=1;});});
   }catch(e){console.error(e);document.querySelector('#ls p').textContent='Error loading. Please refresh.';}
 }
 
