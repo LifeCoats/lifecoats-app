@@ -1973,8 +1973,15 @@ function recReprint(id){
 
 function recComplete(id){
   oComplete(id);
-  var orig=window.confComplete;
-  window.confComplete=async function(){await orig();window.confComplete=orig;REC.activeTab='active';recRender();};
+  // Temporarily override confComplete so after completing the order the
+  // reception UI refreshes and goes back to the Active tab.
+  var _orig=confComplete;
+  confComplete=async function(){
+    await _orig();
+    confComplete=_orig;
+    REC.activeTab='active';
+    recRender();
+  };
 }
 
 // ---- DONE ----
