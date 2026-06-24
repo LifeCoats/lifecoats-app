@@ -240,10 +240,14 @@ tr:hover td{background:#f8f9fa}
   <div class="tabs">
     <div class="tab active" onclick="sBT('produce',this)">Produce a batch</div>
     <div class="tab" id="recipes-tab" onclick="sBT('recipes',this)" style="display:none">Recipes</div>
-    <div class="tab" onclick="sBT('log',this)">Production log</div>
+    <div class="tab" onclick="sBT('waterproofing',this)">Waterproofing</div>
+    <div class="tab" onclick="sBT('fiberseal',this)">Fiber Seal</div>
+    <div class="tab" onclick="sBT('log',this)">Log</div>
   </div>
   <div id="bt-produce"></div>
   <div id="bt-recipes" style="display:none"></div>
+  <div id="bt-waterproofing" style="display:none"></div>
+  <div id="bt-fiberseal" style="display:none"></div>
   <div id="bt-log" style="display:none"></div>
 </div>
 
@@ -1255,7 +1259,56 @@ async function rRcvLog(){var log=await api('GET','/stock-receipts')||[];document
 
 // BATCH PRODUCTION
 function rBatches(){rBatchProduce();}
-function sBT(tab,el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='log')rBatchLog();}
+function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','waterproofing','fiberseal','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='waterproofing')rBatchMfg('waterproofing');if(tab==='fiberseal')rBatchMfg('fiberseal');if(tab==='log')rBatchLog();}
+
+function rBatchMfg(type){
+  var label=type==='waterproofing'?'Waterproofing':'Fiber Seal';
+  var mfg=mfgStock[label];
+  var stock=mfg?mfg.stock:0;
+  var alert2=mfg?mfg.alert_level:50;
+  var col=stock<=alert2?'#E24B4A':stock<=(alert2*2)?'#EF9F27':'#5B8FA8';
+  var recipe=batchRecipes.find(function(r){return r.name===label||r.manufactured_stock_id===(mfg&&mfg.id);});
+  var h='<div class="card" style="margin-bottom:0.75rem">';
+  h+='<div class="fb" style="margin-bottom:1rem"><div><h3>'+label+' Stock</h3>';
+  h+='<div style="font-size:22px;font-weight:700;color:'+col+';margin-top:4px">'+stock.toFixed(0)+'L</div>';
+  h+='<div style="font-size:12px;color:#888">Alert level: '+alert2+'L</div></div>';
+  h+='<button class="btn btnp" onclick="produceBatchMfg(\''+type+'\')"><i class="ti ti-plus"></i> Produce 200L batch</button></div>';
+  if(recipe){
+    h+='<div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">Batch ingredients (200L):</div>';
+    (recipe.ingredients||[]).forEach(function(i){h+='<div class="ir"><span>'+i.name+'</span><span class="il">'+i.qty+' '+i.unit+'</span></div>';});
+  }else{
+    h+='<div class="ib"><i class="ti ti-info-circle"></i> Add a batch recipe under the Recipes tab linked to '+label+' to see ingredients here.</div>';
+  }
+  h+='</div>';
+  document.getElementById('bt-'+type).innerHTML=h;
+}
+
+async function produceBatchMfg(type){
+  var label=type==='waterproofing'?'Waterproofing':'Fiber Seal';
+  var mfg=mfgStock[label];
+  if(!mfg){
+    alert('No manufactured stock entry found for "'+label+'". Please go to Supabase and add a row to the manufactured_stock table with name="'+label+'", stock=0, alert_level=50, then refresh the app.');
+    return;
+  }
+  var recipe=batchRecipes.find(function(r){return r.name===label||r.manufactured_stock_id===mfg.id;});
+  if(recipe){
+    // Deduct ingredients
+    var ratio=200/recipe.batch_size;
+    for(var i=0;i<recipe.ingredients.length;i++){
+      var ing=recipe.ingredients[i];
+      var amt=ing.qty*ratio;
+      var mat=mats.find(function(x){return x.name===ing.name;});
+      if(mat){mat.stock=Math.max(0,mat.stock-amt);await api('PUT','/materials/'+mat.id,{stock:mat.stock});}
+      else if(mfgStock[ing.name]){mfgStock[ing.name].stock=Math.max(0,mfgStock[ing.name].stock-amt);await api('PUT','/manufactured-stock/'+mfgStock[ing.name].id,{stock:mfgStock[ing.name].stock});}
+    }
+  }
+  mfg.stock+=200;
+  await api('PUT','/manufactured-stock/'+mfg.id,{stock:mfg.stock});
+  await api('POST','/batch-logs',{recipe_name:label+' Batch',litres_produced:200,triggered_by:userName});
+  rBatchMfg(type);
+  rDash();
+  alert('200L batch of '+label+' produced! Stock is now '+mfg.stock.toFixed(0)+'L.');
+}
 function rBatchProduce(){
   var h='<div class="card"><h3>Select a batch to produce</h3>';
   if(!batchRecipes.length){h+='<div class="es">No batch recipes yet. Admin can add them under Recipes tab.</div></div>';document.getElementById('bt-produce').innerHTML=h;return;}
