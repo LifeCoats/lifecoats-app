@@ -158,6 +158,7 @@ tr:hover td{background:#f8f9fa}
   <div class="ni" onclick="nav('pkg',this)" data-r="admin"><i class="ti ti-bucket"></i>Packaging</div>
   <div class="ns">Production</div>
   <div class="ni" onclick="nav('forms',this)" data-r="admin"><i class="ti ti-book"></i>Formulations</div>
+  <div class="ni" onclick="nav('orders',this)" data-r="admin,reception"><i class="ti ti-clipboard-list"></i>Orders</div>
   <div class="ns">Reports</div>
   <div class="ni" onclick="nav('rep',this)" data-r="admin"><i class="ti ti-chart-bar"></i>Reports</div>
   <div class="ns">Settings</div>
@@ -233,18 +234,16 @@ tr:hover td{background:#f8f9fa}
 <!-- BATCH PRODUCTION -->
 <div class="pg" id="pg-batches">
   <div class="ph">
-    <button class="btn btnp btns" id="add-recipe-btn" onclick="openAddBatch()" style="display:none"><i class="ti ti-plus"></i> Add Formulation</button>
+    <div><h1>Batch Production</h1><p>Produce batches and manage recipes</p></div>
     <button class="btn btnp btns" id="add-recipe-btn" onclick="openAddBatch()" style="display:none"><i class="ti ti-plus"></i> Add recipe</button>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="sBT('produce',this)">Produce a batch</div>
-    <div class="tab" id="recipes-tab" onclick="sBT('recipes',this)" style="display:none">Base Formulations</div>
-    <div class="tab" onclick="sBT('wpfs',this)">Waterproofing & Fiber Seal</div>
-    <div class="tab" onclick="sBT('log',this)">Log</div>
+    <div class="tab" id="recipes-tab" onclick="sBT('recipes',this)" style="display:none">Recipes</div>
+    <div class="tab" onclick="sBT('log',this)">Production log</div>
   </div>
   <div id="bt-produce"></div>
   <div id="bt-recipes" style="display:none"></div>
-  <div id="bt-wpfs" style="display:none"></div>
   <div id="bt-log" style="display:none"></div>
 </div>
 
@@ -280,10 +279,88 @@ tr:hover td{background:#f8f9fa}
     <div class="tab" onclick="sFT('undercoat',this)">Undercoat</div>
     <div class="tab" onclick="sFT('cps',this)">CPS</div>
     <div class="tab" onclick="sFT('clearcoat',this)">Clearcoat</div>
+    <div class="tab" onclick="sFT('waterproofing',this)">Waterproofing</div>
+    <div class="tab" onclick="sFT('fiberseal',this)">Fiber Seal</div>
   </div>
   <div id="fl"></div>
 </div>
 
+<!-- ORDERS -->
+<div class="pg" id="pg-orders">
+  <div class="ph"><div><h1>Orders</h1><p>Build orders, print slips and mark complete</p></div></div>
+  <div class="tabs">
+    <div class="tab active" onclick="sOT('new',this)">New order</div>
+    <div class="tab" onclick="sOT('active',this)">Active <span id="active-count" class="bdg bblu" style="font-size:10px;margin-left:3px"></span></div>
+    <div class="tab" onclick="sOT('done',this)">Completed</div>
+  </div>
+  <div id="ot-new">
+    <div id="rec-stock" style="display:none" class="card"><h3>Stock overview</h3><div id="rsc"></div></div>
+    <div class="card"><h3>Build an order</h3>
+      <div class="fr">
+        <div class="fg"><label>Client name</label><input type="text" id="oc" placeholder="Client name"></div>
+        <div class="fg"><label>Product type</label><select id="opt" onchange="oPTC()">
+          <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+          <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
+          <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
+          <option value="fiberseal">Fiber Seal</option><option value="cm">Colour Match</option>
+        </select></div>
+      </div>
+      <div id="or-std">
+        <div class="fr">
+          <div class="fg"><label>Formulation</label><select id="orec"></select></div>
+          <div class="fg"><label>Quantity (buckets)</label><input type="number" id="oqty" value="1" min="1"></div>
+        </div>
+      </div>
+      <div id="or-stone" style="display:none" class="fg"><label>Stone size (client choice)</label>
+        <select id="oss"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm" selected>1.1mm (most common)</option><option value="Stone 1-2mm">1-2mm</option></select>
+      </div>
+      <div id="or-bkt" style="display:none" class="fg"><label>Bucket type</label>
+        <select id="obk"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select>
+      </div>
+      <div id="or-sec" style="display:none" class="fr">
+        <div class="fg"><label>Bucket size</label><select id="osec"><option value="20">20L Secure Lock</option><option value="5">5L Secure Lock</option></select></div>
+        <div class="fg"><label>Quantity</label><input type="number" id="oqsec" value="1" min="1"></div>
+      </div>
+      <div id="or-cls" style="display:none" class="fg"><label>Clearcoat size</label>
+        <select id="ocls"><option value="20">20L</option><option value="10">10L</option><option value="5">5L</option></select>
+      </div>
+      <div id="or-cm" style="display:none">
+        <div class="ib"><i class="ti ti-palette"></i> Colour match — enter tints per bucket</div>
+        <div class="fr">
+          <div class="fg"><label>Colour ref</label><input type="text" id="cmn" placeholder="e.g. Client Ref 007"></div>
+          <div class="fg"><label>Quantity</label><input type="number" id="cmq" value="1" min="1"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label>Stone size</label><select id="cms"><option value="Stone 0.4mm">0.4mm</option><option value="Stone 0.8mm">0.8mm</option><option value="Stone 1.1mm">1.1mm</option><option value="Stone 1-2mm">1-2mm</option></select></div>
+          <div class="fg"><label>Bucket type</label><select id="cmb"><option value="20L Printed">20L Printed</option><option value="20L Titan Black">20L Titan Black</option></select></div>
+        </div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:6px">Tints per bucket:</div>
+        <div id="cmt"></div>
+        <button class="btn btns" onclick="addCMT()" style="margin-bottom:0.75rem"><i class="ti ti-plus"></i> Add tint</button>
+      </div>
+      <div class="fg"><label>Payment method</label>
+        <select id="opm"><option value="cash">Cash</option><option value="card">Card / EFT</option></select>
+      </div>
+      <div class="fg"><label>Delivery method</label>
+        <select id="odl" onchange="tLN()"><option value="collection">Collection</option><option value="courier">Courier (lids included)</option></select>
+      </div>
+      <div id="ln" style="display:none" class="ib"><i class="ti ti-info-circle"></i> Lids included for courier</div>
+      <div class="fg"><label>Order notes</label><input type="text" id="onn" placeholder="Optional notes for the factory"></div>
+      <button class="btn btnp" onclick="bOrder()"><i class="ti ti-clipboard-check"></i> Build order &amp; generate slip</button>
+    </div>
+    <div id="sarea" style="display:none">
+      <div class="card"><h3>Order slip — ready to print</h3>
+        <div id="sc"></div>
+        <div style="display:flex;gap:8px;margin-top:0.75rem;justify-content:flex-end">
+          <button class="btn btns" onclick="window.print()"><i class="ti ti-printer"></i> Print slip</button>
+          <button class="btn btns btnp" onclick="cOC()"><i class="ti ti-circle-check"></i> Confirm &amp; send to factory</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="ot-active" style="display:none"><div id="aol"></div></div>
+  <div id="ot-done" style="display:none"><div id="dol"></div></div>
+</div>
 
 <!-- CLIENTS -->
 <div class="pg" id="pg-clients">
@@ -381,7 +458,7 @@ tr:hover td{background:#f8f9fa}
 
 <div class="mbg" id="m-batch" onclick="cBG(event,'m-batch')"><div class="mod">
   <button class="mc" onclick="cM('m-batch')"><i class="ti ti-x"></i></button>
-  <h3 id="batch-title">Add batch formulation</h3><input type="hidden" id="batch-eid">
+  <h3 id="batch-title">Add batch recipe</h3><input type="hidden" id="batch-eid">
   <div class="fr">
     <div class="fg"><label>Recipe name</label><input type="text" id="batch-name" placeholder="e.g. Pastel Base"></div>
     <div class="fg"><label>Produces (manufactured stock)</label><select id="batch-prod"><option value="">Select...</option></select></div>
@@ -396,7 +473,7 @@ tr:hover td{background:#f8f9fa}
     <div id="batch-ings"></div>
     <button class="btn btns" onclick="addBatchIng()" style="margin-top:4px"><i class="ti ti-plus"></i> Add ingredient</button>
   </div>
-  <div class="fe"><button class="btn" onclick="cM('m-batch')">Cancel</button><button class="btn btnp" onclick="saveBatch()">Save formulation</button></div>
+  <div class="fe"><button class="btn" onclick="cM('m-batch')">Cancel</button><button class="btn btnp" onclick="saveBatch()">Save recipe</button></div>
 </div></div>
 
 <div class="mbg" id="m-trigger" onclick="cBG(event,'m-trigger')"><div class="mod">
@@ -417,7 +494,8 @@ tr:hover td{background:#f8f9fa}
     <div class="fg"><label>Product type</label><select id="ftype">
       <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
       <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
-      <option value="clearcoat">Clearcoat</option>
+      <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
+      <option value="fiberseal">Fiber Seal</option>
     </select></div>
   </div>
   <div class="fr">
@@ -601,6 +679,7 @@ function nav(id,el){
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
   document.getElementById('pg-'+id).classList.add('active');
   if(el)el.classList.add('active');
+  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset,clients:function(){document.getElementById('cl-results').innerHTML='';document.getElementById('cl-orders').style.display='none';}};
   function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
   function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
   if(fn[id])fn[id]();
@@ -1176,10 +1255,10 @@ async function rRcvLog(){var log=await api('GET','/stock-receipts')||[];document
 
 // BATCH PRODUCTION
 function rBatches(){rBatchProduce();}
-function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','wpfs','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='wpfs')rWPFS();if(tab==='log')rBatchLog();}
+function sBT(tab,el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='log')rBatchLog();}
 function rBatchProduce(){
   var h='<div class="card"><h3>Select a batch to produce</h3>';
-  if(!batchRecipes.length){h+='<div class="es">No batch formulations yet. Admin can add them under Base Formulations tab.</div></div>';document.getElementById('bt-produce').innerHTML=h;return;}
+  if(!batchRecipes.length){h+='<div class="es">No batch recipes yet. Admin can add them under Recipes tab.</div></div>';document.getElementById('bt-produce').innerHTML=h;return;}
   h+='<div class="ib">Click a recipe to produce. Both admin and reception can trigger batches.</div>';
   batchRecipes.forEach(function(r){
     var mfg=mfgStock[r.name];var stock=mfg?mfg.stock:0;var al=mfg?mfg.alert_level:0;
@@ -1190,75 +1269,14 @@ function rBatchProduce(){
   });
   h+='</div>';document.getElementById('bt-produce').innerHTML=h;
 }
-
-function rWPFS(){
-  var types=['waterproofing','fiberseal'];
-  var labels={waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
-  var sizes={waterproofing:['5L','20L'],fiberseal:['5L','20L']};
-  var h='';
-  types.forEach(function(type){
-    var stock=mfgStock[labels[type]]||{stock:0,alert_level:50};
-    var col=stock.stock<=stock.alert_level?'#E24B4A':stock.stock<=(stock.alert_level*2)?'#EF9F27':'#5B8FA8';
-    h+='<div class="card" style="margin-bottom:0.75rem"><div class="fb" style="margin-bottom:0.75rem">';
-    h+='<div><h3>'+labels[type]+'</h3><span class="bdg" style="background:#E8F4F9;color:'+col+'">'+stock.stock.toFixed(0)+'L in stock</span></div>';
-    h+='<button class="btn btnp btns" onclick="oWPFSBatch(\''+type+'\')"><i class="ti ti-plus"></i> Produce 200L batch</button></div>';
-    // Sell section
-    h+='<div style="font-size:12px;font-weight:600;margin-bottom:8px;color:#555">Sell stock</div>';
-    h+='<div class="fr">';
-    h+='<div class="fg"><label>Client name</label><input type="text" id="wpfs-client-'+type+'" placeholder="Client name"></div>';
-    h+='<div class="fg"><label>Size</label><select id="wpfs-size-'+type+'"><option value="5">5L</option><option value="20">20L</option></select></div>';
-    h+='<div class="fg"><label>Qty</label><input type="number" id="wpfs-qty-'+type+'" value="1" min="1"></div>';
-    h+='<div class="fg"><label>Payment</label><select id="wpfs-pm-'+type+'"><option value="cash">Cash</option><option value="card">Card / EFT</option></select></div>';
-    h+='</div>';
-    h+='<button class="btn btnp" onclick="sellWPFS(\''+type+'\')"><i class="ti ti-clipboard-check"></i> Build order &amp; print slip</button>';
-    h+='</div>';
-  });
-  document.getElementById('bt-wpfs').innerHTML=h;
-}
-async function oWPFSBatch(type){
-  var label={waterproofing:'Waterproofing',fiberseal:'Fiber Seal'}[type];
-  var stock=mfgStock[label];
-  if(!stock){alert('No manufactured stock entry found for '+label+'. Please add it in TV settings first.');return;}
-  if(!confirm('Produce a 200L batch of '+label+'? This will add 200L to stock.'))return;
-  stock.stock+=200;
-  await api('PUT','/manufactured-stock/'+stock.id,{stock:stock.stock});
-  await api('POST','/batch-logs',{recipe_name:label+' Batch',litres_produced:200,triggered_by:userName});
-  rWPFS();rDash();
-}
-async function sellWPFS(type){
-  var label={waterproofing:'Waterproofing',fiberseal:'Fiber Seal'}[type];
-  var cl=document.getElementById('wpfs-client-'+type).value.trim();
-  if(!cl){alert('Enter client name');return;}
-  var sz=parseInt(document.getElementById('wpfs-size-'+type).value);
-  var qty=parseInt(document.getElementById('wpfs-qty-'+type).value)||1;
-  var pm=document.getElementById('wpfs-pm-'+type).value;
-  var totalL=sz*qty;
-  var stock=mfgStock[label];
-  if(stock&&stock.stock<totalL){alert('Not enough stock. Available: '+stock.stock.toFixed(0)+'L, needed: '+totalL+'L');return;}
-  var oid='ORD-'+NID++;
-  var f=forms.find(function(x){return x.type===type;});
-  var price=f&&f.price?f.price*qty:0;
-  var od={id:oid,client:cl,product_type:type,name:label+' '+sz+'L',quantity:qty,bucket_type:sz+'L Secure Lock',delivery:'collection',status:'pending',payment_method:pm,orderTotal:price};
-  var res=await api('POST','/orders',od);
-  if(res){
-    var o={id:oid,client:cl,t:type,n:label+' '+sz+'L',qty:qty,bkt:sz+'L Secure Lock',dl:'collection',status:'pending',pm:pm,orderTotal:price};
-    orders.push(o);
-    // deduct stock
-    if(stock){stock.stock=Math.max(0,stock.stock-totalL);await api('PUT','/manufactured-stock/'+stock.id,{stock:stock.stock});}
-    // show slip
-    document.getElementById('bt-wpfs').innerHTML+='<div class="card" id="wpfs-slip-area"><h3>Order slip — ready to print</h3><div>'+bSlip(o,null)+'</div><div style="display:flex;gap:8px;margin-top:0.75rem;justify-content:flex-end"><button class="btn btns" onclick="window.print()"><i class="ti ti-printer"></i> Print slip</button></div></div>';
-    rWPFS();rDash();
-  }
-}
-
 function rBatchRecipes(){
-  var h='<div class="card"><h3>Batch Formulations</h3>';
-  if(!batchRecipes.length){h+='<div class="es">No batch formulations yet.</div></div>';document.getElementById('bt-recipes').innerHTML=h;return;}
+  var h='<div class="card"><h3>Batch recipes</h3>';
+  if(!batchRecipes.length){h+='<div class="es">No recipes yet.</div></div>';document.getElementById('bt-recipes').innerHTML=h;return;}
   batchRecipes.forEach(function(r){var ings=r.ingredients||[];h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+r.name+'</b><span class="bdg bgry" style="margin-left:5px">'+r.batch_size+'L batch</span></div><div style="display:flex;gap:5px"><button class="btn btns" onclick="editBatch('+r.id+')"><i class="ti ti-edit"></i></button><button class="btn btns btnd" onclick="showConf(\'Delete recipe\',\'Delete '+r.name+'?\',\'Yes\',\'btnd\',function(){delBatch('+r.id+');})"><i class="ti ti-trash"></i></button></div></div>'+ings.map(function(i){return'<div class="ir"><span>'+i.name+'</span><span class="il">'+i.qty+' '+i.unit+' per batch</span></div>';}).join('')+'</div>';});
   h+='</div>';document.getElementById('bt-recipes').innerHTML=h;
 }
 async function rBatchLog(){var logs=await api('GET','/batch-logs')||[];var h='<div class="card"><h3>Production log</h3>';h+=logs.length?logs.map(function(l){var dt=new Date(l.created_at);return'<div class="stock-row"><div style="flex:1"><div style="font-weight:500">'+l.recipe_name+'</div><div style="font-size:11px;color:#888">'+dt.toLocaleDateString('en-ZA')+' '+dt.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · by '+l.triggered_by+'</div></div><span class="bdg bok">+'+l.litres_produced+'L</span></div>';}).join(''):'<div class="es">No batches yet</div>';h+='</div>';document.getElementById('bt-log').innerHTML=h;}
-function openAddBatch(){populateBatchProd();document.getElementById('batch-eid').value='';document.getElementById('batch-title').textContent='Add batch formulation';document.getElementById('batch-name').value='';document.getElementById('batch-size').value=200;document.getElementById('batch-alert').value=50;document.getElementById('batch-ings').innerHTML='';oM('m-batch');}
+function openAddBatch(){populateBatchProd();document.getElementById('batch-eid').value='';document.getElementById('batch-title').textContent='Add batch recipe';document.getElementById('batch-name').value='';document.getElementById('batch-size').value=200;document.getElementById('batch-alert').value=50;document.getElementById('batch-ings').innerHTML='';oM('m-batch');}
 function editBatch(id){var r=batchRecipes.find(function(x){return x.id===id;});if(!r)return;populateBatchProd();document.getElementById('batch-eid').value=id;document.getElementById('batch-title').textContent='Edit: '+r.name;document.getElementById('batch-name').value=r.name;document.getElementById('batch-size').value=r.batch_size;var mfg=Object.values(mfgStock).find(function(m){return m.name===r.name;});if(mfg){document.getElementById('batch-alert').value=mfg.alert_level;document.getElementById('batch-prod').value=mfg.id;}document.getElementById('batch-ings').innerHTML='';(r.ingredients||[]).forEach(function(i){addBatchIng(i.name,i.qty,i.unit);});oM('m-batch');}
 function populateBatchProd(){var sel=document.getElementById('batch-prod');sel.innerHTML='<option value="">Select...</option>';Object.values(mfgStock).forEach(function(m){sel.innerHTML+='<option value="'+m.id+'">'+m.name+'</option>';});}
 function addBatchIng(name,qty,unit){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';row.innerHTML='<div class="fg" style="margin:0"><select>'+allIngOpts()+'</select></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0" placeholder="Qty per batch"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option></select></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';document.getElementById('batch-ings').appendChild(row);if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
@@ -1281,8 +1299,8 @@ async function rBOLog(){var log=await api('GET','/packaging-bookouts')||[];docum
 // FORMULATIONS
 function sFT(tab,el){CRT=tab;document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');rForms();}
 function rForms(){
-  var types=['gamazine','granite','undercoat','cps','clearcoat'];
-  var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat'};
+  var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
+  var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
   document.querySelectorAll('#ftabs .tab').forEach(function(tab,i){var type=types[i];if(!type)return;var count=forms.filter(function(f){return f.type===type;}).length;tab.innerHTML=labels[type]+(count>0?' <span style="font-size:10px;background:#E8F4F9;color:#3a6e87;padding:1px 5px;border-radius:10px;font-weight:500">'+count+'</span>':'');});
   var fs=forms.filter(function(f){return f.type===CRT;});
   if(!fs.length){document.getElementById('fl').innerHTML='<div class="es card">No formulations yet. Click Add formulation above.</div>';return;}
