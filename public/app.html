@@ -1454,7 +1454,36 @@ function mkQR(text){var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';for(var r
 function cOC(){document.getElementById('sarea').style.display='none';document.getElementById('oc').value='';document.getElementById('onn').value='';sOT('active',null);}
 function sOT(tab,el){if(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}document.getElementById('ot-new').style.display=tab==='new'?'block':'none';document.getElementById('ot-active').style.display=tab==='active'?'block':'none';document.getElementById('ot-done').style.display=tab==='done'?'block':'none';rOLists();}
 function rOLists(){var p=orders.filter(function(o){return o.status==='pending';});var d=orders.filter(function(o){return o.status==='done';});var ce=document.getElementById('active-count');if(ce)ce.textContent=p.length>0?p.length:'';document.getElementById('aol').innerHTML=p.length?p.map(function(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+(o.bkt?' · '+o.bkt:'')+(o.stK?' · '+o.stK:'')+'</div></div><div style="display:flex;gap:5px"><button class="btn btns btnw" onclick="oComplete(\''+o.id+'\')"><i class="ti ti-circle-check"></i> Mark complete</button>'+(userRole==='admin'?'<button class="btn btns btnd" onclick="cancelOrder(\''+o.id+'\')"><i class="ti ti-x"></i> Cancel</button>':'')+'</div></div>';}).join(''):'<div class="es card">No active orders</div>';document.getElementById('dol').innerHTML=d.length?d.map(function(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div><span class="bdg bok"><i class="ti ti-circle-check"></i> Complete</span></div>';}).join(''):'<div class="es card">No completed orders yet</div>';}
-function oComplete(id){var o=orders.find(function(x){return x.id===id;});if(!o)return;pendingOrderId=id;var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;document.getElementById('comp-det').innerHTML='<div class="oc" style="margin-bottom:0.75rem"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';if(f){(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;var name=ing.is_stone?o.stK:ing.name;dd+=dl(name,ing.qty*o.qty,ing.unit);});(f.tints||[]).forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});}if(o.cmTi&&o.cmTi.length)o.cmTi.forEach(function(t){dd+=dl(t.n,(ml(t.s,t.y)/1000)*o.qty,'L');});if(o.bkt){if(o.bkt.includes('Printed'))dd+=dl('20L Printed Buckets',o.qty,'units');else if(o.bkt.includes('Titan'))dd+=dl('20L Titan Black',o.qty,'units');else if(o.bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',o.qty,'units');else if(o.bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',o.qty,'units');}if(['gamazine','granite','undercoat'].indexOf(o.t)!==-1)dd+=dl('Plastic Bags',o.qty,'units');if(o.lid)dd+=dl('Lids',o.qty,'units');document.getElementById('comp-ded').innerHTML=dd;oM('m-comp');}
+function oComplete(id){
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;pendingOrderId=id;
+  document.getElementById('comp-det').innerHTML='<div class="oc" style="margin-bottom:0.75rem"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';
+  function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}
+  var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';
+  function buildOne(t,fid,qty,stK,bkt,secSize,cmTi){
+    var f=fid?forms.find(function(x){return x.id===fid;}):null;
+    var szRatio=(t==='cps'&&secSize==='5')?0.25:1;
+    if(t==='undercoat'){dd+=dl('Undercoat',qty,'bkt');}
+    else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:20;dd+=dl(wpLabel,wpSz*qty,'L');}
+    else if(f){
+      (f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!stK)return;var name=ing.is_stone?stK:ing.name;dd+=dl(name,ing.qty*qty*szRatio,ing.unit);});
+      (f.tints||[]).forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio,'L');});
+    }
+    if(cmTi&&cmTi.length)cmTi.forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty,'L');});
+    if(bkt){if(bkt.includes('Printed'))dd+=dl('20L Printed Buckets',qty,'units');else if(bkt.includes('Titan'))dd+=dl('20L Titan Black',qty,'units');else if(bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',qty,'units');else if(bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',qty,'units');}
+    if(['gamazine','granite'].indexOf(t)!==-1)dd+=dl('Plastic Bags',qty,'units');
+  }
+  if(o.t==='multi'&&o.items&&o.items.length){
+    o.items.forEach(function(item){
+      var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':'20L Secure Lock'):(item.bucket||'');
+      buildOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+    });
+  } else {
+    var secSizeGuess=o.bkt&&o.bkt.includes('5L')?'5':'20';
+    buildOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi);
+  }
+  if(o.lid)dd+=dl('Lids',o.qty,'units');
+  document.getElementById('comp-ded').innerHTML=dd;oM('m-comp');
+}
 async function cancelOrder(id){
   var reason=window.prompt('Reason for cancelling this order (admin override):');
   if(reason===null)return;
@@ -1462,7 +1491,38 @@ async function cancelOrder(id){
   orders=orders.filter(function(o){return o.id!==id;});
   rOLists();rDash();
 }
-async function confComplete(){var id=pendingOrderId;var o=orders.find(function(x){return x.id===id;});if(!o)return;var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}if(o.t==='undercoat'){await dm('Undercoat',o.qty);}else if(f){var szRatio=(o.t==='cps'&&o.bkt&&o.bkt.indexOf('5L')!==-1)?0.25:1;for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!o.stK)continue;var name=ing.is_stone?o.stK:ing.name;await dm(name,ing.qty*o.qty*szRatio);}for(var j=0;j<(f.tints||[]).length;j++){var t=f.tints[j];await dm(t.n,(ml(t.s,t.y)/1000)*o.qty*szRatio);}}if(o.cmTi)for(var k=0;k<o.cmTi.length;k++)await dm(o.cmTi[k].n,(ml(o.cmTi[k].s,o.cmTi[k].y)/1000)*o.qty);if(o.bkt){if(o.bkt.includes('Printed'))await dp('pr20',o.qty);else if(o.bkt.includes('Titan'))await dp('ti20',o.qty);else if(o.bkt.includes('5L Secure'))await dp('sl5',o.qty);else if(o.bkt.includes('20L Secure'))await dp('sl20',o.qty);}if(['gamazine','granite'].indexOf(o.t)!==-1)await dp('bags',o.qty);if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}await api('PUT','/orders/'+id,{status:'done'});o.status='done';cM('m-comp');rOLists();rDash();}
+
+async function confComplete(){
+  var id=pendingOrderId;var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
+  async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
+  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi){
+    var f=fid?forms.find(function(x){return x.id===fid;}):null;
+    var szRatio=(t==='cps'&&secSize==='5')?0.25:1;
+    if(t==='undercoat'){await dm('Undercoat',qty);}
+    else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:20;await dm(wpLabel,wpSz*qty);}
+    else if(f){
+      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!stK)continue;var name=ing.is_stone?stK:ing.name;await dm(name,ing.qty*qty*szRatio);}
+      for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
+    }
+    if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
+    if(bkt){if(bkt.includes('Printed'))await dp('pr20',qty);else if(bkt.includes('Titan'))await dp('ti20',qty);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
+    if(['gamazine','granite'].indexOf(t)!==-1)await dp('bags',qty);
+  }
+  if(o.t==='multi'&&o.items&&o.items.length){
+    for(var n=0;n<o.items.length;n++){
+      var item=o.items[n];
+      var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':'20L Secure Lock'):(item.bucket||'');
+      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+    }
+  } else {
+    var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
+    var secSizeGuess=o.bkt&&o.bkt.includes('5L')?'5':'20';
+    await deductOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi);
+  }
+  if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}
+  await api('PUT','/orders/'+id,{status:'done'});o.status='done';cM('m-comp');rOLists();rDash();
+}
 
 // REPORTS
 function rRep(){rWk();}
