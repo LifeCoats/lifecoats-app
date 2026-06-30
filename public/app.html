@@ -1145,7 +1145,7 @@ function tTV(){
 
 function renderTV(){
   var container=document.getElementById('tv-fullscreen');if(!container)return;
-  var done=orders.filter(function(o){return o.status==='done';});
+  var done=orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);});
   var active=orders.filter(function(o){return o.status==='pending';});
   var allItems=allTVItems();
   var lowItems=allItems.filter(function(i){return i.low();});
@@ -1661,7 +1661,7 @@ function rBS(bg,col,border,fs){return'background:'+bg+';color:'+col+';border:0.5
 // ---- DASHBOARD ----
 function recDashHTML(){
   var active=orders.filter(function(o){return o.status==='pending';});
-  var done=orders.filter(function(o){return o.status==='done';});
+  var done=orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);});
   var h='<h2 style="font-size:20px;font-weight:500;margin-bottom:1rem">Dashboard</h2>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem">';
   h+=recMetric('Active orders',active.length,'#378ADD');
