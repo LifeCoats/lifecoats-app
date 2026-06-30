@@ -723,7 +723,7 @@ var tvSettings={selected_items:[],groups:[]};
 function allTVItems(){
   var items=[];
   mats.forEach(function(m){items.push({key:'mat:'+m.name,label:m.name,cat:'Raw Materials',getVal:function(){return m.stock;},getMax:function(){return Math.max(m.alert_level*3,m.stock,1);},getAlert:function(){return m.alert_level;},getUnit:function(){return m.unit;},dsp:function(){return dspStock(m);},low:function(){return stt(m.stock,m.alert_level)!=='ok';}});});
-  Object.values(mfgStock).forEach(function(m){items.push({key:'mfg:'+m.name,label:m.name,cat:'Manufactured Stock',getVal:function(){return m.stock;},getMax:function(){return Math.max(m.alert_level*3,m.stock,1);},getAlert:function(){return m.alert_level;},getUnit:function(){return m.unit;},dsp:function(){return m.stock.toFixed(0)+'L';},low:function(){return m.stock<=m.alert_level;}});});
+  Object.values(mfgStock).forEach(function(m){items.push({key:'mfg:'+m.name,label:m.name,cat:'Manufactured Stock',getVal:function(){return m.stock;},getMax:function(){return Math.max(m.alert_level*3,m.stock,1);},getAlert:function(){return m.alert_level;},getUnit:function(){return m.name==='Undercoat'?'buckets':m.unit;},dsp:function(){return m.name==='Undercoat'?m.stock.toFixed(0)+' bkt':m.stock.toFixed(0)+'L';},low:function(){return m.stock<=m.alert_level;}});});
   Object.values(pkgData).forEach(function(p){items.push({key:'pkg:'+p.id,label:p.name,cat:'Packaging',getVal:function(){return p.stock;},getMax:function(){return Math.max(p.alert_level*3,p.stock,1);},getAlert:function(){return p.alert_level;},getUnit:function(){return p.pack_unit?'rolls':'units';},dsp:function(){return p.stock+(p.pack_unit?' rolls':'');},low:function(){return p.stock<=p.alert_level;}});});
   return items;
 }
