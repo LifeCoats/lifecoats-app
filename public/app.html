@@ -1737,7 +1737,7 @@ function recProductPanel(){
   var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
   var h='';
 
-  if(!isCM&&!isSec){
+  if(!isCM&&(t==='cps'||!isSec)){
     var fs=forms.filter(function(f){return f.type===t;});
     var search=(REC.addSearch||'').toLowerCase();
     // Sub-category tabs
