@@ -223,6 +223,16 @@ app.post('/api/base-logs', auth, async (req, res) => {
   res.json(data);
 });
 
+// JOB BOOKINGS
+app.get('/api/job-bookings', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('job_bookings').select('*').order('created_at', { ascending: false });
+  res.json(data || []);
+});
+app.post('/api/job-bookings', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('job_bookings').insert(req.body).select().single();
+  res.json(data);
+});
+
 // Serve app for all other routes
 app.get('*', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
