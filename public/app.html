@@ -2168,12 +2168,19 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
     if(item.unit)details.push(item.unit);
     h+='<td><div style="font-weight:600">'+item.label+'</div>';
     // Tints detail for colour match and gamazine
-    var tintSource=item.cmTi&&item.cmTi.length?item.cmTi:(item.fid?(forms.find(function(f){return f.id===item.fid;})||{tints:[]}).tints:[]);
+    var itemForm=item.fid?forms.find(function(f){return f.id===item.fid;}):null;
+    var tintSource=item.cmTi&&item.cmTi.length?item.cmTi:(itemForm?itemForm.tints:[]);
+    var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:1;
+    if(itemForm&&(itemForm.ingredients||[]).length){
+      h+='<div class="tint-detail"><b>Materials (×'+item.qty+' '+(szRatio<1?'× 5L':'buckets')+'):</b><br>';
+      itemForm.ingredients.forEach(function(ing){if(ing.is_stone&&!item.stone)return;var name=ing.is_stone?item.stone:ing.name;var amt=ing.qty*item.qty*szRatio;h+=''+name+': '+amt.toFixed(2)+' '+ing.unit+'<br>';});
+      h+='</div>';
+    }
     if(tintSource&&tintSource.length){
       h+='<div class="tint-detail"><b>Tints (per bucket):</b><br>';
       tintSource.forEach(function(t){var totalMl=ml(t.s,t.y);h+=''+t.n+': '+t.y+'Y + '+t.s+' shots = '+totalMl.toFixed(1)+'ml<br>';});
-      h+='<b>Tints (×'+item.qty+' buckets):</b><br>';
-      tintSource.forEach(function(t){var totalMl=ml(t.s,t.y)*item.qty;h+=''+t.n+': '+(t.y*item.qty)+'Y + '+(t.s*item.qty)+' shots = '+totalMl.toFixed(1)+'ml<br>';});
+      h+='<b>Tints (×'+item.qty+' '+(szRatio<1?'× 5L':'buckets')+'):</b><br>';
+      tintSource.forEach(function(t){var totalMl=ml(t.s,t.y)*item.qty*szRatio;h+=''+t.n+': '+(t.y*item.qty*szRatio).toFixed(1)+'Y + '+(t.s*item.qty*szRatio).toFixed(1)+' shots = '+totalMl.toFixed(1)+'ml<br>';});
       h+='</div>';
     }
     h+='</td>';
