@@ -696,6 +696,7 @@ function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').
 function doConf(){cM('m-conf');if(confCB)confCB();}
 
 function nav(id,el){
+  if(id!=='jobs'&&window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
   document.getElementById('pg-'+id).classList.add('active');
@@ -729,7 +730,7 @@ function sJT(tab,el){
   document.getElementById('jt-new').style.display=tab==='new'?'block':'none';
   document.getElementById('jt-log').style.display=tab==='log'?'block':'none';
   if(tab==='new')rJobNew();
-  if(tab==='log')rJobLog();
+  if(tab==='log'){if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}rJobLog();}
 }
 
 function rJobNew(){
@@ -765,11 +766,11 @@ function rJobNew(){
     });
     h+='</div></div>';
   } else {
-    var prevREC=window.REC;window.REC=JOB;window._jobMode=true;
+    window._jobModeREC=window._jobModeREC||REC;
+    window.REC=JOB;window._jobMode=true;
     h+='<div class="card"><button onclick="JOB.addType=null;rJobNew()" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:0.75rem"><i class="ti ti-arrow-left"></i> Back</button>';
     h+=recProductPanel();
     h+='</div>';
-    window.REC=prevREC;window._jobMode=false;
   }
   el.innerHTML=h;
 }
@@ -777,14 +778,13 @@ function rJobNew(){
 function jobRemove(i){JOB.basket.splice(i,1);rJobNew();}
 
 function jobAddToBasket(){
-  var prevREC=window.REC;window.REC=JOB;
   var t=JOB.addType;var isSec=['cps','waterproofing','fiberseal'].indexOf(t)!==-1;
   var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
   var f=JOB.addFid?forms.find(function(x){return x.id===JOB.addFid;}):null;
-  if(!f){window.REC=prevREC;window.alert('Select a colour first');return;}
-  if(isGam&&!JOB.addStone){window.REC=prevREC;window.alert('Select a stone size');return;}
-  if(isBkt&&!JOB.addBucket){window.REC=prevREC;window.alert('Select a bucket type');return;}
-  if(isSec&&!JOB.addSecSize){window.REC=prevREC;window.alert('Select a size');return;}
+  if(!f){window.alert('Select a colour first');return;}
+  if(isGam&&!JOB.addStone){window.alert('Select a stone size');return;}
+  if(isBkt&&!JOB.addBucket){window.alert('Select a bucket type');return;}
+  if(isSec&&!JOB.addSecSize){window.alert('Select a size');return;}
   var qty=JOB.addQty||1;
   var label=f.name;
   var details=[];
@@ -794,7 +794,6 @@ function jobAddToBasket(){
   details.push(qty+' bucket'+(qty>1?'s':''));
   JOB.basket.push({type:'product',fid:JOB.addFid,productType:t,label:label,qty:qty,stone:JOB.addStone,bucket:JOB.addBucket||'',secSize:JOB.addSecSize||'',details:details.join(' · ')});
   JOB.addType=null;JOB.addFid=null;JOB.addSearch='';JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;
-  window.REC=prevREC;
   rJobNew();
 }
 
