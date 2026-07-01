@@ -1623,12 +1623,29 @@ function rForms(){
 
 async function syncCPSFromGamazine(){
   var gamForms=forms.filter(function(f){return f.type==='gamazine';});
-  var cpsForms=forms.filter(function(f){return f.type==='cps';});
   var created=0,updated=0,deleted=0;
+
+  // Step 0 — Remove any duplicate CPS colours (keep the one with most data — ingredients/prices)
+  var seen={};
+  var cpsDupes=forms.filter(function(f){return f.type==='cps';});
+  for(var d=0;d<cpsDupes.length;d++){
+    var key=cpsDupes[d].name.toLowerCase();
+    if(seen[key]){
+      // Keep whichever has more ingredients or a price set; delete the other
+      var keep=((cpsDupes[d].ingredients||[]).length+(cpsDupes[d].price||0))>((seen[key].ingredients||[]).length+(seen[key].price||0))?cpsDupes[d]:seen[key];
+      var remove=keep===cpsDupes[d]?seen[key]:cpsDupes[d];
+      await api('DELETE','/formulations/'+remove.id);
+      forms=forms.filter(function(f){return f.id!==remove.id;});
+      seen[key]=keep;deleted++;
+    } else {
+      seen[key]=cpsDupes[d];
+    }
+  }
 
   // Step 1 — Create or update CPS colours to match Gamazine
   for(var i=0;i<gamForms.length;i++){
     var gam=gamForms[i];
+    var cpsForms=forms.filter(function(f){return f.type==='cps';});
     var existing=cpsForms.find(function(c){return c.name.toLowerCase()===gam.name.toLowerCase();});
     if(!existing){
       // Create new CPS colour copying name, sub_category and tints only
@@ -2527,4 +2544,3 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </script>
 </body>
 </html>
-
