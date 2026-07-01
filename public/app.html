@@ -278,7 +278,8 @@ tr:hover td{background:#f8f9fa}
 <!-- FORMULATIONS -->
 <div class="pg" id="pg-forms">
   <div class="ph"><div><h1>Formulations</h1><p>All product formulas — admin only</p></div>
-    <button class="btn btnp btns" onclick="oAddForm()"><i class="ti ti-plus"></i> Add formulation</button></div>
+    <button class="btn btnp btns" onclick="oAddForm()"><i class="ti ti-plus"></i> Add formulation</button>
+    <button class="btn btns" id="cps-sync-btn" onclick="syncCPSFromGamazine()" style="display:none"><i class="ti ti-refresh"></i> Sync colours from Gamazine</button></div>
   <div class="al"><i class="ti ti-lock"></i> Company confidential — admin only</div>
   <div class="tabs" id="ftabs">
     <div class="tab active" onclick="sFT('gamazine',this)">Gamazine</div>
@@ -1587,7 +1588,7 @@ async function doBO(){var key=document.getElementById('bo-key').value;var qty=pa
 async function rBOLog(){var log=await api('GET','/packaging-bookouts')||[];document.getElementById('bo-log').innerHTML=log.length?log.slice(0,15).map(function(l){var dt=new Date(l.created_at);return'<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><div style="flex:1"><div style="font-weight:500">'+l.item_name+'</div><div style="font-size:11px;color:#888">'+(l.reason||'Manual bookout')+' · '+dt.toLocaleDateString('en-ZA')+'</div></div><span class="bdg bcrit">−'+l.quantity+'</span></div>';}).join(''):'<div class="es">No bookings yet</div>';}
 
 // FORMULATIONS
-function sFT(tab,el){CRT=tab;document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');rForms();}
+function sFT(tab,el){CRT=tab;document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');var sb=document.getElementById('cps-sync-btn');if(sb)sb.style.display=tab==='cps'?'inline-flex':'none';rForms();}
 function rForms(){
   var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
   var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
@@ -1619,6 +1620,57 @@ function rForms(){
   });
   document.getElementById('fl').innerHTML=h;
 }
+
+async function syncCPSFromGamazine(){
+  var gamForms=forms.filter(function(f){return f.type==='gamazine';});
+  var cpsForms=forms.filter(function(f){return f.type==='cps';});
+  var created=0,updated=0,deleted=0;
+
+  // Step 1 — Create or update CPS colours to match Gamazine
+  for(var i=0;i<gamForms.length;i++){
+    var gam=gamForms[i];
+    var existing=cpsForms.find(function(c){return c.name.toLowerCase()===gam.name.toLowerCase();});
+    if(!existing){
+      // Create new CPS colour copying name, sub_category and tints only
+      var data={name:gam.name,type:'cps',sub_category:gam.sub_category||'Standard',price:0,price_5l:0,
+        ingredients:[],tints:JSON.parse(JSON.stringify(gam.tints||[])),
+        other_ingredients:[],cps_ingredients:{},granite_ingredients:{},
+        base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0};
+      var res=await api('POST','/formulations',data);
+      if(res){res.ingredients=[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';forms.push(res);created++;}
+    } else {
+      // Update name and sub_category if gamazine was renamed, keep existing CPS ingredients/tints/prices
+      var needsUpdate=(existing.name!==gam.name||existing.sub_category!==(gam.sub_category||'Standard'));
+      if(needsUpdate){
+        var upd={name:gam.name,sub_category:gam.sub_category||'Standard',type:'cps',
+          price:existing.price||0,price_5l:existing.price_5l||0,
+          ingredients:existing.ingredients||[],tints:existing.tints||[],
+          other_ingredients:[],cps_ingredients:{},granite_ingredients:{},
+          base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0};
+        var res2=await api('PUT','/formulations/'+existing.id,upd);
+        if(res2){var idx=forms.findIndex(function(f){return f.id===existing.id;});if(idx!==-1){forms[idx].name=gam.name;forms[idx].sub_category=gam.sub_category||'Standard';}updated++;}
+      }
+    }
+  }
+
+  // Step 2 — Delete CPS colours that no longer have a matching Gamazine colour
+  var gamNames=gamForms.map(function(f){return f.name.toLowerCase();});
+  var toDelete=cpsForms.filter(function(c){return gamNames.indexOf(c.name.toLowerCase())===-1;});
+  for(var j=0;j<toDelete.length;j++){
+    await api('DELETE','/formulations/'+toDelete[j].id);
+    forms=forms.filter(function(f){return f.id!==toDelete[j].id;});
+    deleted++;
+  }
+
+  buildCollections();rForms();
+  var msg='Sync complete!\n';
+  if(created)msg+='✓ '+created+' new CPS colour'+(created>1?'s':'')+' created\n';
+  if(updated)msg+='✓ '+updated+' CPS colour'+(updated>1?'s':'')+' renamed\n';
+  if(deleted)msg+='✓ '+deleted+' CPS colour'+(deleted>1?'s':'')+' removed\n';
+  if(!created&&!updated&&!deleted)msg+='Everything is already in sync — no changes needed.';
+  window.alert(msg);
+}
+
 async function dForm(id){await api('DELETE','/formulations/'+id);forms=forms.filter(function(f){return f.id!==id;});buildCollections();rForms();}
 function copyForm(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;var copy=JSON.parse(JSON.stringify(f));copy.name=f.name+' (copy)';delete copy.id;api('POST','/formulations',copy).then(function(res){if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';forms.push(res);buildCollections();rForms();}});}
 function oAddForm(){document.getElementById('feid').value='';document.getElementById('fmtitle').textContent='Add formulation';document.getElementById('fn').value='';document.getElementById('fp').value='';document.getElementById('fsubcat').value='Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';document.getElementById('ftype').value=CRT;updateSCS();oM('m-af');}
@@ -2475,3 +2527,4 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </script>
 </body>
 </html>
+
