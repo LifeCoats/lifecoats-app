@@ -16,6 +16,8 @@ body{font-family:system-ui,sans-serif;background:#f0f4f7;display:flex;align-item
 .fg label{display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:#333}
 .fg input{width:100%;font-size:14px;padding:9px 12px;border-radius:8px;border:0.5px solid #ccc;font-family:inherit}
 .fg input:focus{outline:none;border-color:#5B8FA8}
+.remember{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;font-size:13px;color:#555;cursor:pointer}
+.remember input{width:auto;margin:0;cursor:pointer}
 .btn{width:100%;padding:10px;background:#5B8FA8;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:500}
 .btn:hover{background:#4a7a93}
 .error{background:#FCEBEB;color:#A32D2D;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:1rem;display:none}
@@ -37,14 +39,29 @@ body{font-family:system-ui,sans-serif;background:#f0f4f7;display:flex;align-item
     <label>Password</label>
     <input type="password" id="pw" placeholder="Enter password" autocomplete="current-password">
   </div>
+  <label class="remember">
+    <input type="checkbox" id="rm"> Remember me on this device
+  </label>
   <button class="btn" onclick="login()">Log in</button>
   <div class="loading" id="ld">Logging in...</div>
 </div>
 <script>
-document.addEventListener('keydown', function(e){ if(e.key==='Enter') login(); });
+// Pre-fill saved credentials if Remember Me was checked
+(function(){
+  var saved=JSON.parse(localStorage.getItem('lc_remember')||'null');
+  if(saved){
+    document.getElementById('un').value=saved.un||'';
+    document.getElementById('pw').value=saved.pw||'';
+    document.getElementById('rm').checked=true;
+  }
+})();
+
+document.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+
 async function login(){
   var un=document.getElementById('un').value.trim();
   var pw=document.getElementById('pw').value.trim();
+  var rm=document.getElementById('rm').checked;
   if(!un||!pw){document.getElementById('err').style.display='block';return;}
   document.getElementById('ld').style.display='block';
   document.getElementById('err').style.display='none';
@@ -55,6 +72,9 @@ async function login(){
       localStorage.setItem('lc_token',data.token);
       localStorage.setItem('lc_role',data.role);
       localStorage.setItem('lc_username',data.username);
+      // Save or clear credentials based on Remember Me
+      if(rm){localStorage.setItem('lc_remember',JSON.stringify({un:un,pw:pw}));}
+      else{localStorage.removeItem('lc_remember');}
       window.location.href='/app.html';
     } else {
       document.getElementById('err').style.display='block';
