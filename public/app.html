@@ -146,6 +146,8 @@ tr:hover td{background:#f8f9fa}
 <div class="loading-screen" id="ls">
   <div class="spinner"></div><h2>Life Coats</h2><p>Loading ProducTrack...</p>
 </div>
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,15,30,0.6);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:14px"><div style="width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:#5B8FA8;border-radius:50%;animation:spin 0.8s linear infinite"></div><div id="loading-msg" style="color:#fff;font-size:14px;font-weight:500;letter-spacing:0.04em">Saving...</div></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 <div class="app" id="app" style="display:none">
 <div class="sidebar" id="sb">
   <div class="logo"><h2>Life Coats</h2><p id="rl">ProducTrack</p></div>
@@ -722,7 +724,8 @@ function rRecset(){
 async function saveRecSettings(){var all=allTVItems();var sel=all.filter(function(it){var cb=document.getElementById('rs-'+it.key);return cb&&cb.checked;}).map(function(it){return{key:it.key,label:it.label};});await api('POST','/reception-settings',{selected_items:sel});if(REC)REC.dashItems=sel;alert('Reception dashboard saved!');}
 
 // ==== JOB BOOKINGS ====
-var JOB={basket:[],ref:'',addType:null,addFid:null,addSearch:'',addSub:null,addQty:1,addStone:null,addBucket:null,addSecSize:null};
+function showLoad(msg){var o=document.getElementById('loading-overlay');if(o){o.style.display='flex';document.getElementById('loading-msg').textContent=msg||'Saving...';}}
+function hideLoad(){var o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
 function recOrJobRender(){if(window._jobMode){rJobNew();}else{recRender();}}
 var jobBookings=[];
 var JOBTYPES=['gamazine','granite','cps','waterproofing','fiberseal','undercoat'];
@@ -815,6 +818,7 @@ function jobAddToBasket(){
 async function jobConfirm(){
   if(!JOB.basket.length){window.alert('Add items to the basket first');return;}
   if(!JOB.ref||!JOB.ref.trim()){window.alert('Enter a client name / job reference');return;}
+  showLoad('Booking out stock...');
   async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
   for(var n=0;n<JOB.basket.length;n++){
@@ -843,7 +847,7 @@ async function jobConfirm(){
   rDash();
   // Print
   jobPrintSlip(jid,rec.ref,JOB.basket);
-  JOB.basket=[];JOB.ref='';
+  hideLoad();JOB.basket=[];JOB.ref='';
   rJobNew();
 }
 
@@ -1456,7 +1460,7 @@ async function rRcvLog(){var log=await api('GET','/stock-receipts')||[];document
 
 // BATCH PRODUCTION
 function rBatches(){rBatchProduce();}
-function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','waterproofing','fiberseal','undercoat','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='waterproofing')rBatchMfg('waterproofing');if(tab==='fiberseal')rBatchMfg('fiberseal');if(tab==='undercoat')rBatchMfgBkt('undercoat');if(tab==='log')rBatchLog();}
+function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','waterproofing','fiberseal','undercoat','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='waterproofing')rBatchMfg('waterproofing');if(tab==='fiberseal')rBatchMfg('fiberseal');if(tab==='undercoat')hideLoad();rBatchMfgBkt('undercoat');if(tab==='log')rBatchLog();}
 function rBatchMfgBkt(type){
   var label='Undercoat';
   var mfg=mfgStock[label];
@@ -1482,6 +1486,7 @@ async function produceBatchBkt(){
   var label='Undercoat';
   var mfg=mfgStock[label];
   if(!mfg){alert('No manufactured stock entry found for "Undercoat". Please add a row in Supabase: manufactured_stock table, name="Undercoat", stock=0, alert_level=10, then refresh.');return;}
+  showLoad('Producing Undercoat batch...');
   var recipe=batchRecipes.find(function(r){return r.name===label||r.name.toLowerCase().indexOf('undercoat')!==-1;});
   if(recipe){
     var ratio=45/recipe.batch_size;
@@ -1496,8 +1501,7 @@ async function produceBatchBkt(){
   mfg.stock+=45;
   await api('PUT','/manufactured-stock/'+mfg.id,{stock:mfg.stock});
   await api('POST','/batch-logs',{recipe_name:'Undercoat Batch',litres_produced:45,triggered_by:userName});
-  rBatchMfgBkt('undercoat');
-  rDash();
+  hideLoad();hideLoad();rBatchMfgBkt('undercoat');rDash();
   alert('45 bucket batch of Undercoat produced! Stock is now '+Math.round(mfg.stock)+' buckets.');
 }
 function rBatchMfg(type){
@@ -1544,8 +1548,7 @@ async function produceBatchMfg(type){
   mfg.stock+=200;
   await api('PUT','/manufactured-stock/'+mfg.id,{stock:mfg.stock});
   await api('POST','/batch-logs',{recipe_name:label+' Batch',litres_produced:200,triggered_by:userName});
-  rBatchMfg(type);
-  rDash();
+  hideLoad();hideLoad();rBatchMfg(type);rDash();
   alert('200L batch of '+label+' produced! Stock is now '+mfg.stock.toFixed(0)+'L.');
 }
 function rBatchProduce(){
@@ -1623,6 +1626,7 @@ function rForms(){
 }
 
 async function syncCPSFromGamazine(){
+  showLoad('Syncing CPS colours from Gamazine...');
   var gamForms=forms.filter(function(f){return f.type==='gamazine';});
   var created=0,updated=0,deleted=0;
 
@@ -1680,7 +1684,7 @@ async function syncCPSFromGamazine(){
     deleted++;
   }
 
-  buildCollections();rForms();
+  hideLoad();buildCollections();rForms();
   var msg='Sync complete!\n';
   if(created)msg+='✓ '+created+' new CPS colour'+(created>1?'s':'')+' created\n';
   if(updated)msg+='✓ '+updated+' CPS colour'+(updated>1?'s':'')+' renamed\n';
@@ -1704,7 +1708,7 @@ function toggleStone(cb){var row=cb.parentElement.parentElement;var fc=row.child
 function addTintRow(name,y,s){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;align-items:end;margin-bottom:6px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(y||0)+'" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(s||0)+'" min="0"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';document.getElementById('f-tint-list').appendChild(row);if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
 function getIngs(){var ings=[];document.querySelectorAll('#f-ing-list > div').forEach(function(row){var cb=row.querySelector('input[type="checkbox"]');var isStone=cb?cb.checked:false;var name='';if(isStone){name='__stone__';}else{var sel=row.querySelector('select');name=sel?sel.value:'';}var ins=row.querySelectorAll('input[type="number"]');var us=row.querySelectorAll('select')[1];var qty=ins[0]?parseFloat(ins[0].value)||0:0;var unit=us?us.value:'kg';if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});});return ings;}
 function getTints(){var tints=[];document.querySelectorAll('#f-tint-list > div').forEach(function(row){var sels=row.querySelectorAll('select');var ins=row.querySelectorAll('input');if(sels[0])tints.push({n:sels[0].value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});return tints;}
-async function saveForm(){var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a name');return;}var data={name:n,type:document.getElementById('ftype').value,sub_category:document.getElementById('fsubcat').value.trim()||'Standard',price:parseFloat(document.getElementById('fp').value)||0,price_5l:parseFloat(document.getElementById('fp5').value)||0,price_10l:parseFloat(document.getElementById('fp10').value)||0,ingredients:getIngs(),tints:getTints(),other_ingredients:[],cps_ingredients:{},granite_ingredients:{},base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0};var eid=document.getElementById('feid').value;if(eid){var res=await api('PUT','/formulations/'+eid,data);if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}}else{var res2=await api('POST','/formulations',data);if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}}cM('m-af');buildCollections();rForms();}
+async function saveForm(){var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a name');return;}showLoad('Saving formulation...');var data={name:n,type:document.getElementById('ftype').value,sub_category:document.getElementById('fsubcat').value.trim()||'Standard',price:parseFloat(document.getElementById('fp').value)||0,price_5l:parseFloat(document.getElementById('fp5').value)||0,price_10l:parseFloat(document.getElementById('fp10').value)||0,ingredients:getIngs(),tints:getTints(),other_ingredients:[],cps_ingredients:{},granite_ingredients:{},base:'None',base_qty:0,sand_type:'none',sand_qty:0,stone_type:'none',stone_qty:0};var eid=document.getElementById('feid').value;if(eid){var res=await api('PUT','/formulations/'+eid,data);if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}}else{var res2=await api('POST','/formulations',data);if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}}hideLoad();cM('m-af');buildCollections();rForms();}
 
 // ORDERS
 function rRecStock(){var show=userRole==='reception';document.getElementById('rec-stock').style.display=show?'block':'none';if(!show)return;var h='<div class="fr"><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Manufactured stock</div>';Object.values(mfgStock).forEach(function(m){var col=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+m.name+'</span><span style="font-weight:500;color:'+col+'">'+m.stock.toFixed(0)+'L</span></div>';});h+='</div><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Packaging</div>';['pr20','ti20','sl20','sl5','bags'].forEach(function(k){var p=pkgData[k];if(!p)return;var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});h+='</div></div>';document.getElementById('rsc').innerHTML=h;}
