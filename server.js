@@ -191,11 +191,13 @@ app.get('/api/formulations', auth, async (req, res) => {
   res.json(data || []);
 });
 app.post('/api/formulations', auth, adminOnly, async (req, res) => {
-  const { data } = await supabase.from('formulations').insert(req.body).select().single();
+  const { data, error } = await supabase.from('formulations').insert(req.body).select().single();
+  if(error){ console.error('formulations insert error:', error); return res.status(500).json({ error: error.message }); }
   res.json(data);
 });
 app.put('/api/formulations/:id', auth, adminOnly, async (req, res) => {
-  const { data } = await supabase.from('formulations').update(req.body).eq('id', req.params.id).select().single();
+  const { data, error } = await supabase.from('formulations').update(req.body).eq('id', req.params.id).select().single();
+  if(error){ console.error('formulations update error:', error); return res.status(500).json({ error: error.message }); }
   res.json(data);
 });
 app.delete('/api/formulations/:id', auth, adminOnly, async (req, res) => {
