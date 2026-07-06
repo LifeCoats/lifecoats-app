@@ -30,7 +30,7 @@ function auth(req, res, next) {
 }
 
 function adminOnly(req, res, next) {
-  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  if (req.user.role !== 'admin' && req.user.role !== 'office') return res.status(403).json({ error: 'Admin only' });
   next();
 }
 
