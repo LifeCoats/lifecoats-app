@@ -399,11 +399,12 @@ tr:hover td{background:#f8f9fa}
 <div class="pg" id="pg-jobs">
   <div class="ph"><div><h1>Job Bookings</h1><p>Book out stock for application jobs &amp; quotes — no pricing, no sales impact</p></div></div>
   <div class="tabs">
-    <div class="tab active" onclick="sJT('new',this)">New Booking</div>
-    <div class="tab" onclick="sJT('log',this)">Booking Log</div>
+    <div class="tab active" onclick="sJT('open',this)">Open Jobs</div>
+    <div class="tab" onclick="sJT('closed',this)">Closed Jobs</div>
   </div>
-  <div id="jt-new"></div>
-  <div id="jt-log" style="display:none"></div>
+  <div id="jt-open"></div>
+  <div id="jt-closed" style="display:none"></div>
+  <div id="jt-detail" style="display:none"></div>
 </div>
 
 <!-- REPORTS -->
@@ -619,7 +620,7 @@ async function loadAll(){
     forms=(r[3]||[]).map(function(f){f.ingredients=f.ingredients||[];f.tints=f.tints||[];f.sub_category=f.sub_category||'Standard';return f;});
     orders=(r[4]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,cashAmt:o.cash_amount||0,cardAmt:o.card_amount||0,orderTotal:o.order_total||0,items:o.items||null};});
     batchRecipes=r[5]||[];
-    jobBookings=(r[6]||[]).map(function(j){return{id:j.id,ref:j.job_ref,items:j.items||[],created_at:j.created_at,booked_by:j.booked_by};});
+    jobBookings=(r[6]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});});
     await loadTVSettings();
     if(orders.length){var mx=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));NID=mx+1;}
     buildCollections();
@@ -719,7 +720,7 @@ function nav(id,el){
   document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('active');});
   document.getElementById('pg-'+id).classList.add('active');
   if(el)el.classList.add('active');
-  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset,clients:function(){document.getElementById('cl-results').innerHTML='';document.getElementById('cl-orders').style.display='none';},jobs:function(){sJT('new',document.querySelector('#pg-jobs .tab'));}};
+  var fn={dash:rDash,mats:rMats,receive:rReceive,batches:rBatches,pkg:rPkg,forms:rForms,orders:function(){oPTC();rOLists();rRecStock();},rep:rRep,recset:rRecset,clients:function(){document.getElementById('cl-results').innerHTML='';document.getElementById('cl-orders').style.display='none';},jobs:function(){activeJobId=null;sJT('open',document.querySelector('#pg-jobs .tab'));}};
   function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
   function rRecset(){var all=allTVItems();var rs=document.getElementById('recset-list');if(!rs)return;var saved=REC&&REC.dashItems?REC.dashItems:[];var savedKeys=saved.map(function(s){return s.key;});rs.innerHTML=all.map(function(it){var chk=savedKeys.indexOf(it.key)!==-1;return'<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #e0e0e0;font-size:13px"><input type="checkbox" id="rs-'+it.key+'" '+(chk?'checked':'')+' style="width:auto"><label for="rs-'+it.key+'">'+it.label+'<span style="font-size:11px;color:#888;margin-left:6px">'+it.cat+'</span></label></div>';}).join('');}
   if(fn[id])fn[id]();
@@ -738,64 +739,292 @@ function rRecset(){
 async function saveRecSettings(){var all=allTVItems();var sel=all.filter(function(it){var cb=document.getElementById('rs-'+it.key);return cb&&cb.checked;}).map(function(it){return{key:it.key,label:it.label};});await api('POST','/reception-settings',{selected_items:sel});if(REC)REC.dashItems=sel;alert('Reception dashboard saved!');}
 
 // ==== JOB BOOKINGS ====
-function showLoad(msg){var o=document.getElementById('loading-overlay');if(o){o.style.display='flex';document.getElementById('loading-msg').textContent=msg||'Saving...';}}
-function hideLoad(){var o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
-function recOrJobRender(){if(window._jobMode){rJobNew();}else{recRender();}}
+var JOB={basket:[],addType:null,addFid:null,addSearch:'',addSub:null,addQty:1,addStone:null,addBucket:null,addSecSize:null,cmTi:[]};
 var jobBookings=[];
-var JOBTYPES=['gamazine','granite','cps','waterproofing','fiberseal','undercoat'];
+var activeJobId=null; // currently open job being viewed
 
 function sJT(tab,el){
   document.querySelectorAll('#pg-jobs .tab').forEach(function(t){t.classList.remove('active');});
   if(el)el.classList.add('active');
-  document.getElementById('jt-new').style.display=tab==='new'?'block':'none';
-  document.getElementById('jt-log').style.display=tab==='log'?'block':'none';
-  if(tab==='new')rJobNew();
-  if(tab==='log'){if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}rJobLog();}
+  ['open','closed','detail'].forEach(function(t){var e=document.getElementById('jt-'+t);if(e)e.style.display='none';});
+  var show=document.getElementById('jt-'+tab);if(show)show.style.display='block';
+  if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
+  if(tab==='open')rJobOpen();
+  if(tab==='closed')rJobClosed();
+  if(tab==='detail'&&activeJobId)rJobDetail(activeJobId);
 }
 
-function rJobNew(){
-  var el=document.getElementById('jt-new');if(!el)return;
-  var h='';
-  // Basket summary
-  if(JOB.basket.length){
-    h+='<div class="card" style="margin-bottom:0.75rem;background:#f0faf4;border-color:#5B8FA8">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-    h+='<span style="font-weight:600;font-size:14px">Booking basket ('+JOB.basket.length+' item'+(JOB.basket.length>1?'s':'')+')</span></div>';
-    JOB.basket.forEach(function(item,i){
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #ddd;font-size:13px">';
-      h+='<span><b>'+item.label+'</b> × '+item.qty+(item.details?' · '+item.details:'')+'</span>';
-      h+='<button class="btn btns btnd" onclick="jobRemove('+i+')" style="padding:3px 8px;font-size:11px"><i class="ti ti-x"></i></button></div>';
-    });
-    h+='<div style="display:flex;gap:8px;margin-top:0.75rem">';
-    h+='<button class="btn btns" onclick="JOB.basket=[];rJobNew()" style="font-size:12px"><i class="ti ti-trash"></i> Clear basket</button>';
-    h+='<button class="btn btnp" onclick="jobConfirm()" style="flex:1"><i class="ti ti-clipboard-check"></i> Confirm booking &amp; deduct stock</button>';
-    h+='</div></div>';
-  }
-  // Job reference
-  h+='<div class="card" style="margin-bottom:0.75rem"><h3>Job reference</h3>';
-  h+='<div class="fg"><label>Client name / Job reference</label><input type="text" id="job-ref" value="'+(JOB.ref||'')+'" oninput="JOB.ref=this.value" placeholder="e.g. Smith Residence - Driveway"></div>';
+// ---- OPEN JOBS LIST ----
+function rJobOpen(){
+  var el=document.getElementById('jt-open');if(!el)return;
+  var open=jobBookings.filter(function(j){return j.status!=='closed';});
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">';
+  h+='<h3 style="margin:0">Open Jobs ('+open.length+')</h3>';
+  h+='<button class="btn btnp btns" onclick="oCreateJob()"><i class="ti ti-plus"></i> Create new job</button></div>';
+  if(!open.length){h+='<div class="card es">No open jobs. Click "Create new job" to start one.</div>';el.innerHTML=h;return;}
+  open.forEach(function(j){
+    var age=Math.floor((new Date()-new Date(j.created_at))/(1000*60*60*24));
+    h+='<div class="card" style="margin-bottom:0.75rem;cursor:pointer" onclick="openJobDetail(''+j.id+'')">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+    h+='<div><div style="font-weight:700;font-size:15px;color:#3a6e87">'+j.job_ref+'</div>';
+    h+='<div style="font-size:11px;color:#888;margin-top:3px">Started: '+new Date(j.created_at).toLocaleDateString('en-ZA')+' · '+age+' day'+(age!==1?'s':'')+' open</div></div>';
+    h+='<div style="display:flex;gap:6px">';
+    h+='<button class="btn btns" onclick="event.stopPropagation();openJobDetail(''+j.id+'')"><i class="ti ti-eye"></i> View</button>';
+    h+='<button class="btn btns" onclick="event.stopPropagation();jobPrint(''+j.id+'')"><i class="ti ti-printer"></i></button>';
+    h+='<button class="btn btns btnd" onclick="event.stopPropagation();closeJob(''+j.id+'')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';
+    h+='</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ---- CLOSED JOBS LIST ----
+function rJobClosed(){
+  var el=document.getElementById('jt-closed');if(!el)return;
+  var closed=jobBookings.filter(function(j){return j.status==='closed';});
+  var h='<h3 style="margin-bottom:1rem">Closed Jobs ('+closed.length+')</h3>';
+  if(!closed.length){h+='<div class="card es">No closed jobs yet.</div>';el.innerHTML=h;return;}
+  closed.forEach(function(j){
+    h+='<div class="card" style="margin-bottom:0.75rem">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center">';
+    h+='<div><div style="font-weight:700;font-size:15px">'+j.job_ref+'</div>';
+    h+='<div style="font-size:11px;color:#888;margin-top:3px">Closed: '+new Date(j.updated_at||j.created_at).toLocaleDateString('en-ZA')+'</div></div>';
+    h+='<div style="display:flex;gap:6px">';
+    h+='<button class="btn btns" onclick="openJobDetail(''+j.id+'')"><i class="ti ti-eye"></i> View</button>';
+    h+='<button class="btn btns" onclick="jobPrint(''+j.id+'')"><i class="ti ti-printer"></i></button>';
+    h+='<button class="btn btns" onclick="reopenJob(''+j.id+'')" style="font-size:11px"><i class="ti ti-lock-open"></i> Reopen</button>';
+    h+='</div></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ---- JOB DETAIL ----
+function openJobDetail(id){
+  activeJobId=id;
+  // Switch to detail tab
+  document.querySelectorAll('#pg-jobs .tab').forEach(function(t){t.classList.remove('active');});
+  ['open','closed','detail'].forEach(function(t){var e=document.getElementById('jt-'+t);if(e)e.style.display='none';});
+  document.getElementById('jt-detail').style.display='block';
+  rJobDetail(id);
+}
+
+async function rJobDetail(id){
+  var el=document.getElementById('jt-detail');if(!el)return;
+  var j=jobBookings.find(function(x){return x.id===id;});if(!j)return;
+  var isClosed=j.status==='closed';
+  el.innerHTML='<div class="es">Loading job items...</div>';
+  // Fetch items from backend
+  var items=await api('GET','/job-bookings/'+id+'/items');
+  if(!items)items=[];
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">';
+  h+='<div>';
+  h+='<button onclick="sJT(''+(isClosed?'closed':'open')+'',document.querySelector('#pg-jobs .tab'+(''+isClosed+'')))" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:8px"><i class="ti ti-arrow-left"></i> Back</button>';
+  h+='<h3 style="margin:0">'+j.job_ref+'</h3>';
+  h+='<div style="font-size:12px;color:#888;margin-top:3px">Started: '+new Date(j.created_at).toLocaleDateString('en-ZA')+' · Status: <b style="color:'+(isClosed?'#E24B4A':'#5B8FA8')+'">'+(isClosed?'Closed':'Open')+'</b></div>';
   h+='</div>';
-  // Product type grid
-  if(!JOB.addType){
-    h+='<div class="card"><h3>Select product</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.5rem">';
-    [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
-      var labels={gamazine:'Gamazine',granite:'Granite',cps:'CPS',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',undercoat:'Undercoat',cm:'Colour Match',loose:'Loose Items'};
-      h+='<button onclick="JOB.addType=\''+t.id+'\';JOB.addFid=null;JOB.addSearch=\'\';JOB.addSub=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;rJobNew()" style="padding:14px 8px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;text-align:center">';
-      h+='<i class="ti '+t.icon+'" style="font-size:22px;color:'+t.col+';display:block;margin-bottom:5px"></i>';
-      h+='<div style="font-size:12px;font-weight:600;color:#333">'+labels[t.id]+'</div></button>';
+  h+='<div style="display:flex;gap:6px">';
+  h+='<button class="btn btns" onclick="jobPrint(''+id+'')"><i class="ti ti-printer"></i> Print</button>';
+  if(isClosed){h+='<button class="btn btns" onclick="reopenJob(''+id+'')"><i class="ti ti-lock-open"></i> Reopen</button>';}
+  else{h+='<button class="btn btns btnd" onclick="closeJob(''+id+'')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';}
+  h+='</div></div>';
+  // Items log
+  h+='<div class="card" style="margin-bottom:0.75rem"><h3>Items booked out ('+items.length+' booking'+(items.length!==1?'s':'')+')</h3>';
+  if(!items.length){h+='<div class="es">No items booked out yet.</div>';}
+  else{
+    items.forEach(function(entry){
+      h+='<div style="border-bottom:0.5px solid #f0f0f0;padding:10px 0">';
+      h+='<div style="font-size:11px;color:#888;margin-bottom:5px"><i class="ti ti-calendar"></i> '+new Date(entry.booked_at).toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' at '+new Date(entry.booked_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · by '+entry.booked_by+'</div>';
+      (entry.items||[]).forEach(function(item){
+        h+='<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0">';
+        h+='<span><b>'+item.label+'</b>'+(item.details?' · <span style="color:#888;font-size:11px">'+item.details+'</span>':'')+'</span>';
+        h+='<span style="font-weight:600">×'+item.qty+'</span></div>';
+      });
+      h+='</div>';
     });
-    h+='</div></div>';
-  } else {
-    window._jobModeREC=window._jobModeREC||REC;
-    window.REC=JOB;window._jobMode=true;
-    h+='<div class="card"><button onclick="JOB.addType=null;rJobNew()" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:0.75rem"><i class="ti ti-arrow-left"></i> Back</button>';
-    h+=JOB.addType==='loose'?recLoosePanel():recProductPanel();
+  }
+  h+='</div>';
+  // Add items button (only if open)
+  if(!isClosed){
+    h+='<div id="job-add-section">';
+    h+=rJobAddSection(id);
     h+='</div>';
   }
   el.innerHTML=h;
 }
 
-function jobRemove(i){JOB.basket.splice(i,1);rJobNew();}
+function rJobAddSection(id){
+  var h='<div class="card"><h3>Book out more items</h3>';
+  if(JOB.basket.length){
+    h+='<div style="background:#f0faf4;border:1px solid #5B8FA8;border-radius:10px;padding:0.75rem;margin-bottom:0.75rem">';
+    h+='<div style="font-weight:600;font-size:13px;margin-bottom:6px">Ready to book out ('+JOB.basket.length+' item'+(JOB.basket.length>1?'s':'')+')</div>';
+    JOB.basket.forEach(function(item,i){
+      h+='<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0">';
+      h+='<span><b>'+item.label+'</b> × '+item.qty+(item.details?' · '+item.details:'')+'</span>';
+      h+='<button class="btn btns btnd" onclick="jobRemove('+i+')" style="padding:2px 7px;font-size:10px"><i class="ti ti-x"></i></button></div>';
+    });
+    h+='<div style="display:flex;gap:8px;margin-top:0.75rem">';
+    h+='<button class="btn btns" onclick="JOB.basket=[];rJobDetail(''+id+'')" style="font-size:12px"><i class="ti ti-trash"></i> Clear</button>';
+    h+='<button class="btn btnp" onclick="jobBookOut(''+id+'')" style="flex:1;font-size:13px"><i class="ti ti-clipboard-check"></i> Confirm &amp; deduct stock</button>';
+    h+='</div></div>';
+  }
+  if(!JOB.addType){
+    h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.5rem">';
+    [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
+      var labels={gamazine:'Gamazine',granite:'Granite',cps:'CPS',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',undercoat:'Undercoat',cm:'Colour Match',loose:'Loose Items'};
+      h+='<button onclick="JOB.addType=''+t.id+'';JOB.addFid=null;JOB.addSearch='';JOB.addSub=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;rJobDetail(''+id+'')" style="padding:12px 8px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;text-align:center">';
+      h+='<i class="ti '+t.icon+'" style="font-size:20px;color:'+t.col+';display:block;margin-bottom:4px"></i>';
+      h+='<div style="font-size:11px;font-weight:600;color:#333">'+labels[t.id]+'</div></button>';
+    });
+    h+='</div>';
+  } else {
+    window._jobModeREC=window._jobModeREC||REC;
+    window.REC=JOB;window._jobMode=true;
+    h+='<button onclick="JOB.addType=null;rJobDetail(''+id+'')" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:0.75rem"><i class="ti ti-arrow-left"></i> Back</button>';
+    h+=JOB.addType==='loose'?recLoosePanel():recProductPanel();
+  }
+  h+='</div>';
+  return h;
+}
+
+// ---- CREATE JOB ----
+function oCreateJob(){
+  var ref=prompt('Enter job name / reference:');
+  if(!ref||!ref.trim())return;
+  createJob(ref.trim());
+}
+
+async function createJob(ref){
+  showLoad('Creating job...');
+  var res=await api('POST','/job-bookings',{job_ref:ref,status:'open',booked_by:userName,items:[]});
+  hideLoad();
+  if(res){
+    var j={id:res.id,job_ref:ref,status:'open',created_at:res.created_at||new Date().toISOString()};
+    jobBookings.unshift(j);
+    openJobDetail(j.id);
+  }
+}
+
+// ---- BOOK OUT ITEMS TO EXISTING JOB ----
+async function jobBookOut(id){
+  if(!JOB.basket.length){window.alert('Add items first');return;}
+  showLoad('Booking out stock...');
+  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
+  async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
+  for(var n=0;n<JOB.basket.length;n++){
+    var item=JOB.basket[n];
+    if(item.type==='loose'){if(pkgData[item.pkgKey]&&item.qty>0){pkgData[item.pkgKey].stock=Math.max(0,pkgData[item.pkgKey].stock-item.qty);await api('PUT','/packaging/'+item.pkgKey,{stock:pkgData[item.pkgKey].stock});}continue;}
+    var f=item.fid?forms.find(function(x){return x.id===item.fid;}):null;
+    var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:(item.productType==='cps'&&item.secSize==='10')?0.5:1;
+    if(item.productType==='undercoat'){await dm('Undercoat',item.qty);}
+    else if(['waterproofing','fiberseal'].indexOf(item.productType)!==-1){var wpLabel=item.productType==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=item.secSize==='5'?5:item.secSize==='10'?10:20;await dm(wpLabel,wpSz*item.qty);}
+    else if(f){
+      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!item.stone)continue;var iname=ing.is_stone?item.stone:ing.name;await dm(iname,ing.qty*item.qty*szRatio);}
+      for(var j2=0;j2<(f.tints||[]).length;j2++){var t2=f.tints[j2];await dm(t2.n,(ml(t2.s,t2.y)/1000)*item.qty*szRatio);}
+    }
+    if(item.productType==='cm'&&item.cmTi)for(var k=0;k<item.cmTi.length;k++)await dm(item.cmTi[k].n,(ml(item.cmTi[k].s,item.cmTi[k].y)/1000)*item.qty);
+    var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
+    if(bktLabel){if(bktLabel.includes('Printed'))await dp('pr20',item.qty);else if(bktLabel.includes('Titan'))await dp('ti20',item.qty);else if(bktLabel.includes('10L Secure'))await dp('sl5',item.qty*2);else if(bktLabel.includes('5L Secure'))await dp('sl5',item.qty);else if(bktLabel.includes('20L Secure'))await dp('sl20',item.qty);}
+    if(['gamazine','granite'].indexOf(item.productType)!==-1)await dp('bags',item.qty);
+  }
+  // Save items entry to backend
+  await api('POST','/job-bookings/'+id+'/items',{items:JOB.basket,booked_by:userName});
+  hideLoad();
+  JOB.basket=[];JOB.addType=null;
+  if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
+  rDash();
+  rJobDetail(id);
+}
+
+// ---- CLOSE / REOPEN JOB ----
+async function closeJob(id){
+  if(!confirm('Close this job? It will move to Closed Jobs. You can reopen it later.'))return;
+  showLoad('Closing job...');
+  var res=await api('PATCH','/job-bookings/'+id,{status:'closed',updated_at:new Date().toISOString()});
+  hideLoad();
+  if(res){var j=jobBookings.find(function(x){return x.id===id;});if(j){j.status='closed';j.updated_at=res.updated_at;}}
+  sJT('open',document.querySelector('#pg-jobs .tab'));
+}
+
+async function reopenJob(id){
+  showLoad('Reopening job...');
+  var res=await api('PATCH','/job-bookings/'+id,{status:'open'});
+  hideLoad();
+  if(res){var j=jobBookings.find(function(x){return x.id===id;});if(j)j.status='open';}
+  openJobDetail(id);
+}
+
+// ---- PRINT JOB ----
+async function jobPrint(id){
+  var j=jobBookings.find(function(x){return x.id===id;});if(!j)return;
+  showLoad('Loading job for print...');
+  var items=await api('GET','/job-bookings/'+id+'/items');
+  hideLoad();
+  if(!items)items=[];
+  var win=window.open('','_blank','width=850,height=1100');if(!win)return;
+  var now=new Date();
+  var h='<!DOCTYPE html><html><head><title>Job — '+j.job_ref+'</title><style>';
+  h+='*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a}';
+  h+='.page{width:210mm;min-height:297mm;padding:18mm;margin:0 auto}';
+  h+='.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #5B8FA8;padding-bottom:14px;margin-bottom:18px}';
+  h+='.co-name{font-size:22px;font-weight:700;color:#5B8FA8;margin-bottom:4px}';
+  h+='.co-detail{font-size:11px;color:#666;line-height:1.6}';
+  h+='.job-id{font-size:20px;font-weight:700;color:#5B8FA8}';
+  h+='.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#5B8FA8;border-bottom:1px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px;margin-top:16px}';
+  h+='table{width:100%;border-collapse:collapse;margin-bottom:8px}';
+  h+='th{text-align:left;padding:6px 8px;font-size:10px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:600;text-transform:uppercase}';
+  h+='td{padding:6px 8px;border-bottom:0.5px solid #f0f0f0;font-size:11px}';
+  h+='.date-row{background:#f0f7fa;padding:6px 8px;font-size:11px;font-weight:600;color:#3a6e87;border-radius:4px;margin:10px 0 4px}';
+  h+='.tag{display:inline-block;background:#FFF3CD;color:#856404;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;margin-top:4px}';
+  h+='.status-open{color:#5B8FA8;font-weight:700}';
+  h+='.status-closed{color:#E24B4A;font-weight:700}';
+  h+='.sig-line{border-top:1px solid #333;margin-top:40px;padding-top:6px;font-size:11px;color:#888}';
+  h+='.footer{text-align:center;font-size:10px;color:#aaa;border-top:1px solid #e0e0e0;padding-top:10px;margin-top:20px}';
+  h+='@media print{body{-webkit-print-color-adjust:exact}}</style></head><body><div class="page">';
+  h+='<div class="header"><div>';
+  h+='<div class="co-name">'+COMPANY.name+'</div>';
+  h+='<div class="co-detail">'+COMPANY.address+'<br>Tel: '+COMPANY.phone+' · '+COMPANY.email+'</div>';
+  h+='<div class="tag">JOB BOOKING — NOT A SALE</div>';
+  h+='</div><div style="text-align:right">';
+  h+='<div class="job-id">'+j.job_ref+'</div>';
+  h+='<div style="font-size:11px;color:#888;margin-top:4px">Started: '+new Date(j.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'})+'</div>';
+  h+='<div style="font-size:11px;margin-top:2px">Status: <span class="status-'+(j.status||'open')+'">'+(j.status==='closed'?'CLOSED':'OPEN')+'</span></div>';
+  h+='<div style="font-size:11px;color:#888;margin-top:2px">Printed: '+now.toLocaleDateString('en-ZA')+' '+now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div>';
+  h+='</div></div>';
+  // Group items by date
+  if(!items.length){h+='<div style="padding:20px;text-align:center;color:#888">No items booked out for this job yet.</div>';}
+  else{
+    h+='<div class="section-title">Items booked out by date</div>';
+    // Calculate totals
+    var totals={};
+    items.forEach(function(entry){
+      (entry.items||[]).forEach(function(item){
+        var key=item.label+(item.details?' ('+item.details+')':'');
+        totals[key]=(totals[key]||0)+item.qty;
+      });
+    });
+    items.forEach(function(entry){
+      h+='<div class="date-row">'+new Date(entry.booked_at).toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+new Date(entry.booked_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · '+entry.booked_by+'</div>';
+      h+='<table><thead><tr><th>Product / Colour</th><th>Details</th><th style="text-align:right">Qty</th></tr></thead><tbody>';
+      (entry.items||[]).forEach(function(item){
+        h+='<tr><td><b>'+item.label+'</b></td><td style="color:#666">'+(item.details||'')+'</td><td style="text-align:right">'+item.qty+'</td></tr>';
+      });
+      h+='</tbody></table>';
+    });
+    h+='<div class="section-title">Grand totals</div>';
+    h+='<table><thead><tr><th>Product</th><th style="text-align:right">Total qty</th></tr></thead><tbody>';
+    Object.keys(totals).forEach(function(k){h+='<tr><td><b>'+k+'</b></td><td style="text-align:right;font-weight:700">'+totals[k]+'</td></tr>';});
+    h+='</tbody></table>';
+  }
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px">';
+  h+='<div><div class="sig-line">Prepared by</div></div>';
+  h+='<div><div class="sig-line">Authorised by</div></div>';
+  h+='</div>';
+  h+='<div class="footer">'+COMPANY.name+' · Internal job booking record · No revenue recorded</div>';
+  h+='</div></body></html>';
+  win.document.write(h);win.document.close();
+  setTimeout(function(){win.print();},500);
+}
+
+function jobRemove(i){JOB.basket.splice(i,1);if(activeJobId)rJobDetail(activeJobId);else rJobNew();}
 
 function jobAddToBasket(){
   var t=JOB.addType;var isCM=t==='cm';var isSec=['cps','waterproofing','fiberseal'].indexOf(t)!==-1;
@@ -804,14 +1033,13 @@ function jobAddToBasket(){
   if(isCM){
     var cmEl=document.getElementById('rec-cm-name');var cmName=cmEl?cmEl.value.trim():'';
     if(!cmName){window.alert('Enter a colour reference');return;}
-    if(isGam&&!JOB.addStone){window.alert('Select a stone size');return;}
     if(!JOB.addBucket){window.alert('Select a bucket type');return;}
     var qtyCM=JOB.addQty||1;
     var detailsCM=[];if(JOB.addBucket)detailsCM.push(JOB.addBucket);if(JOB.addStone)detailsCM.push(JOB.addStone);detailsCM.push(qtyCM+' bucket'+(qtyCM>1?'s':''));
     JOB.basket.push({type:'product',fid:null,productType:'cm',label:'Colour Match: '+cmName,qty:qtyCM,stone:JOB.addStone,bucket:JOB.addBucket||'',secSize:'',cmTi:JOB.cmTi||[],details:detailsCM.join(' · ')});
     JOB.addType=null;JOB.addFid=null;JOB.cmTi=[];JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;
-    rJobNew();
-    return;
+    if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
+    if(activeJobId)rJobDetail(activeJobId);return;
   }
   if(!f){window.alert('Select a colour first');return;}
   if(isGam&&!JOB.addStone){window.alert('Select a stone size');return;}
@@ -826,102 +1054,9 @@ function jobAddToBasket(){
   details.push(qty+' bucket'+(qty>1?'s':''));
   JOB.basket.push({type:'product',fid:JOB.addFid,productType:t,label:label,qty:qty,stone:JOB.addStone,bucket:JOB.addBucket||'',secSize:JOB.addSecSize||'',details:details.join(' · ')});
   JOB.addType=null;JOB.addFid=null;JOB.addSearch='';JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;
-  rJobNew();
+  if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
+  if(activeJobId)rJobDetail(activeJobId);
 }
-
-async function jobConfirm(){
-  if(!JOB.basket.length){window.alert('Add items to the basket first');return;}
-  if(!JOB.ref||!JOB.ref.trim()){window.alert('Enter a client name / job reference');return;}
-  showLoad('Booking out stock...');
-  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
-  async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
-  for(var n=0;n<JOB.basket.length;n++){
-    var item=JOB.basket[n];
-    if(item.type==='loose'){
-      if(pkgData[item.pkgKey]&&item.qty>0){pkgData[item.pkgKey].stock=Math.max(0,pkgData[item.pkgKey].stock-item.qty);await api('PUT','/packaging/'+item.pkgKey,{stock:pkgData[item.pkgKey].stock});}
-      continue;
-    }
-    var f=item.fid?forms.find(function(x){return x.id===item.fid;}):null;
-    var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:(item.productType==='cps'&&item.secSize==='10')?0.5:1;
-    if(item.productType==='undercoat'){await dm('Undercoat',item.qty);}
-    else if(['waterproofing','fiberseal'].indexOf(item.productType)!==-1){var wpLabel=item.productType==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=item.secSize==='5'?5:20;await dm(wpLabel,wpSz*item.qty);}
-    else if(f){
-      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!item.stone)continue;var name=ing.is_stone?item.stone:ing.name;await dm(name,ing.qty*item.qty*szRatio);}
-      for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*item.qty*szRatio);}
-    }
-    if(item.productType==='cm'&&item.cmTi)for(var k=0;k<item.cmTi.length;k++)await dm(item.cmTi[k].n,(ml(item.cmTi[k].s,item.cmTi[k].y)/1000)*item.qty);
-    var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
-    if(bktLabel){if(bktLabel.includes('Printed'))await dp('pr20',item.qty);else if(bktLabel.includes('Titan'))await dp('ti20',item.qty);else if(bktLabel.includes('10L Secure'))await dp('sl5',item.qty*2);else if(bktLabel.includes('5L Secure'))await dp('sl5',item.qty);else if(bktLabel.includes('20L Secure'))await dp('sl20',item.qty);}
-    if(['gamazine','granite'].indexOf(item.productType)!==-1)await dp('bags',item.qty);
-  }
-  var jid='JOB-'+Date.now();
-  var rec={id:jid,ref:JOB.ref.trim(),items:JOB.basket,created_at:new Date().toISOString(),booked_by:userName};
-  var res=await api('POST','/job-bookings',{job_ref:rec.ref,items:rec.items,booked_by:userName});
-  jobBookings.unshift(rec);
-  rDash();
-  // Print
-  jobPrintSlip(jid,rec.ref,JOB.basket);
-  hideLoad();JOB.basket=[];JOB.ref='';
-  rJobNew();
-}
-
-function jobPrintSlip(jid,ref,basket){
-  var win=window.open('','_blank','width=850,height=1100');if(!win)return;
-  var now=new Date();
-  var h='<!DOCTYPE html><html><head><title>Job Booking — '+jid+'</title><style>';
-  h+='*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;padding:0}';
-  h+='.page{width:210mm;min-height:297mm;padding:18mm;margin:0 auto}';
-  h+='.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #5B8FA8;padding-bottom:14px;margin-bottom:18px}';
-  h+='.co-name{font-size:22px;font-weight:700;color:#5B8FA8;margin-bottom:4px}';
-  h+='.co-detail{font-size:11px;color:#666;line-height:1.6}';
-  h+='.job-id{font-size:24px;font-weight:700;color:#5B8FA8}';
-  h+='.section{margin-bottom:16px}';
-  h+='.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#5B8FA8;border-bottom:1px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px}';
-  h+='table{width:100%;border-collapse:collapse}';
-  h+='th{text-align:left;padding:7px 10px;font-size:11px;background:#f8f9fa;border-bottom:1px solid #e0e0e0;font-weight:600;text-transform:uppercase}';
-  h+='td{padding:8px 10px;border-bottom:0.5px solid #f0f0f0;font-size:12px}';
-  h+='.sig-line{border-top:1px solid #333;margin-top:40px;padding-top:6px;font-size:11px;color:#888}';
-  h+='.footer{text-align:center;font-size:10px;color:#aaa;border-top:1px solid #e0e0e0;padding-top:10px;margin-top:20px}';
-  h+='.tag{display:inline-block;background:#FFF3CD;color:#856404;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;margin-top:4px}';
-  h+='@media print{body{-webkit-print-color-adjust:exact}}</style></head><body><div class="page">';
-  h+='<div class="header"><div>';
-  h+='<div class="co-name">'+COMPANY.name+'</div>';
-  h+='<div class="co-detail">'+COMPANY.address+'<br>Tel: '+COMPANY.phone+' · '+COMPANY.email+'</div>';
-  h+='<div class="tag">JOB BOOKING — NOT A SALE</div>';
-  h+='</div><div style="text-align:right">';
-  h+='<div class="job-id">'+jid+'</div>';
-  h+='<div style="font-size:12px;color:#888;margin-top:4px">'+now.toLocaleDateString('en-ZA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+'</div>';
-  h+='<div style="font-size:12px;color:#888">'+now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div>';
-  h+='</div></div>';
-  h+='<div class="section"><div class="section-title">Job reference</div><div style="font-size:16px;font-weight:600">'+ref+'</div></div>';
-  h+='<div class="section"><div class="section-title">Items booked out</div><table><thead><tr><th>Product / Colour</th><th>Details</th><th style="text-align:right">Qty</th></tr></thead><tbody>';
-  basket.forEach(function(item){
-    h+='<tr><td><b>'+item.label+'</b></td><td style="font-size:11px;color:#666">'+(item.details||'')+'</td><td style="text-align:right">'+item.qty+'</td></tr>';
-  });
-  h+='</tbody></table></div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px">';
-  h+='<div><div class="sig-line">Booked by</div></div>';
-  h+='<div><div class="sig-line">Authorised by</div></div>';
-  h+='</div>';
-  h+='<div class="footer">Life Coats (Pty) Ltd · Internal job booking record · No revenue recorded</div>';
-  h+='</div></body></html>';
-  win.document.write(h);win.document.close();
-  setTimeout(function(){win.print();},500);
-}
-
-function rJobLog(){
-  var el=document.getElementById('jt-log');if(!el)return;
-  var h='<div class="card"><h3>Job booking log</h3>';
-  if(!jobBookings.length){h+='<div class="es">No job bookings yet</div></div>';el.innerHTML=h;return;}
-  h+='<div style="overflow-x:auto"><table><thead><tr><th>Job ref</th><th>Date</th><th>Items</th><th></th></tr></thead><tbody>';
-  jobBookings.forEach(function(j){
-    var itemsStr=j.items.map(function(i){return i.label+' ×'+i.qty;}).join(', ');
-    h+='<tr><td><b>'+j.ref+'</b></td><td style="font-size:11px;color:#888">'+new Date(j.created_at).toLocaleDateString('en-ZA')+'</td><td style="font-size:11px">'+itemsStr+'</td><td><button class="btn btns" onclick="jobPrintSlip(\''+j.id+'\',\''+j.ref.replace(/'/g,"\\'")+'\',jobBookings.find(function(x){return x.id===\''+j.id+'\';}).items)"><i class="ti ti-printer"></i></button></td></tr>';
-  });
-  h+='</tbody></table></div></div>';
-  el.innerHTML=h;
-}
-
 
 // DASHBOARD
 function tCP(){var p=document.getElementById('cp');p.style.display=p.style.display==='none'?'flex':'none';}
