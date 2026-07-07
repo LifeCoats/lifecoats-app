@@ -235,6 +235,22 @@ app.post('/api/job-bookings', auth, adminOnly, async (req, res) => {
   res.json(data);
 });
 
+// Job booking items
+app.get('/api/job-bookings/:id/items', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('job_booking_items').select('*').eq('job_id', req.params.id).order('booked_at', { ascending: true });
+  res.json(data || []);
+});
+app.post('/api/job-bookings/:id/items', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('job_booking_items').insert({ job_id: req.params.id, ...req.body }).select().single();
+  if(error){ console.error('job items error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.patch('/api/job-bookings/:id', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('job_bookings').update(req.body).eq('id', req.params.id).select().single();
+  if(error){ return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+
 // Serve app for all other routes
 app.get('*', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
