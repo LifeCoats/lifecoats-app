@@ -604,6 +604,8 @@ async function api(method,path,body){
   }catch(e){console.error(e);return null;}
 }
 // ---- Auto Load Data ---- //
+function buildCollections(){collections={};['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'].forEach(function(t){collections[t]=[];});forms.forEach(function(f){if(!collections[f.type])collections[f.type]=[];var s=f.sub_category||'Standard';if(collections[f.type].indexOf(s)===-1)collections[f.type].push(s);});}
+
 async function loadAll(){
   try{
     var r=await Promise.all([
