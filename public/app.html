@@ -620,7 +620,7 @@ async function loadAll(){
     forms=(r[3]||[]).map(function(f){f.ingredients=f.ingredients||[];f.tints=f.tints||[];f.sub_category=f.sub_category||'Standard';return f;});
     orders=(r[4]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,cashAmt:o.cash_amount||0,cardAmt:o.card_amount||0,orderTotal:o.order_total||0,items:o.items||null};});
     batchRecipes=r[5]||[];
-    jobBookings=(r[6]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});});
+    jobBookings=(r[6]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});
     await loadTVSettings();
     if(orders.length){var mx=Math.max.apply(null,orders.map(function(o){return parseInt((o.id||'').replace('ORD-',''))||1000;}));NID=mx+1;}
     buildCollections();
@@ -764,14 +764,14 @@ function rJobOpen(){
   if(!open.length){h+='<div class="card es">No open jobs. Click "Create new job" to start one.</div>';el.innerHTML=h;return;}
   open.forEach(function(j){
     var age=Math.floor((new Date()-new Date(j.created_at))/(1000*60*60*24));
-    h+='<div class="card" style="margin-bottom:0.75rem;cursor:pointer" onclick="openJobDetail(''+j.id+'')">';
+    h+='<div class="card" style="margin-bottom:0.75rem;cursor:pointer" onclick="openJobDetail(\''+j.id+'\')">';
     h+='<div style="display:flex;justify-content:space-between;align-items:flex-start">';
     h+='<div><div style="font-weight:700;font-size:15px;color:#3a6e87">'+j.job_ref+'</div>';
     h+='<div style="font-size:11px;color:#888;margin-top:3px">Started: '+new Date(j.created_at).toLocaleDateString('en-ZA')+' · '+age+' day'+(age!==1?'s':'')+' open</div></div>';
     h+='<div style="display:flex;gap:6px">';
-    h+='<button class="btn btns" onclick="event.stopPropagation();openJobDetail(''+j.id+'')"><i class="ti ti-eye"></i> View</button>';
-    h+='<button class="btn btns" onclick="event.stopPropagation();jobPrint(''+j.id+'')"><i class="ti ti-printer"></i></button>';
-    h+='<button class="btn btns btnd" onclick="event.stopPropagation();closeJob(''+j.id+'')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';
+    h+='<button class="btn btns" onclick="event.stopPropagation();openJobDetail(\''+j.id+'\')"><i class="ti ti-eye"></i> View</button>';
+    h+='<button class="btn btns" onclick="event.stopPropagation();jobPrint(\''+j.id+'\')"><i class="ti ti-printer"></i></button>';
+    h+='<button class="btn btns btnd" onclick="event.stopPropagation();closeJob(\''+j.id+'\')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';
     h+='</div></div></div>';
   });
   el.innerHTML=h;
@@ -789,15 +789,20 @@ function rJobClosed(){
     h+='<div><div style="font-weight:700;font-size:15px">'+j.job_ref+'</div>';
     h+='<div style="font-size:11px;color:#888;margin-top:3px">Closed: '+new Date(j.updated_at||j.created_at).toLocaleDateString('en-ZA')+'</div></div>';
     h+='<div style="display:flex;gap:6px">';
-    h+='<button class="btn btns" onclick="openJobDetail(''+j.id+'')"><i class="ti ti-eye"></i> View</button>';
-    h+='<button class="btn btns" onclick="jobPrint(''+j.id+'')"><i class="ti ti-printer"></i></button>';
-    h+='<button class="btn btns" onclick="reopenJob(''+j.id+'')" style="font-size:11px"><i class="ti ti-lock-open"></i> Reopen</button>';
+    h+='<button class="btn btns" onclick="openJobDetail(\''+j.id+'\')"><i class="ti ti-eye"></i> View</button>';
+    h+='<button class="btn btns" onclick="jobPrint(\''+j.id+'\')"><i class="ti ti-printer"></i></button>';
+    h+='<button class="btn btns" onclick="reopenJob(\''+j.id+'\')" style="font-size:11px"><i class="ti ti-lock-open"></i> Reopen</button>';
     h+='</div></div></div>';
   });
   el.innerHTML=h;
 }
 
 // ---- JOB DETAIL ----
+function goBackFromJob(id){
+  var j=jobBookings.find(function(x){return x.id===id;});
+  var tab=j&&j.status==='closed'?'closed':'open';
+  sJT(tab,document.querySelector('#pg-jobs .tab'));
+}
 function openJobDetail(id){
   activeJobId=id;
   // Switch to detail tab
@@ -817,14 +822,14 @@ async function rJobDetail(id){
   if(!items)items=[];
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">';
   h+='<div>';
-  h+='<button onclick="sJT(''+(isClosed?'closed':'open')+'',document.querySelector('#pg-jobs .tab'+(''+isClosed+'')))" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:8px"><i class="ti ti-arrow-left"></i> Back</button>';
+  h+='<button onclick="goBackFromJob(\''+id+'\')" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:8px"><i class="ti ti-arrow-left"></i> Back</button>';
   h+='<h3 style="margin:0">'+j.job_ref+'</h3>';
   h+='<div style="font-size:12px;color:#888;margin-top:3px">Started: '+new Date(j.created_at).toLocaleDateString('en-ZA')+' · Status: <b style="color:'+(isClosed?'#E24B4A':'#5B8FA8')+'">'+(isClosed?'Closed':'Open')+'</b></div>';
   h+='</div>';
   h+='<div style="display:flex;gap:6px">';
-  h+='<button class="btn btns" onclick="jobPrint(''+id+'')"><i class="ti ti-printer"></i> Print</button>';
-  if(isClosed){h+='<button class="btn btns" onclick="reopenJob(''+id+'')"><i class="ti ti-lock-open"></i> Reopen</button>';}
-  else{h+='<button class="btn btns btnd" onclick="closeJob(''+id+'')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';}
+  h+='<button class="btn btns" onclick="jobPrint(\''+id+'\')"><i class="ti ti-printer"></i> Print</button>';
+  if(isClosed){h+='<button class="btn btns" onclick="reopenJob(\''+id+'\')"><i class="ti ti-lock-open"></i> Reopen</button>';}
+  else{h+='<button class="btn btns btnd" onclick="closeJob(\''+id+'\')" style="font-size:11px"><i class="ti ti-lock"></i> Close job</button>';}
   h+='</div></div>';
   // Items log
   h+='<div class="card" style="margin-bottom:0.75rem"><h3>Items booked out ('+items.length+' booking'+(items.length!==1?'s':'')+')</h3>';
@@ -862,15 +867,15 @@ function rJobAddSection(id){
       h+='<button class="btn btns btnd" onclick="jobRemove('+i+')" style="padding:2px 7px;font-size:10px"><i class="ti ti-x"></i></button></div>';
     });
     h+='<div style="display:flex;gap:8px;margin-top:0.75rem">';
-    h+='<button class="btn btns" onclick="JOB.basket=[];rJobDetail(''+id+'')" style="font-size:12px"><i class="ti ti-trash"></i> Clear</button>';
-    h+='<button class="btn btnp" onclick="jobBookOut(''+id+'')" style="flex:1;font-size:13px"><i class="ti ti-clipboard-check"></i> Confirm &amp; deduct stock</button>';
+    h+='<button class="btn btns" onclick="JOB.basket=[];rJobDetail(\''+id+'\')" style="font-size:12px"><i class="ti ti-trash"></i> Clear</button>';
+    h+='<button class="btn btnp" onclick="jobBookOut(\''+id+'\')" style="flex:1;font-size:13px"><i class="ti ti-clipboard-check"></i> Confirm &amp; deduct stock</button>';
     h+='</div></div>';
   }
   if(!JOB.addType){
     h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.5rem">';
     [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
       var labels={gamazine:'Gamazine',granite:'Granite',cps:'CPS',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',undercoat:'Undercoat',cm:'Colour Match',loose:'Loose Items'};
-      h+='<button onclick="JOB.addType=''+t.id+'';JOB.addFid=null;JOB.addSearch='';JOB.addSub=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;rJobDetail(''+id+'')" style="padding:12px 8px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;text-align:center">';
+      h+='<button onclick="JOB.addType=\''+t.id+'\';JOB.addFid=null;JOB.addSearch=\'\';JOB.addSub=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;rJobDetail(\''+id+'\')" style="padding:12px 8px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;text-align:center">';
       h+='<i class="ti '+t.icon+'" style="font-size:20px;color:'+t.col+';display:block;margin-bottom:4px"></i>';
       h+='<div style="font-size:11px;font-weight:600;color:#333">'+labels[t.id]+'</div></button>';
     });
@@ -878,7 +883,7 @@ function rJobAddSection(id){
   } else {
     window._jobModeREC=window._jobModeREC||REC;
     window.REC=JOB;window._jobMode=true;
-    h+='<button onclick="JOB.addType=null;rJobDetail(''+id+'')" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:0.75rem"><i class="ti ti-arrow-left"></i> Back</button>';
+    h+='<button onclick="JOB.addType=null;rJobDetail(\''+id+'\')" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:0.75rem"><i class="ti ti-arrow-left"></i> Back</button>';
     h+=JOB.addType==='loose'?recLoosePanel():recProductPanel();
   }
   h+='</div>';
