@@ -67,6 +67,11 @@ app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
   res.json(data);
 });
 
+app.delete('/api/materials/:id', auth, adminOnly, async (req, res) => {
+  await supabase.from('materials').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
+
 // CLIENTS
 app.get('/api/clients', auth, async (req, res) => {
   const { q } = req.query;
