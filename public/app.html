@@ -1344,20 +1344,24 @@ function tvStylePiece(val,max,alert2,unit,style,px,itemLabel,itemKey){
 
   var w=px,h=px;
 
-  // ── TINT: Paint drop ──
+  // ── TINT: Water drop ──
   if(isTint){
-    var dropH=h*0.82,dropW=w*0.55;
-    var cx=w/2,bodyTop=h*0.22,bodyBot=h*0.9,r=dropW/2;
-    var fillY=bodyTop+(bodyBot-bodyTop)*(1-pct/100);
-    var fillH=(bodyBot-fillY);
-    return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin:0 auto;filter:drop-shadow(0 0 5px '+glowCol+')">' +
+    var cx=w/2,cy=h/2;
+    // Water drop: pointed top, round bottom
+    var dropPath='M '+cx+' '+(h*0.05)+' C '+(cx+w*0.35)+' '+(h*0.3)+' '+(cx+w*0.42)+' '+(h*0.55)+' '+(cx)+' '+(h*0.95)+' C '+(cx-w*0.42)+' '+(h*0.55)+' '+(cx-w*0.35)+' '+(h*0.3)+' '+cx+' '+(h*0.05)+' Z';
+    var fillY=h*0.05+(h*0.9)*(1-pct/100);
+    var fillH=h*0.9*(pct/100);
+    return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin:0 auto;filter:drop-shadow(0 0 6px '+glowCol+')">' +
       '<defs>'+
-      '<linearGradient id="td'+Math.round(pct)+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.6"/></linearGradient>'+
-      '<clipPath id="dc'+Math.round(pct)+'"><path d="M '+cx+' '+(h*0.04)+' Q '+(cx+dropW*0.15)+' '+(h*0.14)+' '+(cx+r)+' '+bodyTop+' Q '+(cx+r*1.1)+' '+(h*0.55)+' '+(cx+r)+' '+bodyBot+' Q '+cx+' '+(h*0.96)+' '+(cx-r)+' '+bodyBot+' Q '+(cx-r*1.1)+' '+(h*0.55)+' '+(cx-r)+' '+bodyTop+' Q '+(cx-dropW*0.15)+' '+(h*0.14)+' '+cx+' '+(h*0.04)+' Z"/></clipPath>'+
+      '<linearGradient id="wdg'+Math.round(pct)+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.55"/></linearGradient>'+
+      '<clipPath id="wdc'+Math.round(pct)+'"><path d="'+dropPath+'"/></clipPath>'+
       '</defs>'+
-      '<path d="M '+cx+' '+(h*0.04)+' Q '+(cx+dropW*0.15)+' '+(h*0.14)+' '+(cx+r)+' '+bodyTop+' Q '+(cx+r*1.1)+' '+(h*0.55)+' '+(cx+r)+' '+bodyBot+' Q '+cx+' '+(h*0.96)+' '+(cx-r)+' '+bodyBot+' Q '+(cx-r*1.1)+' '+(h*0.55)+' '+(cx-r)+' '+bodyTop+' Q '+(cx-dropW*0.15)+' '+(h*0.14)+' '+cx+' '+(h*0.04)+' Z" fill="#141929" stroke="rgba(201,168,76,0.35)" stroke-width="1.5"/>'+
-      (fillH>0?'<rect x="0" y="'+fillY+'" width="'+w+'" height="'+fillH+'" fill="url(#td'+Math.round(pct)+')" clip-path="url(#dc'+Math.round(pct)+')" opacity="0.92"/>':'')+
-      '<ellipse cx="'+cx+'" cy="'+bodyBot+'" rx="'+r+'" ry="'+(r*0.2)+'" fill="'+fillCol+'" opacity="0.3"/>'+
+      // drop outline
+      '<path d="'+dropPath+'" fill="#141929" stroke="rgba(201,168,76,0.35)" stroke-width="1.5"/>'+
+      // fill from bottom
+      (fillH>0?'<rect x="0" y="'+fillY+'" width="'+w+'" height="'+fillH+'" fill="url(#wdg'+Math.round(pct)+')" clip-path="url(#wdc'+Math.round(pct)+')" opacity="0.92"/>':'')+
+      // shine highlight
+      '<ellipse cx="'+(cx-w*0.1)+'" cy="'+(h*0.32)+'" rx="'+(w*0.06)+'" ry="'+(h*0.1)+'" fill="rgba(255,255,255,0.15)" transform="rotate(-20,'+(cx-w*0.1)+','+(h*0.32)+')"/>'+
       '</svg>';}
 
   // ── MASKING TAPE: Side-view roll ──
@@ -1390,39 +1394,49 @@ function tvStylePiece(val,max,alert2,unit,style,px,itemLabel,itemKey){
     }
     return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin:0 auto;filter:drop-shadow(0 0 5px '+glowCol+')">' +svgH+'</svg>';}
 
-  // ── PRINTED BUCKET: Tapered bucket with label ──
+  // ── PRINTED BUCKET: Cylinder with label sticker ──
   if(isPrintedBucket){
-    var bw2=w*0.7,bh2=h*0.82,topW2=bw2*0.7,bx2=(w-bw2)/2,by2=h*0.1;
-    var fpct=pct/100;
-    var fillTW=topW2+(bw2-topW2)*(1-fpct),fillTX=bx2+(bw2-fillTW)/2,fillY2=by2+bh2*(1-fpct);
+    var cx=w/2,topY=h*0.12,botY=h*0.92,bw5=w*0.74,rx5=bw5/2;
+    var fpct5=pct/100;
+    var paintY=topY+(botY-topY)*(1-fpct5);
+    var lblY=topY+(botY-topY)*0.2,lblH=(botY-topY)*0.38;
     return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin:0 auto;filter:drop-shadow(0 0 6px '+glowCol+')">' +
-      '<defs><linearGradient id="pb'+Math.round(pct)+'" x1="0" y1="0" x2="0.2" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.6"/></linearGradient></defs>'+
-      '<path d="M '+(bx2+(bw2-topW2)/2)+' '+by2+' L '+bx2+' '+(by2+bh2)+' L '+(bx2+bw2)+' '+(by2+bh2)+' L '+(bx2+(bw2+topW2)/2)+' '+by2+' Z" fill="#141929" stroke="rgba(201,168,76,0.35)" stroke-width="1.5"/>'+
-      (fpct>0?'<clipPath id="pbc'+Math.round(pct)+'"><path d="M '+(bx2+(bw2-topW2)/2)+' '+by2+' L '+bx2+' '+(by2+bh2)+' L '+(bx2+bw2)+' '+(by2+bh2)+' L '+(bx2+(bw2+topW2)/2)+' '+by2+' Z"/></clipPath>'+
-      '<rect x="0" y="'+fillY2+'" width="'+w+'" height="'+(by2+bh2-fillY2)+'" fill="url(#pb'+Math.round(pct)+')" clip-path="url(#pbc'+Math.round(pct)+')" opacity="0.9"/>':'')+
-      // label rectangle
-      '<rect x="'+(bx2+(bw2-topW2)/2+4)+'" y="'+(by2+bh2*0.28)+'" width="'+(topW2*0.9+4)+'" height="'+(bh2*0.32)+'" rx="2" fill="rgba(255,255,255,0.08)" stroke="rgba(201,168,76,0.4)" stroke-width="1"/>'+
-      '<line x1="'+(bx2+(bw2-topW2)/2+8)+'" y1="'+(by2+bh2*0.38)+'" x2="'+(bx2+(bw2+topW2)/2-4)+'" y2="'+(by2+bh2*0.38)+'" stroke="rgba(201,168,76,0.3)" stroke-width="0.8"/>'+
-      '<line x1="'+(bx2+(bw2-topW2)/2+8)+'" y1="'+(by2+bh2*0.46)+'" x2="'+(bx2+(bw2+topW2)/2-4)+'" y2="'+(by2+bh2*0.46)+'" stroke="rgba(201,168,76,0.2)" stroke-width="0.6"/>'+
-      // handle
-      '<path d="M '+(bx2+(bw2-topW2)/2+topW2*0.2)+' '+by2+' Q '+(w/2)+' '+(by2-h*0.08)+' '+(bx2+(bw2+topW2)/2-topW2*0.2)+' '+by2+'" fill="none" stroke="rgba(201,168,76,0.45)" stroke-width="2" stroke-linecap="round"/>'+
-      '<line x1="'+bx2+'" y1="'+(by2+bh2)+'" x2="'+(bx2+bw2)+'" y2="'+(by2+bh2)+'" stroke="rgba(201,168,76,0.5)" stroke-width="2"/>'+
+      '<defs><linearGradient id="pk'+Math.round(pct)+'" x1="0" y1="0" x2="0.2" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.6"/></linearGradient></defs>'+
+      '<rect x="'+(cx-rx5)+'" y="'+topY+'" width="'+bw5+'" height="'+(botY-topY)+'" fill="#141929" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>'+
+      (fpct5>0?'<rect x="'+(cx-rx5+2)+'" y="'+paintY+'" width="'+(bw5-4)+'" height="'+(botY-paintY)+'" fill="url(#pk'+Math.round(pct)+')" opacity="0.9"/>':'')+
+      '<ellipse cx="'+cx+'" cy="'+botY+'" rx="'+rx5+'" ry="'+(rx5*0.22)+'" fill="#111827" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>'+
+      '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+(rx5*1.08)+'" ry="'+(rx5*0.25)+'" fill="#1a2035" stroke="rgba(201,168,76,0.5)" stroke-width="2"/>'+
+      (fpct5>0?'<ellipse cx="'+cx+'" cy="'+paintY+'" rx="'+(rx5-2)+'" ry="'+(rx5*0.18)+'" fill="'+fillCol+'" opacity="0.7"/>':'')+
+      '<path d="M '+(cx-rx5*0.55)+' '+topY+' Q '+cx+' '+(topY-h*0.1)+' '+(cx+rx5*0.55)+' '+topY+'" fill="none" stroke="rgba(201,168,76,0.5)" stroke-width="2.5" stroke-linecap="round"/>'+
+      '<rect x="'+(cx-rx5*0.72)+'" y="'+lblY+'" width="'+(bw5*0.72-4)+'" height="'+lblH+'" rx="3" fill="rgba(255,255,255,0.09)" stroke="rgba(201,168,76,0.45)" stroke-width="1.2"/>'+
+      '<line x1="'+(cx-rx5*0.62)+'" y1="'+(lblY+lblH*0.3)+'" x2="'+(cx+rx5*0.38)+'" y2="'+(lblY+lblH*0.3)+'" stroke="rgba(201,168,76,0.35)" stroke-width="0.8"/>'+
+      '<line x1="'+(cx-rx5*0.62)+'" y1="'+(lblY+lblH*0.55)+'" x2="'+(cx+rx5*0.38)+'" y2="'+(lblY+lblH*0.55)+'" stroke="rgba(201,168,76,0.2)" stroke-width="0.7"/>'+
       '</svg>';}
-
-  // ── PLAIN TITAN BUCKET ──
+// ── PLAIN PAINT BUCKET (cylindrical tin) ──
   if(isTitanBucket||isLid){
-    var bw3=w*0.68,bh3=h*0.82,topW3=bw3*0.72,bx3=(w-bw3)/2,by3=h*0.1;
-    var fpct3=pct/100;
-    var fillTW3=topW3+(bw3-topW3)*(1-fpct3),fillTX3=bx3+(bw3-fillTW3)/2,fillY3=by3+bh3*(1-fpct3);
+    var cx=w/2,topY=h*0.12,botY=h*0.92,bw5=w*0.74,rx5=bw5/2;
+    var fpct5=pct/100;
+    // Cylinder: top ellipse, bottom ellipse, sides
+    var paintY=topY+(botY-topY)*(1-fpct5);
     return'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="display:block;margin:0 auto;filter:drop-shadow(0 0 6px '+glowCol+')">' +
-      '<defs><linearGradient id="tb'+Math.round(pct)+'" x1="0" y1="0" x2="0.2" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.55"/></linearGradient></defs>'+
-      '<path d="M '+(bx3+(bw3-topW3)/2)+' '+by3+' L '+bx3+' '+(by3+bh3)+' L '+(bx3+bw3)+' '+(by3+bh3)+' L '+(bx3+(bw3+topW3)/2)+' '+by3+' Z" fill="#141929" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>'+
-      (fpct3>0?'<clipPath id="tbc'+Math.round(pct)+'"><path d="M '+(bx3+(bw3-topW3)/2)+' '+by3+' L '+bx3+' '+(by3+bh3)+' L '+(bx3+bw3)+' '+(by3+bh3)+' L '+(bx3+(bw3+topW3)/2)+' '+by3+' Z"/></clipPath>'+
-      '<rect x="0" y="'+fillY3+'" width="'+w+'" height="'+(by3+bh3-fillY3)+'" fill="url(#tb'+Math.round(pct)+')" clip-path="url(#tbc'+Math.round(pct)+')" opacity="0.9"/>':'')+
-      '<line x1="'+(bx3+(bw3-topW3)/2)+'" y1="'+by3+'" x2="'+(bx3+(bw3+topW3)/2)+'" y2="'+by3+'" stroke="rgba(201,168,76,0.5)" stroke-width="2"/>'+
-      '<line x1="'+bx3+'" y1="'+(by3+bh3)+'" x2="'+(bx3+bw3)+'" y2="'+(by3+bh3)+'" stroke="rgba(201,168,76,0.45)" stroke-width="2"/>'+
-      '<line x1="'+(bx3+(bw3-topW3*0.5)/2)+'" y1="'+(by3+bh3*0.4)+'" x2="'+(bx3+(bw3+topW3*0.5)/2)+'" y2="'+(by3+bh3*0.4)+'" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>'+
-      '<path d="M '+(bx3+(bw3-topW3)/2+topW3*0.2)+' '+by3+' Q '+(w/2)+' '+(by3-h*0.08)+' '+(bx3+(bw3+topW3)/2-topW3*0.2)+' '+by3+'" fill="none" stroke="rgba(201,168,76,0.4)" stroke-width="2" stroke-linecap="round"/>'+
+      '<defs>'+
+      '<linearGradient id="bk'+Math.round(pct)+'" x1="0" y1="0" x2="0.2" y2="1"><stop offset="0%" stop-color="'+fillCol+'" stop-opacity="0.95"/><stop offset="100%" stop-color="'+fillCol+'" stop-opacity="0.6"/></linearGradient>'+
+      '<clipPath id="bkc'+Math.round(pct)+'"><rect x="'+(cx-rx5)+'" y="'+topY+'" width="'+bw5+'" height="'+(botY-topY)+'"/></clipPath>'+
+      '</defs>'+
+      // body sides
+      '<rect x="'+(cx-rx5)+'" y="'+topY+'" width="'+bw5+'" height="'+(botY-topY)+'" fill="#141929" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>'+
+      // fill level
+      (fpct5>0?'<rect x="'+(cx-rx5+2)+'" y="'+paintY+'" width="'+(bw5-4)+'" height="'+(botY-paintY)+'" fill="url(#bk'+Math.round(pct)+')" opacity="0.9"/>':'')+
+      // bottom ellipse
+      '<ellipse cx="'+cx+'" cy="'+botY+'" rx="'+rx5+'" ry="'+(rx5*0.22)+'" fill="#111827" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>'+
+      // top rim
+      '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+(rx5*1.08)+'" ry="'+(rx5*0.25)+'" fill="#1a2035" stroke="rgba(201,168,76,0.5)" stroke-width="2"/>'+
+      // paint surface (ellipse at fill level)
+      (fpct5>0?'<ellipse cx="'+cx+'" cy="'+paintY+'" rx="'+(rx5-2)+'" ry="'+(rx5*0.18)+'" fill="'+fillCol+'" opacity="0.7"/>':'')+
+      // handle
+      '<path d="M '+(cx-rx5*0.55)+' '+topY+' Q '+cx+' '+(topY-h*0.1)+' '+(cx+rx5*0.55)+' '+topY+'" fill="none" stroke="rgba(201,168,76,0.5)" stroke-width="2.5" stroke-linecap="round"/>'+
+      // band around bucket
+      '<rect x="'+(cx-rx5)+'" y="'+(topY+(botY-topY)*0.55)+'" width="'+bw5+'" height="'+(h*0.04)+'" fill="rgba(201,168,76,0.1)" stroke="rgba(201,168,76,0.2)" stroke-width="0.8"/>'+
       '</svg>';}
 
   // ── 1-TON BULK BAG (Sand/Silica) ──
