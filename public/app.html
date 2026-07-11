@@ -1481,6 +1481,13 @@ function tvGroupTile(group,items){
   return h;
 }
 
+function tvToggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(function(e){alert('Fullscreen not allowed: '+e.message);});
+  } else {
+    document.exitFullscreen();
+  }
+}
 function tTV(){
   TV=!TV;
   document.getElementById('app').style.display=TV?'none':'flex';
@@ -1517,6 +1524,7 @@ function renderTV(){
   h+='</div>';
   h+='<div style="display:flex;gap:8px">';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:12px" onclick="oTVSettings()"><i class="ti ti-settings"></i> Customise</button>';
+  h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:12px" onclick="tvToggleFullscreen()" id="tv-fs-btn"><i class="ti ti-arrows-maximize"></i> Fullscreen</button>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:12px" onclick="tTV()"><i class="ti ti-x"></i> Exit</button>';
   h+='</div></div>';
 
