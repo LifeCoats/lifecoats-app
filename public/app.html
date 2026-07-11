@@ -739,6 +739,8 @@ function rRecset(){
 async function saveRecSettings(){var all=allTVItems();var sel=all.filter(function(it){var cb=document.getElementById('rs-'+it.key);return cb&&cb.checked;}).map(function(it){return{key:it.key,label:it.label};});await api('POST','/reception-settings',{selected_items:sel});if(REC)REC.dashItems=sel;alert('Reception dashboard saved!');}
 
 // ==== JOB BOOKINGS ====
+function showLoad(msg){var o=document.getElementById('loading-overlay');if(o){o.style.display='flex';var m=document.getElementById('loading-msg');if(m)m.textContent=msg||'Saving...';}}
+function hideLoad(){var o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
 var JOB={basket:[],addType:null,addFid:null,addSearch:'',addSub:null,addQty:1,addStone:null,addBucket:null,addSecSize:null,cmTi:[]};
 var jobBookings=[];
 var activeJobId=null; // currently open job being viewed
