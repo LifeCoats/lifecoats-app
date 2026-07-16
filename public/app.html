@@ -2319,7 +2319,13 @@ function recOrderHTML(){
       h+='<button onclick="recUpdQty('+i+',-1)" style="'+rBS('#f0f0f0','#333','#ddd','14px')+'width:30px;height:30px;border-radius:50%">−</button>';
       h+='<span style="font-size:16px;font-weight:700;color:#5B8FA8;min-width:22px;text-align:center">'+item.qty+'</span>';
       h+='<button onclick="recUpdQty('+i+',1)" style="'+rBS('#5B8FA8','#fff','#5B8FA8','14px')+'width:30px;height:30px;border-radius:50%">+</button>';
-      h+='</div><span style="font-size:13px;font-weight:600;color:#5B8FA8">'+(lineTotal>0?fmt(lineTotal):'')+'</span></div></div>';
+      h+='</div>';
+      h+='<div style="display:flex;align-items:center;gap:4px">';
+      h+='<span style="font-size:11px;color:#aaa">R</span>';
+      h+='<input type="number" value="'+(item.price||'')+'" min="0" step="0.01" placeholder="Price" oninput="recUpdPrice('+i+',this.value)" style="width:80px;font-size:13px;font-weight:600;color:#5B8FA8;border:1px solid #ddd;border-radius:8px;padding:5px 7px;font-family:system-ui,sans-serif;text-align:right">';
+      h+='</div></div>';
+      h+='<div style="text-align:right;font-size:12px;color:#888;margin-top:2px">'+(lineTotal>0?'= '+fmt(lineTotal):'')+'</div>';
+      h+='</div>';
     });
     h+='</div>';
     h+='<div style="border-top:2px solid #e0e0e0;padding-top:10px;margin-top:8px">';
@@ -2331,6 +2337,7 @@ function recOrderHTML(){
   return h;
 }
 
+function recUpdPrice(i,val){REC.basket[i].price=parseFloat(val)||0;var basketTotal=REC.basket.reduce(function(a,item){return a+(item.price||0)*item.qty;},0);var el=document.getElementById('rec-basket-total');if(el)el.textContent=fmt(basketTotal);}
 function recSelType(t){REC.addType=t;REC.addFid=null;REC.addSearch='';REC.addQty=1;REC.addStone=null;REC.addBucket=null;REC.addSecSize=null;recOrJobRender();}
 function recOrJobRender(){if(window._jobMode&&activeJobId){rJobDetail(activeJobId);}else{recRender();}}
 
@@ -2613,13 +2620,13 @@ function recUpdQty(i,d){REC.basket[i].qty=Math.max(1,REC.basket[i].qty+d);recOrJ
 function recCheckout(){
   if(!REC.basket.length){window.alert('Add items to basket first');return;}
   if(!REC.client){window.alert('Select a client first');return;}
-  REC.activeTab='checkout';REC.payMode=null;REC.cashAmt=0;REC.cardAmt=0;
+  REC.activeTab='checkout';REC.payMode=null;REC.cashAmt=0;REC.cardAmt=0;REC.deliveryFee=0;
   recRenderCheckout();
 }
 
 function recRenderCheckout(){
   var ui=document.getElementById('rec-ui');if(!ui)return;
-  var basketTotal=REC.basket.reduce(function(a,item){return a+(item.price||0)*item.qty;},0);
+  var itemsTotal=REC.basket.reduce(function(a,item){return a+(item.price||0)*item.qty;},0);var deliveryFee=REC.delivery==='delivery'?(REC.deliveryFee||0):0;var basketTotal=itemsTotal+deliveryFee;
   var cashAmt=parseFloat(REC.cashAmt)||0;
   var cardAmt=REC.payMode==='cash'?0:REC.payMode==='card'?basketTotal:parseFloat(REC.cardAmt)||0;
   var paid=cashAmt+cardAmt;var change=paid-basketTotal;
@@ -2639,7 +2646,7 @@ function recRenderCheckout(){
     if(item.details)h+='<div style="font-size:12px;color:#888">'+item.details+'</div>';
     h+='</div><span style="font-size:14px;font-weight:600;color:#5B8FA8">'+(lt>0?fmt(lt):'')+'</span></div>';
   });
-  if(basketTotal>0)h+='<div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid #e0e0e0;font-size:18px;font-weight:700"><span>Total</span><span style="color:#5B8FA8">'+fmt(basketTotal)+'</span></div>';
+  if(itemsTotal>0){if(deliveryFee>0)h+='<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#888"><span>Items subtotal</span><span>'+fmt(itemsTotal)+'</span></div>';if(deliveryFee>0)h+='<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px;color:#3a6e87"><span><i class="ti ti-truck"></i> Delivery fee</span><span>'+fmt(deliveryFee)+'</span></div>';h+='<div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid #e0e0e0;font-size:18px;font-weight:700"><span>Total</span><span style="color:#5B8FA8">'+fmt(basketTotal)+'</span></div>';}
   h+='</div>';
 
   // Right — payment + delivery
@@ -2668,11 +2675,21 @@ function recRenderCheckout(){
   // Delivery
   h+='<div style="margin-bottom:14px"><div style="font-size:14px;font-weight:600;margin-bottom:8px">Delivery</div>';
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-  [{v:'collection',l:'Collection'},{v:'courier',l:'Courier'}].forEach(function(d){
+  [{v:'collection',l:'Collection'},{v:'courier',l:'Courier (lids incl.)'},{v:'delivery',l:'Delivery'}].forEach(function(d){
     var sel=REC.delivery===d.v;
-    h+='<button onclick="REC.delivery=\''+d.v+'\';recRenderCheckout()" style="'+rBS(sel?'#E8F4F9':'#fff',sel?'#3a6e87':'#333',sel?'#5B8FA8':'#ddd','15px')+'padding:14px;border-radius:10px;font-weight:'+(sel?'600':'400')+'">'+d.l+'</button>';
+    h+='<button onclick="REC.delivery=\''+d.v+'\';recRenderCheckout()" style="'+rBS(sel?'#E8F4F9':'#fff',sel?'#3a6e87':'#333',sel?'#5B8FA8':'#ddd','13px')+'padding:12px 8px;border-radius:10px;font-weight:'+(sel?'600':'400')+'">'+d.l+'</button>';
   });
-  h+='</div></div>';
+  h+='</div>';
+  // Delivery fee input when delivery selected
+  if(REC.delivery==='delivery'){
+    h+='<div style="margin-top:10px;background:#E8F4F9;border-radius:10px;padding:12px">';
+    h+='<div style="font-size:13px;font-weight:600;color:#3a6e87;margin-bottom:6px"><i class="ti ti-truck"></i> Delivery fee</div>';
+    h+='<div style="display:flex;align-items:center;gap:6px">';
+    h+='<span style="font-size:14px;color:#3a6e87;font-weight:600">R</span>';
+    h+='<input type="number" id="rec-delfee" value="'+(REC.deliveryFee||'')+'" min="0" step="0.01" placeholder="0.00" oninput="REC.deliveryFee=parseFloat(this.value)||0;recRenderCheckout()" style="flex:1;font-size:18px;font-weight:700;color:#3a6e87;border:1px solid #5B8FA8;border-radius:8px;padding:10px;font-family:system-ui,sans-serif">';
+    h+='</div></div>';
+  }
+  h+='</div>';
 
   // Notes
   h+='<div style="margin-bottom:14px"><div style="font-size:14px;font-weight:600;margin-bottom:8px">Notes (optional)</div>';
@@ -2691,7 +2708,7 @@ async function recConfirm(){
   if(!REC.payMode){window.alert('Select a payment method');return;}
   if(!REC.delivery){window.alert('Select delivery method');return;}
   var notesEl=document.getElementById('rec-notes');if(notesEl)REC.notes=notesEl.value;
-  var basketTotal=REC.basket.reduce(function(a,i){return a+(i.price||0)*i.qty;},0);
+  var itemsTotal2=REC.basket.reduce(function(a,i){return a+(i.price||0)*i.qty;},0);var deliveryFee2=REC.delivery==='delivery'?(REC.deliveryFee||0):0;var basketTotal=itemsTotal2+deliveryFee2;
   var cashAmt=REC.payMode==='cash'?basketTotal:REC.payMode==='card'?0:parseFloat(REC.cashAmt)||0;
   var cardAmt=REC.payMode==='card'?basketTotal:REC.payMode==='cash'?0:Math.max(0,basketTotal-cashAmt);
   var pm=REC.payMode==='split'?(cashAmt>0&&cardAmt>0?'split':cashAmt>0?'cash':'card'):REC.payMode;
@@ -2702,7 +2719,7 @@ async function recConfirm(){
   if(res){
     orders.push({id:oid,client:REC.client.name,t:'multi',n:od.name,qty:od.quantity,bkt:'',stK:'',lid:od.include_lid,dl:REC.delivery,nt:REC.notes||'',status:'pending',fid:null,cmTi:[],pm:pm,items:allItems,cashAmt:cashAmt,cardAmt:cardAmt,total:basketTotal,clientObj:REC.client});
     recPrintA4(oid,REC.client,REC.basket,REC.delivery,REC.notes||'',cashAmt,cardAmt,basketTotal,pm);
-    REC.basket=[];REC.client=null;REC.delivery=null;REC.notes='';REC.cashAmt=0;REC.cardAmt=0;REC.payMode=null;REC.addType=null;REC.looseQty={};
+    REC.basket=[];REC.client=null;REC.delivery=null;REC.notes='';REC.cashAmt=0;REC.cardAmt=0;REC.payMode=null;REC.addType=null;REC.looseQty={};REC.deliveryFee=0;
     REC.activeTab='active';recRender();
   }
 }
@@ -2791,7 +2808,7 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
 
   // Totals + payment
   h+='<div class="section"><div class="section-title">Payment</div><div class="payment-box">';
-  if(total>0){h+='<div class="total-row grand-total"><span>Order total</span><span>'+fmt(total)+'</span></div>';}
+  if(total>0){var delFeeP=(delivery==='delivery'&&REC&&REC.deliveryFee)?REC.deliveryFee:0;if(delFeeP>0)h+='<div class="total-row" style="color:#5B8FA8"><span><i class="ti ti-truck"></i> Delivery fee</span><span>'+fmt(delFeeP)+'</span></div>';h+='<div class="total-row grand-total"><span>Order total</span><span>'+fmt(total)+'</span></div>';}
   if(pm==='cash'||pm==='split')h+='<div class="total-row"><span>Cash received</span><span>'+fmt(cashAmt)+'</span></div>';
   if(pm==='card'||pm==='split')h+='<div class="total-row"><span>Card / EFT</span><span>'+fmt(cardAmt)+'</span></div>';
   if(cashAmt>total)h+='<div class="total-row" style="color:#3B6D11;font-weight:600"><span>Change</span><span>'+fmt(cashAmt-total)+'</span></div>';
