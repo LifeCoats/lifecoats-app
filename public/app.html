@@ -612,7 +612,7 @@ async function loadAll(){
     var r=await Promise.all([
       api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),
       api('GET','/formulations'),api('GET','/orders'),api('GET','/batch-recipes'),
-      (userRole==='admin'||userRole==='office')?api('GET','/job-bookings'):Promise.resolve([])
+      (userRole==='admin'||userRole==='office'||userRole==='tv')?api('GET','/job-bookings'):Promise.resolve([])
     ]);
     mats=r[0]||[];
     var ms=r[1]||[];mfgStock={};ms.forEach(function(m){mfgStock[m.name]=m;});
@@ -636,7 +636,7 @@ async function loadAll(){
       var div=document.createElement('div');div.id='tv-fullscreen';div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0f1e;overflow-y:auto;z-index:50';document.body.appendChild(div);
       TV=true;renderTV();
       if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
-      if(!window._tvInterval)window._tvInterval=setInterval(async function(){if(TV){try{var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders')]);if(r[0])mats=r[0];if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,orderTotal:o.order_total||0,items:o.items||null};});renderTV();}catch(e){console.error('TV refresh error:',e);}}},60000);
+      if(!window._tvInterval)window._tvInterval=setInterval(async function(){if(TV){try{var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders'),api('GET','/job-bookings')]);if(r[0])mats=r[0];if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,orderTotal:o.order_total||0,items:o.items||null};});if(r[4])jobBookings=(r[4]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});renderTV();}catch(e){console.error('TV refresh error:',e);}}},60000);
     }else{
       requestAnimationFrame(function(){
         nav('dash',document.querySelector('.ni[onclick*="dash"]'));
@@ -1627,7 +1627,7 @@ function tTV(){
     if(!ex){var div=document.createElement('div');div.id='tv-fullscreen';div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0f1e;overflow-y:auto;z-index:50';document.body.appendChild(div);}
     if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
     renderTV();
-    if(!window._tvInterval)window._tvInterval=setInterval(async function(){if(TV){try{var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders')]);if(r[0])mats=r[0];if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,orderTotal:o.order_total||0,items:o.items||null};});renderTV();}catch(e){console.error('TV refresh error:',e);}}},60000);
+    if(!window._tvInterval)window._tvInterval=setInterval(async function(){if(TV){try{var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders'),api('GET','/job-bookings')]);if(r[0])mats=r[0];if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,orderTotal:o.order_total||0,items:o.items||null};});if(r[4])jobBookings=(r[4]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});renderTV();}catch(e){console.error('TV refresh error:',e);}}},60000);
   }else{
     if(ex)ex.remove();
     if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen().catch(function(){});
