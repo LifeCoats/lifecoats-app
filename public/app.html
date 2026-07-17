@@ -2411,6 +2411,14 @@ function recProductPanel(){
     if(isCM){
       h+='<input type="text" id="rec-cm-name" placeholder="Colour reference..." value="'+(REC.cmName||'')+'" style="width:100%;font-size:15px;padding:12px;border-radius:10px;border:0.5px solid #ddd;margin-bottom:10px;font-family:system-ui,sans-serif">';
       h+='<div style="font-size:14px;font-weight:500;margin-bottom:8px">Tints per bucket:</div>';
+      if((REC.cmTi||[]).length>0){
+        h+='<div style="display:grid;grid-template-columns:1fr 60px 60px 36px;gap:6px;margin-bottom:4px;padding:0 2px">';
+        h+='<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em">Tint colour</div>';
+        h+='<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em;text-align:center">Y</div>';
+        h+='<div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.04em;text-align:center">Shots</div>';
+        h+='<div></div>';
+        h+='</div>';
+      }
       (REC.cmTi||[]).forEach(function(t2,i){
         h+='<div style="display:grid;grid-template-columns:1fr 60px 60px 36px;gap:6px;margin-bottom:8px">';
         h+='<select onchange="recUpdCMT('+i+',\'n\',this.value)" style="font-size:14px;padding:10px;border-radius:10px;border:0.5px solid #ddd">'+mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option'+(m.name===t2.n?' selected':'')+'>'+m.name+'</option>';}).join('')+'</select>';
