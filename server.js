@@ -231,7 +231,7 @@ app.post('/api/base-logs', auth, async (req, res) => {
 });
 
 // JOB BOOKINGS
-app.get('/api/job-bookings', auth, adminOnly, async (req, res) => {
+app.get('/api/job-bookings', auth, async (req, res) => {
   const { data } = await supabase.from('job_bookings').select('*').order('created_at', { ascending: false });
   res.json(data || []);
 });
