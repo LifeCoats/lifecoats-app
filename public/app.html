@@ -189,6 +189,7 @@ tr:hover td{background:#f8f9fa}
       <button class="btn btns" onclick="oTVSettings()"><i class="ti ti-settings"></i> Customise TV</button>
       <button class="btn btns" onclick="downloadDailyReport()"><i class="ti ti-file-download"></i> Daily report</button>
       <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="tTV()"><i class="ti ti-tv"></i> TV Mode</button>
+      <button class="btn btns" style="background:#1D1D1D;color:#fff;border-color:#1D1D1D" onclick="oStockTake()" id="stocktake-btn"><i class="ti ti-clipboard-list"></i> Stock Take</button>
     </div>
   </div>
   <div id="cp" style="display:none" class="cpanel">
@@ -233,6 +234,15 @@ tr:hover td{background:#f8f9fa}
   </div>
   <div class="card"><h3>Recent deliveries</h3><div id="rcv-log"></div></div>
 </div>
+
+<!-- STOCK TAKE MODAL -->
+<div class="mbg" id="m-stocktake" onclick="cBG(event,'m-stocktake')"><div class="mod" style="max-width:560px;max-height:85vh;overflow-y:auto">
+  <button class="mc" onclick="cM('m-stocktake')"><i class="ti ti-x"></i></button>
+  <h3>Stock Take — Manufactured Stock</h3>
+  <div class="ib" style="margin-bottom:1rem"><i class="ti ti-info-circle"></i> Enter the actual counted quantities. This will not affect raw materials.</div>
+  <div id="stocktake-list"></div>
+  <div class="fe"><button class="btn" onclick="cM('m-stocktake')">Cancel</button><button class="btn btnp" onclick="saveStockTake()"><i class="ti ti-clipboard-check"></i> Save stock take</button></div>
+</div></div>
 
 <!-- BATCH PRODUCTION -->
 <div class="pg" id="pg-batches">
@@ -649,6 +659,7 @@ function logout(){localStorage.removeItem('lc_token');localStorage.removeItem('l
 function applyRole(){
   document.querySelectorAll('.ni').forEach(function(n){var r=n.getAttribute('data-r');n.style.display=(!r||r.indexOf(userRole)!==-1)?'flex':'none';});
   if(userRole==='admin'){var ab=document.getElementById('add-recipe-btn');if(ab)ab.style.display='';var rt=document.getElementById('recipes-tab');if(rt)rt.style.display='';}
+  var stBtn=document.getElementById('stocktake-btn');if(stBtn)stBtn.style.display=userRole==='admin'?'':'none';
   if(userRole==='office'){
     var ab=document.getElementById('add-recipe-btn');if(ab)ab.style.display='none';
     var rt=document.getElementById('recipes-tab');if(rt)rt.style.display='none';
@@ -1779,6 +1790,45 @@ function rMats(){
 function oQA(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('qa-id').value=id;document.getElementById('qa-title').textContent='Add stock: '+m.name;if(m.pack_unit&&m.pack_qty>0){document.getElementById('qa-lbl').textContent='How many '+m.pack_unit+'s received?';document.getElementById('qa-info').textContent='Current: '+dspStock(m)+' · 1 '+m.pack_unit+' = '+m.pack_qty+m.unit;}else{document.getElementById('qa-lbl').textContent='Quantity to add ('+m.unit+')';document.getElementById('qa-info').textContent='Current: '+m.stock.toFixed(1)+' '+m.unit;}document.getElementById('qa-qty').value='';oM('m-qa');}
 async function doQA(){var id=parseInt(document.getElementById('qa-id').value);var qty=parseFloat(document.getElementById('qa-qty').value)||0;if(qty<=0){window.alert('Enter quantity');return;}var m=mats.find(function(x){return x.id===id;});if(!m)return;var add=qty;if(m.pack_unit&&m.pack_qty>0)add=qty*m.pack_qty;m.stock+=add;await api('PUT','/materials/'+id,{stock:m.stock});if(m.pack_unit&&m.pack_qty>0)await api('POST','/stock-receipts',{material_id:id,material_name:m.name,packs_received:qty,pack_unit:m.pack_unit,pack_qty:m.pack_qty,total_added:add,unit:m.unit,received_at:new Date().toISOString()});cM('m-qa');rMats();rDash();}
 function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('enm').value=m.name||'';document.getElementById('ecat').value=m.category||'other';document.getElementById('enm').value=m.name;document.getElementById('ecat').value=m.category||'other';document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';document.getElementById('epu').value=m.pack_unit||'';document.getElementById('epq').value=m.pack_qty||0;var h=document.getElementById('eph');if(m.pack_unit&&m.pack_qty>0){h.textContent='Currently '+dspStock(m)+' · Alert at '+dspAlert(m);h.style.display='block';}else h.style.display='none';oM('m-em');}
+function oStockTake(){
+  if(userRole!=='admin'){alert('Stock take is admin only.');return;}
+  var list=document.getElementById('stocktake-list');
+  if(!list)return;
+  var h='';
+  Object.values(mfgStock).forEach(function(m){
+    var isB=m.name==='Undercoat';
+    var unit=isB?'buckets':'L';
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid #e0e0e0">';
+    h+='<div style="flex:1"><div style="font-weight:600;font-size:14px">'+m.name+'</div>';
+    h+='<div style="font-size:11px;color:#888">Current: '+m.stock.toFixed(0)+' '+unit+' · Alert at: '+m.alert_level+' '+unit+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:6px">';
+    h+='<input type="number" id="st-'+m.id+'" value="'+m.stock.toFixed(0)+'" min="0" step="'+(isB?'1':'0.1')+'" style="width:90px;font-size:16px;font-weight:700;padding:8px 10px;border-radius:8px;border:1.5px solid #5B8FA8;text-align:right;color:#3a6e87">';
+    h+='<span style="font-size:12px;color:#888;min-width:30px">'+unit+'</span>';
+    h+='</div></div>';
+  });
+  if(!Object.keys(mfgStock).length)h='<div class="es">No manufactured stock found.</div>';
+  list.innerHTML=h;
+  oM('m-stocktake');
+}
+async function saveStockTake(){
+  showLoad('Saving stock take...');
+  var errors=[];
+  var saves=Object.values(mfgStock).map(async function(m){
+    var el=document.getElementById('st-'+m.id);
+    if(!el)return;
+    var newVal=parseFloat(el.value);
+    if(isNaN(newVal)||newVal<0){errors.push(m.name+': invalid value');return;}
+    if(newVal===m.stock)return; // no change
+    m.stock=newVal;
+    await api('PUT','/manufactured-stock/'+m.id,{stock:newVal});
+  });
+  await Promise.all(saves);
+  hideLoad();
+  if(errors.length){alert('Some items had errors:\n'+errors.join('\n'));}
+  else{alert('Stock take saved successfully!');}
+  cM('m-stocktake');
+  rDash();
+}
 async function deleteMat(id){id=parseInt(id);var m=mats.find(function(x){return x.id===id;});if(!m)return;if(!confirm('Delete '+m.name+'?\nThis cannot be undone.'))return;showLoad('Deleting...');await api('DELETE','/materials/'+id);mats=mats.filter(function(x){return x.id!==id;});hideLoad();rMats();}
 async function saveMat(){var id=parseInt(document.getElementById('eid').value);var data={name:document.getElementById('enm').value.trim()||'',category:document.getElementById('ecat').value,stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value,pack_unit:document.getElementById('epu').value||'',pack_qty:parseFloat(document.getElementById('epq').value)||0};await api('PUT','/materials/'+id,data);var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);cM('m-em');rMats();}
 async function addMat(){var n=document.getElementById('mn').value.trim();if(!n){window.alert('Enter name');return;}var data={name:n,category:document.getElementById('mc2').value,supplier:document.getElementById('msu').value||'',pack_size:document.getElementById('mp').value||'',description:document.getElementById('md').value||'',pack_unit:document.getElementById('mpu').value||'',pack_qty:parseFloat(document.getElementById('mpq').value)||0,stock:parseFloat(document.getElementById('mst').value)||0,unit:document.getElementById('mu').value,alert_level:parseFloat(document.getElementById('ma').value)||0};var res=await api('POST','/materials',data);if(res){mats.push(res);cM('m-am');['mn','msu','mp','md','mpu','mpq','mst','ma'].forEach(function(i){document.getElementById(i).value='';});rMats();}}
