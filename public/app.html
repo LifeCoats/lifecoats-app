@@ -593,7 +593,7 @@ if(!token){window.location.href='/';throw new Error('No token');}
 
 var CC={resin:'#378ADD',chemical:'#7F77DD',sand:'#E5A823',stone:'#5AAB7B',granite:'#C46B2D',tint:'#D14F7C',other:'#888'};
 var WS={al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true};
-var TV=false,CRT='gamazine',PRT='wk',pendingOrderId=null,pendingBatchId=null,confCB=null,pdfType='wk';
+var TV=false,_tvScale=null,CRT='gamazine',PRT='wk',pendingOrderId=null,pendingBatchId=null,confCB=null,pdfType='wk';
 var mats=[],mfgStock={},pkgData={},forms=[],orders=[],batchRecipes=[],collections={},NID=1001;
 
 function H(){return{'Authorization':'Bearer '+token,'Content-Type':'application/json'};}
@@ -634,7 +634,7 @@ async function loadAll(){
     }else if(userRole==='tv'){
       document.getElementById('app').style.display='none';
       var div=document.createElement('div');div.id='tv-fullscreen';div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0f1e;overflow-y:auto;z-index:50';document.body.appendChild(div);
-      TV=true;renderTV();
+      TV=true;var saved=localStorage.getItem('lc_tvscale');if(saved)_tvScale=parseFloat(saved);renderTV();
       if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
       if(!window._tvInterval)window._tvInterval=setInterval(async function(){if(TV){try{var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders'),api('GET','/job-bookings')]);if(r[0])mats=r[0];if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,orderTotal:o.order_total||0,items:o.items||null};});if(r[4])jobBookings=(r[4]||[]).map(function(j){return{id:j.id,job_ref:j.job_ref,status:j.status||'open',created_at:j.created_at,updated_at:j.updated_at,booked_by:j.booked_by};});renderTV();}catch(e){console.error('TV refresh error:',e);}}},60000);
     }else{
@@ -1559,7 +1559,7 @@ function tvTile(item,style,size,split,capacity){
   var val=item.getVal(),max=item.getMax(),alert2=item.getAlert(),unit=item.getUnit();
   var isLow=item.low();
   // Auto-size: split items get large, default medium
-  var sizeMap={small:{px:80,span:1},medium:{px:100,span:1},large:{px:130,span:2}};
+  var sizeMap={small:{px:65,span:1},medium:{px:82,span:1},large:{px:108,span:2}};
   var sc=sizeMap[size]||sizeMap.medium;
   if(split)sc=sizeMap.large;
   var inner;
@@ -1635,6 +1635,17 @@ function tTV(){
   }
 }
 
+function tvGetScale(){
+  if(_tvScale!==null)return _tvScale;
+  var w=window.innerWidth;
+  if(w<=1280)return 0.72;
+  if(w<=1600)return 0.82;
+  if(w<=1920)return 0.90;
+  return 1;
+}
+function tvScaleUp(){_tvScale=Math.min(1.2,Math.round((tvGetScale()+0.05)*100)/100);localStorage.setItem('lc_tvscale',_tvScale);renderTV();}
+function tvScaleDown(){_tvScale=Math.max(0.5,Math.round((tvGetScale()-0.05)*100)/100);localStorage.setItem('lc_tvscale',_tvScale);renderTV();}
+function tvScaleReset(){_tvScale=null;localStorage.removeItem('lc_tvscale');renderTV();}
 function renderTV(){
   var container=document.getElementById('tv-fullscreen');if(!container)return;
   var done=orders.filter(function(o){return o.status==='done'&&isToday(o.createdAt);});
@@ -1644,7 +1655,8 @@ function renderTV(){
   var ticker=lowItems.map(function(i){return'\u26a0  '+i.label.toUpperCase()+': '+i.dsp()+' REMAINING';}).join('     \u00b7     ');
   var openJobs=jobBookings.filter(function(j){return j.status!=='closed';});
 
-  var h='<div class="tv-wrap" style="display:flex;flex-direction:column;height:100vh;padding:0.75rem;gap:0.6rem;overflow:hidden">';
+  var scale=tvGetScale();
+  var h='<div class="tv-wrap" style="display:flex;flex-direction:column;height:100vh;padding:0.75rem;gap:0.6rem;overflow:hidden;transform-origin:top left;transform:scale('+scale+');width:'+(100/scale)+'%;height:'+(100/scale)+'vh">';
 
   // ── HEADER ──
   h+='<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:0.6rem;border-bottom:1px solid rgba(201,168,76,0.2);flex-shrink:0">';
@@ -1661,6 +1673,12 @@ function renderTV(){
   h+='</div>';
   h+='</div>';
   h+='<div style="display:flex;gap:6px">';
+  h+='<div style="display:flex;align-items:center;gap:4px;background:#0d1422;border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:3px 6px">';
+  h+='<button onclick="tvScaleDown()" style="background:none;border:none;color:#e8edf5;font-size:14px;cursor:pointer;padding:2px 5px;line-height:1" title="Zoom out">−</button>';
+  h+='<span style="font-size:10px;color:var(--tv-muted);min-width:30px;text-align:center">'+Math.round(scale*100)+'%</span>';
+  h+='<button onclick="tvScaleUp()" style="background:none;border:none;color:#e8edf5;font-size:14px;cursor:pointer;padding:2px 5px;line-height:1" title="Zoom in">+</button>';
+  h+='<button onclick="tvScaleReset()" style="background:none;border:none;color:rgba(232,237,245,0.3);font-size:9px;cursor:pointer;padding:2px 4px;line-height:1" title="Reset">⟳</button>';
+  h+='</div>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="oTVSettings()"><i class="ti ti-settings"></i></button>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="tvToggleFullscreen()"><i class="ti ti-arrows-maximize"></i></button>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="tTV()"><i class="ti ti-x"></i></button>';
@@ -1684,7 +1702,7 @@ function renderTV(){
   if(!tvSettings.selected_items.length&&!tvSettings.groups.length){
     h+='<div class="tv-card" style="text-align:center;padding:2rem;color:var(--tv-muted)">No items selected. Click Customise to set up your TV dashboard.</div>';
   }else{
-    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">';
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">';
     var renderedGroups={};
     tvSettings.groups.forEach(function(grp){
       if(renderedGroups[grp.id])return;
