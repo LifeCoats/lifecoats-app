@@ -140,7 +140,12 @@ tr:hover td{background:#f8f9fa}
 @keyframes tv-pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}50%{box-shadow:0 0 20px rgba(245,158,11,0.25)}}
 .tv-ticker{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;color:#fca5a5;overflow:hidden;white-space:nowrap;margin-bottom:0.85rem;letter-spacing:0.03em}
 .tv-group-header{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--tv-gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--tv-gold-dim)}
+@media print{
+  .no-print{display:none!important}
+  body{margin:0;padding:0}
+}
 </style>
+<style id="thermal-style" media="not print"></style>
 </head>
 <body>
 <div class="loading-screen" id="ls">
@@ -170,7 +175,7 @@ tr:hover td{background:#f8f9fa}
   <div class="user-info">
     <p>Logged in as</p><span id="un-display"></span>
     <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
-    <div style="font-size:10px;color:#bbb;margin-top:8px">v1.0.0</div> 
+    <div style="font-size:10px;color:#bbb;margin-top:8px">v1.9.0</div> 
   </div>
 </div>
 <div class="main" id="main">
@@ -372,7 +377,8 @@ tr:hover td{background:#f8f9fa}
       <div class="card"><h3>Order slip — ready to print</h3>
         <div id="sc"></div>
         <div style="display:flex;gap:8px;margin-top:0.75rem;justify-content:flex-end">
-          <button class="btn btns" onclick="window.print()"><i class="ti ti-printer"></i> Print slip</button>
+          <button class="btn btns" onclick="window.print()"><i class="ti ti-printer"></i> A4 Slip</button>
+                <button class="btn btns" onclick="recPrintThermal(currentOrderId,currentClient,currentBasket,currentDelivery,currentNotes,currentCashAmt,currentCardAmt,currentTotal,currentPm)" style="background:#1a6e3c;color:#fff;border-color:#1a6e3c"><i class="ti ti-receipt"></i> Thermal</button>
           <button class="btn btns btnp" onclick="cOC()"><i class="ti ti-circle-check"></i> Confirm &amp; send to factory</button>
         </div>
       </div>
@@ -2795,6 +2801,9 @@ async function recConfirm(){
   if(res){
     orders.push({id:oid,client:REC.client.name,t:'multi',n:od.name,qty:od.quantity,bkt:'',stK:'',lid:od.include_lid,dl:REC.delivery,nt:REC.notes||'',status:'pending',fid:null,cmTi:[],pm:pm,items:allItems,cashAmt:cashAmt,cardAmt:cardAmt,total:basketTotal,clientObj:REC.client});
     recPrintA4(oid,REC.client,REC.basket,REC.delivery,REC.notes||'',cashAmt,cardAmt,basketTotal,pm);
+    window.currentOrderId=oid;window.currentClient=REC.client;window.currentBasket=REC.basket.slice();
+    window.currentDelivery=REC.delivery;window.currentNotes=REC.notes||'';window.currentCashAmt=cashAmt;
+    window.currentCardAmt=cardAmt;window.currentTotal=basketTotal;window.currentPm=pm;
     REC.basket=[];REC.client=null;REC.delivery=null;REC.notes='';REC.cashAmt=0;REC.cardAmt=0;REC.payMode=null;REC.addType=null;REC.looseQty={};REC.deliveryFee=0;
     REC.activeTab='active';recRender();
   }
@@ -2904,6 +2913,124 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
 }
 
 // ---- ACTIVE ORDERS ----
+
+function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
+  var now=new Date();
+  var PAPER='76mm'; // 80mm paper, ~76mm printable
+  var h='<!DOCTYPE html><html><head><title>'+oid+'</title><meta charset="UTF-8"><style>';
+  h+='*{box-sizing:border-box;margin:0;padding:0}';
+  h+='body{font-family:"Courier New",monospace;font-size:12px;color:#000;width:'+PAPER+';margin:0 auto;padding:4px 6px}';
+  h+='.center{text-align:center}';
+  h+='.bold{font-weight:bold}';
+  h+='.line{border-top:1px dashed #000;margin:5px 0}';
+  h+='.row{display:flex;justify-content:space-between;font-size:11px;margin:1px 0}';
+  h+='.label{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.5px;margin:4px 0 1px}';
+  h+='.item-name{font-weight:bold;font-size:12px;margin:3px 0 1px}';
+  h+='.detail{font-size:10px;color:#333;margin:1px 0}';
+  h+='.total-row{display:flex;justify-content:space-between;font-weight:bold;font-size:13px;margin:2px 0}';
+  h+='.footer{text-align:center;font-size:10px;margin-top:8px;padding-top:5px;border-top:1px dashed #000}';
+  h+='@media print{body{width:'+PAPER+'}}';
+  h+='</style></head><body>';
+
+  // Header
+  h+='<div class="center bold" style="font-size:13px;letter-spacing:1px">LIFE COATS</div>';
+  h+='<div class="center" style="font-size:10px">We\'ve Got You Covered</div>';
+  h+='<div class="center" style="font-size:9px;color:#333">'+COMPANY.address+'</div>';
+  h+='<div class="center" style="font-size:9px;color:#333">Tel: '+COMPANY.phone+'</div>';
+  h+='<div class="line"></div>';
+
+  // Order info
+  h+='<div class="row"><span class="bold">'+oid+'</span><span style="font-size:10px">'+now.toLocaleDateString('en-ZA')+'</span></div>';
+  h+='<div style="font-size:10px">'+now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div>';
+  h+='<div class="line"></div>';
+
+  // Client
+  h+='<div class="label">Client</div>';
+  h+='<div class="bold" style="font-size:12px">'+client.name+'</div>';
+  if(client.phone)h+='<div style="font-size:10px">'+client.phone+'</div>';
+  h+='<div style="font-size:10px">Delivery: '+delivery+'</div>';
+  if(notes)h+='<div style="font-size:10px">Notes: '+notes+'</div>';
+  h+='<div class="line"></div>';
+
+  // Items
+  h+='<div class="label">Order items</div>';
+  basket.forEach(function(item){
+    var lt=(item.price||0)*item.qty;
+    var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:(item.productType==='cps'&&item.secSize==='10')?0.5:1;
+    var itemForm=item.fid?forms.find(function(f){return f.id===item.fid;}):null;
+    var tintSource=item.cmTi&&item.cmTi.length?item.cmTi:(itemForm?itemForm.tints:[]);
+
+    h+='<div class="item-name">'+item.label+'</div>';
+    if(item.bucket||item.secSize){
+      var det=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
+      if(det)h+='<div class="detail">'+det+'</div>';
+    }
+    if(item.stone)h+='<div class="detail">Stone: '+item.stone+'</div>';
+    h+='<div class="row"><span>Qty: '+item.qty+' bucket'+(item.qty!==1?'s':'')+'</span><span>'+(item.price?'R'+parseFloat(item.price).toFixed(2)+' each':'')+'</span></div>';
+
+    // Ingredients (bases)
+    if(itemForm&&(itemForm.ingredients||[]).length){
+      h+='<div class="detail" style="margin-top:2px"><u>Materials for '+item.qty+' bucket'+(item.qty!==1?'s':'')+':</u></div>';
+      itemForm.ingredients.forEach(function(ing){
+        if(ing.is_stone&&!item.stone)return;
+        var name=ing.is_stone?item.stone:ing.name;
+        var amt=ing.qty*item.qty*szRatio;
+        h+='<div class="detail">'+name+': '+amt.toFixed(2)+' '+ing.unit+'</div>';
+      });
+    }
+
+    // Tints - per bucket AND total, showing shots and Y correctly
+    if(tintSource&&tintSource.length){
+      h+='<div class="detail" style="margin-top:2px"><u>Tints per bucket:</u></div>';
+      tintSource.forEach(function(t){
+        var shotsMl=ml(t.s,t.y); // ml per bucket
+        h+='<div class="detail">'+t.n+': '+t.y+'Y + '+t.s+' shots ('+shotsMl.toFixed(1)+'ml)</div>';
+      });
+      if(item.qty>1||szRatio!==1){
+        h+='<div class="detail" style="margin-top:1px"><u>Tints TOTAL ('+item.qty+(szRatio<1?' × '+Math.round(szRatio*20)+'L':' buckets')+'):</u></div>';
+        tintSource.forEach(function(t){
+          var totalShots=t.s*item.qty*szRatio;
+          var totalY=t.y*item.qty*szRatio;
+          var totalMl=ml(t.s,t.y)*item.qty*szRatio;
+          // Convert total shots to Y+shots breakdown (48 shots = 1Y)
+          var fullY=Math.floor(totalShots/48);
+          var remShots=Math.round((totalShots%48)*10)/10;
+          var yDisplay=fullY>0?fullY+'Y + '+remShots+' shots':remShots+' shots';
+          h+='<div class="detail bold">'+t.n+': '+yDisplay+' ('+totalMl.toFixed(1)+'ml)</div>';
+        });
+      }
+    }
+
+    if(lt>0)h+='<div class="row" style="margin-top:2px"><span></span><span class="bold">R'+lt.toFixed(2)+'</span></div>';
+    h+='<div style="border-top:1px dotted #ccc;margin:4px 0"></div>';
+  });
+
+  // Totals
+  var delFee=delivery==='delivery'&&REC&&REC.deliveryFee?REC.deliveryFee:0;
+  if(delFee>0)h+='<div class="row"><span>Delivery fee:</span><span>R'+delFee.toFixed(2)+'</span></div>';
+  h+='<div class="total-row"><span>TOTAL:</span><span>R'+parseFloat(total).toFixed(2)+'</span></div>';
+  h+='<div class="line"></div>';
+
+  // Payment
+  h+='<div class="label">Payment</div>';
+  if(pm==='cash'){
+    h+='<div class="row"><span>Cash received:</span><span>R'+parseFloat(cashAmt||0).toFixed(2)+'</span></div>';
+    var change=parseFloat(cashAmt||0)-parseFloat(total||0);
+    if(change>0)h+='<div class="row bold"><span>Change:</span><span>R'+change.toFixed(2)+'</span></div>';
+  } else {
+    h+='<div class="row"><span>Card / EFT:</span><span>R'+parseFloat(cardAmt||0).toFixed(2)+'</span></div>';
+  }
+  h+='<div class="line"></div>';
+
+  // Footer
+  h+='<div class="footer">Thank you for your business!<br>'+COMPANY.name+' (Pty) Ltd<br>'+COMPANY.email+'</div>';
+  h+='<br><br><br>'; // feed for tear-off
+  h+='</body></html>';
+
+  var win=window.open('','_blank','width=320,height=700');
+  if(win){win.document.write(h);win.document.close();setTimeout(function(){win.print();},400);}
+}
+
 function recActiveHTML(){
   var active=orders.filter(function(o){return o.status==='pending';});
   var h='<h2 style="font-size:20px;font-weight:500;margin-bottom:1rem">Active orders <span style="font-size:15px;color:#888;font-weight:400">('+active.length+')</span></h2>';
