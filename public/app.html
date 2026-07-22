@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;font-size:14px;color:#1a1a1a;background:transparent}
+body{font-family:system-ui,sans-serif;font-size:14px;color:#363535;background:transparent}
 .app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:215px;min-width:215px;background:#f8f9fa;border-right:0.5px solid #e0e0e0;display:flex;flex-direction:column;padding:0.75rem 0;overflow-y:auto}
 .sidebar.hidden{width:0;min-width:0;overflow:hidden;padding:0}
@@ -610,6 +610,18 @@ if(!token){window.location.href='/';throw new Error('No token');}
 var CC={resin:'#378ADD',chemical:'#7F77DD',sand:'#E5A823',stone:'#5AAB7B',granite:'#C46B2D',tint:'#D14F7C',other:'#888'};
 var WS={al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true};
 var TV=false,_tvScale=null,CRT='gamazine',PRT='wk',pendingOrderId=null,pendingBatchId=null,confCB=null,pdfType='wk';
+var tvRevenueRevealed=false,_tvRevealTimer=null;
+function tvToggleRevenueReveal(){
+  if(tvRevenueRevealed){
+    tvRevenueRevealed=false;
+    if(_tvRevealTimer){clearTimeout(_tvRevealTimer);_tvRevealTimer=null;}
+  }else{
+    tvRevenueRevealed=true;
+    if(_tvRevealTimer)clearTimeout(_tvRevealTimer);
+    _tvRevealTimer=setTimeout(function(){tvRevenueRevealed=false;_tvRevealTimer=null;if(TV)renderTV();},20000);
+  }
+  if(TV)renderTV();
+}
 var mats=[],mfgStock={},pkgData={},forms=[],orders=[],batchRecipes=[],collections={},NID=1001;
 
 function H(){return{'Authorization':'Bearer '+token,'Content-Type':'application/json'};}
@@ -1649,6 +1661,8 @@ function tTV(){
     if(ex)ex.remove();
     if(document.exitFullscreen&&document.fullscreenElement)document.exitFullscreen().catch(function(){});
     if(window._tvInterval){clearInterval(window._tvInterval);window._tvInterval=null;}
+    if(_tvRevealTimer){clearTimeout(_tvRevealTimer);_tvRevealTimer=null;}
+    tvRevenueRevealed=false;
   }
 }
 
@@ -1696,16 +1710,21 @@ function renderTV(){
   h+='<button onclick="tvScaleUp()" style="background:none;border:none;color:#e8edf5;font-size:14px;cursor:pointer;padding:2px 5px;line-height:1" title="Zoom in">+</button>';
   h+='<button onclick="tvScaleReset()" style="background:none;border:none;color:rgba(232,237,245,0.3);font-size:9px;cursor:pointer;padding:2px 4px;line-height:1" title="Reset">⟳</button>';
   h+='</div>';
-  h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="oTVSettings()"><i class="ti ti-settings"></i></button>';
+  h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:'+(tvRevenueRevealed?'#c9a84c':'#e8edf5')+';font-size:11px;padding:5px 10px" onclick="tvToggleRevenueReveal()" title="'+(tvRevenueRevealed?'Hide revenue':'Reveal revenue')+'"><i class="ti '+(tvRevenueRevealed?'ti-eye':'ti-eye-off')+'"></i></button>';
+h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="oTVSettings()"><i class="ti ti-settings"></i></button>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="tvToggleFullscreen()"><i class="ti ti-arrows-maximize"></i></button>';
   h+='<button class="btn btns" style="background:#141929;border-color:rgba(201,168,76,0.3);color:#e8edf5;font-size:11px;padding:5px 10px" onclick="tTV()"><i class="ti ti-x"></i></button>';
   h+='</div></div>';
 
   // ── REVENUE ROW ──
+  var revDots='• • • •';
+  var cashDisp=tvRevenueRevealed?fmt(cashRev()):revDots;
+  var cardDisp=tvRevenueRevealed?fmt(cardRev()):revDots;
+  var totalDisp=tvRevenueRevealed?fmt(todayRev()):revDots;
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex-shrink:0">';
-  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem"><div class="tv-rl"><i class="ti ti-cash"></i> Cash</div><div class="tv-rv" style="font-size:22px">'+fmt(cashRev())+'</div></div>';
-  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem"><div class="tv-rl"><i class="ti ti-credit-card"></i> Card / EFT</div><div class="tv-rv" style="font-size:22px">'+fmt(cardRev())+'</div></div>';
-  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem;border-color:rgba(201,168,76,0.45)"><div class="tv-rl" style="color:var(--tv-gold)"><i class="ti ti-currency-dollar"></i> Total Revenue</div><div class="tv-rv" style="color:var(--tv-gold);font-size:22px">'+fmt(todayRev())+'</div></div>';
+  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem"><div class="tv-rl"><i class="ti ti-cash"></i> Cash</div><div class="tv-rv" style="font-size:22px;letter-spacing:'+(tvRevenueRevealed?'normal':'2px')+'">'+cashDisp+'</div></div>';
+  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem"><div class="tv-rl"><i class="ti ti-credit-card"></i> Card / EFT</div><div class="tv-rv" style="font-size:22px;letter-spacing:'+(tvRevenueRevealed?'normal':'2px')+'">'+cardDisp+'</div></div>';
+  h+='<div class="tv-rev-card" style="padding:0.6rem 1rem;border-color:rgba(201,168,76,0.45)"><div class="tv-rl" style="color:var(--tv-gold)"><i class="ti ti-currency-dollar"></i> Total Revenue</div><div class="tv-rv" style="color:var(--tv-gold);font-size:22px;letter-spacing:'+(tvRevenueRevealed?'normal':'2px')+'">'+totalDisp+'</div></div>';
   h+='</div>';
 
   // ── ALERT TICKER (below revenue) ──
