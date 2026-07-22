@@ -610,6 +610,7 @@ if(!token){window.location.href='/';throw new Error('No token');}
 var CC={resin:'#378ADD',chemical:'#7F77DD',sand:'#E5A823',stone:'#5AAB7B',granite:'#C46B2D',tint:'#D14F7C',other:'#888'};
 var WS={al:true,me:true,rv:true,st:true,ms:true,or:true,pk:true};
 var TV=false,_tvScale=null,CRT='gamazine',PRT='wk',pendingOrderId=null,pendingBatchId=null,confCB=null,pdfType='wk';
+
 var tvRevenueRevealed=false,_tvRevealTimer=null;
 function tvToggleRevenueReveal(){
   if(tvRevenueRevealed){
@@ -2211,7 +2212,7 @@ function xPDF(){var done=orders.filter(function(o){return o.status==='done';});v
 // ============================================================
 // RECEPTION UI V3 — touch optimised, basket, A4 slip
 // ============================================================
-var REC={basket:[],client:null,activeTab:'dash',dashItems:[],addType:null,addFid:null,addSearch:'',addQty:1,addStone:null,addBucket:null,addSecSize:null,cmName:'',cmTi:[],looseQty:{},delivery:null,notes:'',cashAmt:0,cardAmt:0,payMode:null};
+var REC={basket:[],client:null,activeTab:'dash',dashItems:[],addType:null,addFid:null,addSearch:'',addQty:1,addStone:null,addBucket:null,addSecSize:null,cmName:'',cmTi:[],looseQty:{},delivery:null,notes:'',cashAmt:0,cardAmt:0,payMode:null,doneDate:null};
 var COMPANY={name:'Life Coats (Pty) Ltd',address:'9 Eddison BLVD Vanderbijlpark, Gauteng, 1911',phone:'016 100 2222',email:'info@lifecoat.com'};
 
 var LOOSE_ITEMS_BASE=[
@@ -2259,11 +2260,10 @@ function recRender(){
   h+='<div id="rec-content" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem">';
   if(REC.activeTab==='dash')h+=recDashHTML();
   else if(REC.activeTab==='new')h+=recOrderHTML();
-  else if(REC.activeTab==='active')h+=recActiveHTML();
   else if(REC.activeTab==='done')h+=recDoneHTML();
   h+='</div>';
-  h+='<div style="background:#fff;border-top:0.5px solid #e0e0e0;display:grid;grid-template-columns:repeat(4,1fr);height:68px;flex-shrink:0">';
-  [{id:'dash',icon:'ti-layout-dashboard',label:'Dashboard'},{id:'new',icon:'ti-shopping-cart',label:'New Order'+(REC.basket.length?' ('+REC.basket.length+')':'')},{id:'active',icon:'ti-clipboard-list',label:'Active'},{id:'done',icon:'ti-circle-check',label:'Done'}].forEach(function(tab){
+  h+='<div style="background:#fff;border-top:0.5px solid #e0e0e0;display:grid;grid-template-columns:repeat(3,1fr);height:68px;flex-shrink:0">';
+  [{id:'dash',icon:'ti-layout-dashboard',label:'Dashboard'},{id:'new',icon:'ti-shopping-cart',label:'New Order'+(REC.basket.length?' ('+REC.basket.length+')':'')},{id:'done',icon:'ti-circle-check',label:'Done'}].forEach(function(tab){
     var active=REC.activeTab===tab.id;
     h+='<button onclick="recTab(\''+tab.id+'\')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:'+(active?'#E8F4F9':'#fff')+';cursor:pointer;color:'+(active?'#5B8FA8':'#888')+';font-size:11px;font-family:system-ui,sans-serif"><i class="ti '+tab.icon+'" style="font-size:22px"></i><span style="font-weight:'+(active?'600':'400')+'">'+tab.label+'</span></button>';
   });
@@ -2282,19 +2282,22 @@ async function searchClients(){
   document.getElementById('cl-orders').style.display='none';
   if(!clients.length){document.getElementById('cl-results').innerHTML='<div class="card es">No clients found</div>';return;}
   document.getElementById('cl-results').innerHTML='<div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Since</th><th></th></tr></thead><tbody>'+
-    clients.map(function(c){return'<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||'—')+'</td><td>'+(c.address||'—')+'</td><td style="font-size:11px;color:#888">'+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'—')+'</td><td><button class="btn btns" onclick="viewClientOrders('+c.id+',\''+c.name.replace(/'/g,"\\'")+'\')"><i class="ti ti-history"></i> History</button></td></tr>';}).join('')+
+    clients.map(function(c){return'<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||'—')+'</td><td>'+(c.address||'—')+'</td><td style="font-size:11px;color:#888">'+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'—')+'</td><td><button class="btn btns" onclick="viewClientOrders('+JSON.stringify(c).replace(/"/g,'&quot;')+')"><i class="ti ti-history"></i> History</button></td></tr>';}).join('')+
     '</tbody></table></div>';
 }
-async function viewClientOrders(id,name){
+async function viewClientOrders(c){
+  var id=c.id,name=c.name;
   var res=await api('GET','/clients/'+id+'/orders');
   var clientOrders=res||[];
+  window._clientOrdersCache=clientOrders;
+  window._clientOrdersClientObj={name:c.name,phone:c.phone||'',address:c.address||''};
   var el=document.getElementById('cl-orders');
   el.style.display='block';
   var h='<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Order history — '+name+'</h3><button class="btn btns" onclick="document.getElementById(\'cl-orders\').style.display=\'none\'"><i class="ti ti-x"></i></button></div>';
   if(!clientOrders.length){h+='<div class="es">No orders found for this client</div>';h+='</div>';el.innerHTML=h;return;}
-  clientOrders.forEach(function(o){
+  clientOrders.forEach(function(o,oi){
     var dt=o.created_at?new Date(o.created_at).toLocaleDateString('en-ZA')+' '+new Date(o.created_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'}):'—';
-    h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+o.id+'</b> <span class="bdg '+(o.status==='done'?'bok':o.status==='pending'?'bblu':'bgry')+'" style="margin-left:6px">'+o.status+'</span></div><span style="font-size:11px;color:#888">'+dt+'</span></div>';
+    h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+o.id+'</b> <span class="bdg '+(o.status==='done'?'bok':o.status==='pending'?'bblu':'bgry')+'" style="margin-left:6px">'+o.status+'</span></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#888">'+dt+'</span><button class="btn btns" onclick="adminReprintClientOrder('+oi+')"><i class="ti ti-printer"></i> A4</button></div></div>';
     h+='<div class="ir"><span>Delivery</span><span class="il">'+(o.delivery||'—')+'</span></div>';
     h+='<div class="ir"><span>Payment method</span><span class="il">'+(o.payment_method||'—')+'</span></div>';
     if(o.cash_amount>0)h+='<div class="ir"><span>Cash received</span><span class="il">'+fmt(o.cash_amount)+'</span></div>';
@@ -2314,8 +2317,12 @@ async function viewClientOrders(id,name){
       if(tintSource&&tintSource.length){
         h+='<div style="font-size:11px;color:#5B8FA8;margin-top:6px;font-weight:500">Tints used (total for this order):</div>';
         tintSource.forEach(function(t){
+          var perBucketShotsEquiv=(t.y*48)+t.s;
+          var totalShotsEquiv=perBucketShotsEquiv*item.qty;
           var totalMl=ml(t.s,t.y)*item.qty;
-          h+='<div style="font-size:11px;color:#666;margin-top:2px">'+t.n+': '+(t.y*item.qty)+'Y + '+(t.s*item.qty)+' shots = <b>'+totalMl.toFixed(1)+'ml total</b> (per bucket: '+t.y+'Y + '+t.s+' shots)</div>';
+          var fullY=Math.floor(totalShotsEquiv/48);
+          var remShots=Math.round((totalShotsEquiv-(fullY*48))*10)/10;
+          h+='<div style="font-size:11px;color:#666;margin-top:2px">'+t.n+': '+fullY+'Y + '+remShots+' shots = <b>'+totalMl.toFixed(1)+'ml total</b> (per bucket: '+t.y+'Y + '+t.s+' shots)</div>';
         });
       }
       h+='</div>';
@@ -2325,6 +2332,19 @@ async function viewClientOrders(id,name){
   h+='</div>';
   el.innerHTML=h;
   el.scrollIntoView({behavior:'smooth'});
+}
+
+function adminReprintClientOrder(idx){
+  var o=(window._clientOrdersCache||[])[idx];if(!o)return;
+  var clientObj=window._clientOrdersClientObj||{name:o.client||'',phone:'',address:''};
+  var items;
+  if(o.items&&o.items.length){
+    items=o.items;
+  }else{
+    var f=o.formulation_id?forms.find(function(x){return x.id===o.formulation_id;}):null;
+    items=[{label:o.name,qty:o.quantity,price:f?f.price:0,fid:o.formulation_id,stone:o.stone_size,bucket:o.bucket_type,cmTi:o.custom_tints}];
+  }
+  recPrintA4(o.id,clientObj,items,o.delivery,o.notes||'',o.cash_amount||0,o.card_amount||0,o.order_total||0,o.payment_method||'cash');
 }
 
 function recTab(tab){REC.activeTab=tab;recRender();}
@@ -2805,6 +2825,35 @@ function recRenderCheckout(){
 function recSetPayMode(mode){REC.payMode=mode;if(mode!=='split')REC.cashAmt=0;recRenderCheckout();}
 function recUpdSplit(val){REC.cashAmt=parseFloat(val)||0;var basketTotal=REC.basket.reduce(function(a,i){return a+(i.price||0)*i.qty;},0);var cardCalc=Math.max(0,basketTotal-REC.cashAmt);var change=REC.cashAmt-basketTotal;var cardEl=document.getElementById('rec-card-calc');if(cardEl)cardEl.textContent=fmt(cardCalc);recRenderCheckout();}
 
+async function deductOrderStock(order){
+  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
+  async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
+  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi){
+    var f=fid?forms.find(function(x){return x.id===fid;}):null;
+    var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
+    if(t==='undercoat'){await dm('Undercoat',qty);}
+    else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;await dm(wpLabel,wpSz*qty);}
+    else if(f){
+      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!stK)continue;var name=ing.is_stone?stK:ing.name;await dm(name,ing.qty*qty*szRatio);}
+      for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
+    }
+    if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
+    if(bkt){if(bkt.includes('Printed'))await dp('pr20',qty);else if(bkt.includes('Titan'))await dp('ti20',qty);else if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
+    if(['gamazine','granite'].indexOf(t)!==-1)await dp('bags',qty);
+  }
+  if(order.items&&order.items.length){
+    for(var n=0;n<order.items.length;n++){
+      var item=order.items[n];
+      var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
+      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+    }
+  }else{
+    var secSizeGuess=order.bkt&&order.bkt.includes('5L')?'5':order.bkt&&order.bkt.includes('10L')?'10':'20';
+    await deductOne(order.t,order.fid,order.qty,order.stK,order.bkt,secSizeGuess,order.cmTi);
+  }
+  if(order.lid){if(order.bkt&&order.bkt.includes('5L'))await dp('sl5l',order.qty);else await dp('sl20l',order.qty);}
+}
+
 async function recConfirm(){
   if(!REC.payMode){window.alert('Select a payment method');return;}
   if(!REC.delivery){window.alert('Select delivery method');return;}
@@ -2815,16 +2864,24 @@ async function recConfirm(){
   var pm=REC.payMode==='split'?(cashAmt>0&&cardAmt>0?'split':cashAmt>0?'cash':'card'):REC.payMode;
   var oid='ORD-'+NID++;
   var allItems=REC.basket.map(function(item){return{type:item.type,label:item.label,qty:item.qty,price:item.price||0,productType:item.productType,fid:item.fid,stone:item.stone,bucket:item.bucket,secSize:item.secSize,cmTi:item.cmTi,key:item.key,pkgKey:item.pkgKey};});
-  var od={id:oid,client:REC.client.name,client_id:REC.client.id,product_type:'multi',name:REC.basket.map(function(i){return i.label;}).join(', '),quantity:REC.basket.reduce(function(a,i){return a+i.qty;},0),bucket_type:'',stone_size:'',include_lid:REC.delivery==='courier',delivery:REC.delivery,notes:REC.notes||'',status:'pending',formulation_id:null,custom_tints:[],payment_method:pm,cash_amount:cashAmt,card_amount:cardAmt,order_total:basketTotal,items:allItems};
+  var nowIso=new Date().toISOString();
+  var od={id:oid,client:REC.client.name,client_id:REC.client.id,product_type:'multi',name:REC.basket.map(function(i){return i.label;}).join(', '),quantity:REC.basket.reduce(function(a,i){return a+i.qty;},0),bucket_type:'',stone_size:'',include_lid:REC.delivery==='courier',delivery:REC.delivery,notes:REC.notes||'',status:'done',formulation_id:null,custom_tints:[],payment_method:pm,cash_amount:cashAmt,card_amount:cardAmt,order_total:basketTotal,items:allItems,created_at:nowIso};
+  showLoad('Completing order...');
   var res=await api('POST','/orders',od);
   if(res){
-    orders.push({id:oid,client:REC.client.name,t:'multi',n:od.name,qty:od.quantity,bkt:'',stK:'',lid:od.include_lid,dl:REC.delivery,nt:REC.notes||'',status:'pending',fid:null,cmTi:[],pm:pm,items:allItems,cashAmt:cashAmt,cardAmt:cardAmt,total:basketTotal,clientObj:REC.client});
-    recPrintA4(oid,REC.client,REC.basket,REC.delivery,REC.notes||'',cashAmt,cardAmt,basketTotal,pm);
+    var newOrder={id:oid,client:REC.client.name,t:'multi',n:od.name,qty:od.quantity,bkt:'',stK:'',lid:od.include_lid,dl:REC.delivery,nt:REC.notes||'',status:'done',fid:null,cmTi:[],pm:pm,items:allItems,cashAmt:cashAmt,cardAmt:cardAmt,total:basketTotal,orderTotal:basketTotal,clientObj:REC.client,createdAt:res.created_at||nowIso};
+    orders.push(newOrder);
+    await deductOrderStock(newOrder);
+    hideLoad();
+    recPrintThermal(oid,REC.client,REC.basket,REC.delivery,REC.notes||'',cashAmt,cardAmt,basketTotal,pm);
     window.currentOrderId=oid;window.currentClient=REC.client;window.currentBasket=REC.basket.slice();
     window.currentDelivery=REC.delivery;window.currentNotes=REC.notes||'';window.currentCashAmt=cashAmt;
     window.currentCardAmt=cardAmt;window.currentTotal=basketTotal;window.currentPm=pm;
     REC.basket=[];REC.client=null;REC.delivery=null;REC.notes='';REC.cashAmt=0;REC.cardAmt=0;REC.payMode=null;REC.addType=null;REC.looseQty={};REC.deliveryFee=0;
-    REC.activeTab='active';recRender();
+    REC.activeTab='done';recRender();
+  }else{
+    hideLoad();
+    window.alert('Could not save the order. Please check your connection and try again.');
   }
 }
 
@@ -3008,12 +3065,12 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
       if(item.qty>1||szRatio!==1){
         h+='<div class="detail" style="margin-top:1px"><u>Tints TOTAL ('+item.qty+(szRatio<1?' × '+Math.round(szRatio*20)+'L':' buckets')+'):</u></div>';
         tintSource.forEach(function(t){
-          var totalShots=t.s*item.qty*szRatio;
-          var totalY=t.y*item.qty*szRatio;
+          // Combine Y and shots into one shot-equivalent BEFORE scaling by quantity (48 shots = 1Y)
+          var perBucketShotsEquiv=(t.y*48)+t.s;
+          var totalShotsEquiv=perBucketShotsEquiv*item.qty*szRatio;
           var totalMl=ml(t.s,t.y)*item.qty*szRatio;
-          // Convert total shots to Y+shots breakdown (48 shots = 1Y)
-          var fullY=Math.floor(totalShots/48);
-          var remShots=Math.round((totalShots%48)*10)/10;
+          var fullY=Math.floor(totalShotsEquiv/48);
+          var remShots=Math.round((totalShotsEquiv-(fullY*48))*10)/10;
           var yDisplay=fullY>0?fullY+'Y + '+remShots+' shots':remShots+' shots';
           h+='<div class="detail bold">'+t.n+': '+yDisplay+' ('+totalMl.toFixed(1)+'ml)</div>';
         });
@@ -3074,6 +3131,7 @@ function recOrderCard(o,showActions){
   h+='</div>';return h;
 }
 
+
 function recReprint(id){
   var o=orders.find(function(x){return x.id===id;});if(!o)return;
   var clientObj=o.clientObj||{name:o.client,phone:'',address:''};
@@ -3082,6 +3140,17 @@ function recReprint(id){
   }else{
     var f=o.fid?forms.find(function(f){return f.id===o.fid;}):null;
     recPrintA4(o.id,clientObj,[{label:o.n,qty:o.qty,price:f?f.price:0,stone:o.stK,bucket:o.bkt,fid:o.fid,cmTi:o.cmTi}],o.dl,o.nt,0,0,f?f.price*o.qty:0,o.pm||'cash');
+  }
+}
+
+function recReprintThermal(id){
+  var o=orders.find(function(x){return x.id===id;});if(!o)return;
+  var clientObj=o.clientObj||{name:o.client,phone:'',address:''};
+  if(o.items&&o.items.length){
+    recPrintThermal(o.id,clientObj,o.items,o.dl,o.nt,o.cashAmt||0,o.cardAmt||0,o.total||o.orderTotal||0,o.pm||'cash');
+  }else{
+    var f=o.fid?forms.find(function(f){return f.id===o.fid;}):null;
+    recPrintThermal(o.id,clientObj,[{label:o.n,qty:o.qty,price:f?f.price:0,stone:o.stK,bucket:o.bkt,fid:o.fid,cmTi:o.cmTi}],o.dl,o.nt,0,0,f?f.price*o.qty:0,o.pm||'cash');
   }
 }
 
@@ -3095,14 +3164,38 @@ function recComplete(id){
 }
 
 // ---- DONE ----
+function recDoneDefaultDate(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function recDoneChangeDay(delta){
+  var cur=REC.doneDate?new Date(REC.doneDate+'T00:00:00'):new Date();
+  cur.setDate(cur.getDate()+delta);
+  REC.doneDate=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+  recRender();
+}
+function recDoneSetDate(v){REC.doneDate=v;recRender();}
+function recDoneToday(){REC.doneDate=recDoneDefaultDate();recRender();}
 function recDoneHTML(){
-  var done=orders.filter(function(o){return o.status==='done';});
-  var h='<h2 style="font-size:20px;font-weight:500;margin-bottom:1rem">Completed <span style="font-size:15px;color:#888;font-weight:400">('+done.length+')</span></h2>';
-  if(!done.length)return h+'<div style="text-align:center;padding:3rem;color:#aaa;font-size:16px">No completed orders yet</div>';
+  if(!REC.doneDate)REC.doneDate=recDoneDefaultDate();
+  var selDate=REC.doneDate;
+  var done=orders.filter(function(o){return o.status==='done'&&o.createdAt&&(function(){var d=new Date(o.createdAt);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})()===selDate;});
+  done.sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var dObj=new Date(selDate+'T00:00:00');
+  var isToday2=selDate===recDoneDefaultDate();
+  var h='<h2 style="font-size:20px;font-weight:500;margin-bottom:1rem">Completed orders</h2>';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap">';
+  h+='<button onclick="recDoneChangeDay(-1)" style="'+rBS('#f0f0f0','#333','#ddd','18px')+'width:44px;height:44px;border-radius:12px"><i class="ti ti-chevron-left"></i></button>';
+  h+='<input type="date" value="'+selDate+'" onchange="recDoneSetDate(this.value)" style="font-size:15px;padding:10px 12px;border-radius:10px;border:0.5px solid #ddd;font-family:system-ui,sans-serif">';
+  h+='<button onclick="recDoneChangeDay(1)" style="'+rBS('#f0f0f0','#333','#ddd','18px')+'width:44px;height:44px;border-radius:12px"><i class="ti ti-chevron-right"></i></button>';
+  if(!isToday2)h+='<button onclick="recDoneToday()" style="'+rBS('#E8F4F9','#3a6e87','#5B8FA8','13px')+'padding:10px 16px;border-radius:10px;font-weight:600">Today</button>';
+  h+='<span style="font-size:13px;color:#888;margin-left:4px">'+dObj.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</span>';
+  h+='</div>';
+  if(!done.length)return h+'<div style="text-align:center;padding:3rem;color:#aaa;font-size:16px">No completed orders on this day</div>';
   done.forEach(function(o){
-    h+='<div style="background:#fff;border-radius:14px;border:0.5px solid #e0e0e0;padding:1.1rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">';
-    h+='<div><div style="font-size:12px;color:#888">'+o.id+'</div><div style="font-size:16px;font-weight:600">'+o.client+'</div><div style="font-size:13px;color:#888">'+o.n+'</div></div>';
-    h+='<span class="bdg bok" style="font-size:13px;padding:5px 12px"><i class="ti ti-circle-check"></i> Complete</span></div>';
+    h+='<div style="background:#fff;border-radius:14px;border:0.5px solid #e0e0e0;padding:1.1rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">';
+    h+='<div style="flex:1;min-width:0"><div style="font-size:12px;color:#888">'+o.id+' · '+new Date(o.createdAt).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div><div style="font-size:16px;font-weight:600">'+o.client+'</div><div style="font-size:13px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.n+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
+    h+='<button onclick="recReprintThermal(\''+o.id+'\')" style="'+rBS('#f8f9fa','#333','#ddd','13px')+'padding:10px 14px;border-radius:10px"><i class="ti ti-printer"></i> Reprint</button>';
+    h+='<span class="bdg bok" style="font-size:12px;padding:5px 10px;white-space:nowrap"><i class="ti ti-circle-check"></i> Complete</span>';
+    h+='</div></div>';
   });
   return h;
 }
