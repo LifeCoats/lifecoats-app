@@ -2303,7 +2303,7 @@ async function searchClients(){
   document.getElementById('cl-orders').style.display='none';
   if(!clients.length){document.getElementById('cl-results').innerHTML='<div class="card es">No clients found</div>';return;}
   document.getElementById('cl-results').innerHTML='<div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Since</th><th></th></tr></thead><tbody>'+
-    clients.map(function(c){return'<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||'—')+'</td><td>'+(c.address||'—')+'</td><td style="font-size:11px;color:#888">'+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'—')+'</td><td><button class="btn btns" onclick="viewClientOrders('+JSON.stringify(c).replace(/"/g,'&quot;')+')"><i class="ti ti-history"></i> History</button></td></tr>';}).join('')+
+    clients.map(function(c){return'<tr><td><b>'+c.name+'</b></td><td>'+(c.phone||'—')+'</td><td>'+(c.address||'—')+'</td><td style="font-size:11px;color:#888">'+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'—')+'</td><td style="white-space:nowrap"><button class="btn btns" onclick="viewClientOrders('+JSON.stringify(c).replace(/"/g,'&quot;')+')"><i class="ti ti-history"></i> History</button> <button class="btn btns btnd" onclick="adminDeleteClient('+c.id+',\''+c.name.replace(/'/g,"\\'")+'\')" style="margin-left:4px"><i class="ti ti-trash"></i></button></td></tr>';}).join('')+
     '</tbody></table></div>';
 }
 async function viewClientOrders(c){
@@ -2353,6 +2353,21 @@ async function viewClientOrders(c){
   h+='</div>';
   el.innerHTML=h;
   el.scrollIntoView({behavior:'smooth'});
+}
+
+async function adminDeleteClient(id,name){
+  var ords=await api('GET','/clients/'+id+'/orders')||[];
+  if(ords.length>0){
+    if(!confirm('"'+name+'" still has '+ords.length+' order(s) linked to this record.\n\nDeleting will NOT delete those orders — but they will no longer be linked to any client. Are you sure you want to continue?'))return;
+  }else{
+    if(!confirm('Delete client "'+name+'"? This cannot be undone.'))return;
+  }
+  showLoad('Deleting client...');
+  var res=await api('DELETE','/clients/'+id);
+  hideLoad();
+  if(res===null){alert('Could not delete this client. Please check your connection and try again.');return;}
+  alert('Client deleted.');
+  searchClients();
 }
 
 async function findDuplicateClients(){
