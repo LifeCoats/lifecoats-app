@@ -390,7 +390,8 @@ tr:hover td{background:#f8f9fa}
 
 <!-- CLIENTS -->
 <div class="pg" id="pg-clients">
-  <div class="ph"><div><h1>Clients</h1><p>Search client history and order records</p></div></div>
+  <div class="ph"><div><h1>Clients</h1><p>Search client history and order records</p></div>
+    <button class="btn btns" onclick="findDuplicateClients()"><i class="ti ti-git-merge"></i> Find duplicate clients</button></div>
   <div class="card">
     <div class="fr">
       <div class="fg"><label>Search by name or phone</label><input type="text" id="cl-search" placeholder="Start typing..." oninput="searchClients()"></div>
@@ -398,6 +399,7 @@ tr:hover td{background:#f8f9fa}
     </div>
     <button class="btn btnp btns" onclick="searchClients()"><i class="ti ti-search"></i> Search</button>
   </div>
+  <div id="cl-dupes" style="display:none"></div>
   <div id="cl-results"></div>
   <div id="cl-orders" style="display:none"></div>
 </div>
@@ -2351,6 +2353,91 @@ async function viewClientOrders(c){
   h+='</div>';
   el.innerHTML=h;
   el.scrollIntoView({behavior:'smooth'});
+}
+
+async function findDuplicateClients(){
+  document.getElementById('cl-results').innerHTML='';
+  document.getElementById('cl-orders').style.display='none';
+  var dupesEl=document.getElementById('cl-dupes');
+  dupesEl.style.display='block';
+  dupesEl.innerHTML='<div class="card es">Scanning for duplicate clients...</div>';
+  var all=await api('GET','/clients?q=')||[];
+  var groups={};
+  all.forEach(function(c){
+    var key=(c.name||'').trim().toLowerCase();
+    if(!key)return;
+    if(!groups[key])groups[key]=[];
+    groups[key].push(c);
+  });
+  var dupeGroups=Object.keys(groups).map(function(k){return groups[k];}).filter(function(g){return g.length>1;});
+  if(!dupeGroups.length){
+    dupesEl.innerHTML='<div class="card sb" style="color:#3B6D11"><i class="ti ti-circle-check"></i> No duplicate clients found — everything looks clean.</div>';
+    return;
+  }
+  var h='<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Possible duplicate clients ('+dupeGroups.length+' name'+(dupeGroups.length>1?'s':'')+')</h3><button class="btn btns" onclick="document.getElementById(\'cl-dupes\').style.display=\'none\'"><i class="ti ti-x"></i></button></div>';
+  h+='<div class="ib">Records with the exact same name are grouped below. Pick which record to keep — its order history stays intact, all other records\' orders move onto it, then those duplicates are deleted.</div>';
+  h+='</div>';
+  dupesEl.innerHTML=h;
+  for(var i=0;i<dupeGroups.length;i++){
+    await renderDupeGroup(dupeGroups[i],i);
+  }
+}
+
+async function renderDupeGroup(group,gi){
+  var dupesEl=document.getElementById('cl-dupes');
+  var withCounts=await Promise.all(group.map(async function(c){
+    var ords=await api('GET','/clients/'+c.id+'/orders')||[];
+    return{c:c,count:ords.length};
+  }));
+  withCounts.sort(function(a,b){return b.count-a.count;});
+  var groupId='dupe-grp-'+gi;
+  var h='<div class="card" id="'+groupId+'">';
+  h+='<div style="font-weight:600;font-size:14px;margin-bottom:8px">'+group[0].name+' <span class="bdg bgry">'+group.length+' records</span></div>';
+  withCounts.forEach(function(item,idx){
+    var c=item.c;
+    h+='<label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:6px;cursor:pointer">';
+    h+='<input type="radio" name="'+groupId+'-keep" value="'+c.id+'" '+(idx===0?'checked':'')+' style="margin-top:3px">';
+    h+='<div style="flex:1"><div style="font-weight:500">'+c.name+'</div>';
+    h+='<div style="font-size:12px;color:#888">'+(c.phone||'no phone')+' · '+(c.address||'no address')+' · added '+(c.created_at?new Date(c.created_at).toLocaleDateString('en-ZA'):'unknown')+'</div>';
+    h+='<div style="font-size:12px;color:#5B8FA8;font-weight:500;margin-top:2px">'+item.count+' order'+(item.count!==1?'s':'')+'</div>';
+    h+='</div></label>';
+  });
+  h+='<button class="btn btnw" onclick="mergeDupeGroup(\''+groupId+'\','+JSON.stringify(group.map(function(c){return c.id;})).replace(/"/g,'&quot;')+')"><i class="ti ti-git-merge"></i> Merge into selected record</button>';
+  h+='</div>';
+  dupesEl.insertAdjacentHTML('beforeend',h);
+}
+
+async function mergeDupeGroup(groupId,allIds){
+  var groupEl=document.getElementById(groupId);
+  var keepId=parseInt(document.querySelector('input[name="'+groupId+'-keep"]:checked').value);
+  var allClients=await api('GET','/clients?q=')||[];
+  var keepObj=allClients.find(function(c){return c.id===keepId;});
+  var removeIds=allIds.filter(function(id){return id!==keepId;});
+  if(!confirm('Merge '+removeIds.length+' duplicate record(s) into "'+(keepObj?keepObj.name:'selected client')+'"? All their orders will move to the kept record, and the duplicates will be deleted. This cannot be undone.'))return;
+  showLoad('Merging clients...');
+  var failedIds=[];
+  for(var i=0;i<removeIds.length;i++){
+    var rid=removeIds[i];
+    var ords=await api('GET','/clients/'+rid+'/orders')||[];
+    var allMoved=true;
+    for(var j=0;j<ords.length;j++){
+      var res=await api('PUT','/orders/'+ords[j].id,{client_id:keepId,client:keepObj?keepObj.name:undefined});
+      if(!res){allMoved=false;}
+    }
+    if(allMoved){
+      var delRes=await api('DELETE','/clients/'+rid);
+      if(delRes===null)failedIds.push(rid+' (orders moved, but delete failed)');
+    }else{
+      failedIds.push(rid+' (some orders did not move — record kept, not deleted)');
+    }
+  }
+  hideLoad();
+  if(failedIds.length){
+    alert('Merge finished with problems. These records were NOT fully processed and need manual attention:\n\n'+failedIds.join('\n')+'\n\nPlease check the Clients list and Supabase directly before trying again.');
+  }else{
+    if(groupEl)groupEl.remove();
+    alert('Merge complete — all orders moved successfully and duplicate records removed.');
+  }
 }
 
 function adminReprintClientOrder(idx){
