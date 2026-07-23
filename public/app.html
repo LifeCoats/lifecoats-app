@@ -2243,6 +2243,22 @@ async function loadReceptionUI(){
   div.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#f0f4f7;display:flex;flex-direction:column;z-index:50;font-family:system-ui,sans-serif;overflow:hidden';
   document.body.appendChild(div);
   recRender();
+  recStartAutoRefresh();
+}
+
+async function recRefreshStockData(){
+  try{
+    var r=await Promise.all([api('GET','/materials'),api('GET','/manufactured-stock'),api('GET','/packaging'),api('GET','/orders')]);
+    if(r[0])mats=r[0];
+    if(r[1]){mfgStock={};r[1].forEach(function(m){mfgStock[m.name]=m;});}
+    if(r[2]){pkgData={};r[2].forEach(function(p){pkgData[p.id]=p;});}
+    if(r[3])orders=(r[3]||[]).map(function(o){return{id:o.id,client:o.client,t:o.product_type,n:o.name,qty:o.quantity,bkt:o.bucket_type,stK:o.stone_size,lid:o.include_lid,dl:o.delivery,nt:o.notes,status:o.status,fid:o.formulation_id,cmTi:o.custom_tints||[],pm:o.payment_method||'cash',createdAt:o.created_at||null,cashAmt:o.cash_amount||0,cardAmt:o.card_amount||0,orderTotal:o.order_total||0,items:o.items||null};});
+    if(REC.activeTab==='dash')recRender();
+  }catch(e){console.error('Reception refresh error:',e);}
+}
+function recStartAutoRefresh(){
+  if(window._recRefreshInterval)return;
+  window._recRefreshInterval=setInterval(recRefreshStockData,15000);
 }
 
 function recRender(){
@@ -2461,12 +2477,41 @@ function recClientPanel(){
   h+='<input type="text" id="rec-csearch" placeholder="Search by name or phone..." oninput="recSearchClients(this.value)" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:10px;font-family:system-ui,sans-serif">';
   h+='<div id="rec-cresults" style="margin-bottom:12px"></div>';
   h+='<div style="font-size:16px;font-weight:700;color:#333;margin:12px 0 10px;padding-top:12px;border-top:1px solid #e0e0e0">Add new client</div>';
-  h+='<input type="text" id="rec-cname" placeholder="Full name *" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:8px;font-family:system-ui,sans-serif">';
-  h+='<input type="text" id="rec-cphone" placeholder="Phone number" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:8px;font-family:system-ui,sans-serif">';
+  h+='<div id="rec-newclient-warn"></div>';
+  h+='<input type="text" id="rec-cname" placeholder="Full name *" oninput="recCheckNewClientMatches()" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:8px;font-family:system-ui,sans-serif">';
+  h+='<input type="text" id="rec-cphone" placeholder="Phone number" oninput="recCheckNewClientMatches()" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:8px;font-family:system-ui,sans-serif">';
   h+='<input type="text" id="rec-caddr" placeholder="Address" style="width:100%;font-size:16px;padding:14px;border-radius:12px;border:0.5px solid #ddd;margin-bottom:12px;font-family:system-ui,sans-serif">';
   h+='<button onclick="recSaveClient()" style="'+rBS('#5B8FA8','#fff','#5B8FA8','16px')+'width:100%;padding:15px;border-radius:12px;font-size:16px;font-weight:600">Continue →</button>';
   h+='</div>';
   return h;
+}
+
+var _newClientCheckTimer=null;
+function recCheckNewClientMatches(){
+  if(_newClientCheckTimer)clearTimeout(_newClientCheckTimer);
+  _newClientCheckTimer=setTimeout(recCheckNewClientMatchesNow,350);
+}
+async function recCheckNewClientMatchesNow(){
+  var n=(document.getElementById('rec-cname')||{}).value||'';
+  var ph=(document.getElementById('rec-cphone')||{}).value||'';
+  var q=n.trim()||ph.trim();
+  var box=document.getElementById('rec-newclient-warn');
+  if(!box)return;
+  if(q.length<2){box.innerHTML='';return;}
+  var res=await api('GET','/clients?q='+encodeURIComponent(q));
+  var matches=res||[];
+  if(!matches.length){box.innerHTML='';return;}
+  var h='<div style="background:#FAEEDA;border:1.5px solid #FAC775;border-radius:12px;padding:14px;margin-bottom:12px">';
+  h+='<div style="font-size:14px;font-weight:700;color:#854F0B;margin-bottom:10px"><i class="ti ti-alert-triangle"></i> This client might already exist:</div>';
+  matches.slice(0,5).forEach(function(c){
+    h+='<button onclick="recSelClient('+JSON.stringify(c).replace(/"/g,'&quot;')+')" style="'+rBS('#fff','#854F0B','#FAC775','15px')+'width:100%;padding:13px;border-radius:10px;margin-bottom:6px;text-align:left">';
+    h+='<div style="font-weight:700">'+c.name+'</div>';
+    if(c.phone)h+='<div style="font-size:12px;color:#888">'+c.phone+(c.address?' · '+c.address:'')+'</div>';
+    h+='<div style="font-size:12px;color:#0F6E56;margin-top:4px;font-weight:600">Tap here to use this client instead</div>';
+    h+='</button>';
+  });
+  h+='</div>';
+  box.innerHTML=h;
 }
 
 async function recSearchClients(q){
@@ -2488,6 +2533,12 @@ async function recSaveClient(){
   if(!n){window.alert('Enter client name');return;}
   var phone=document.getElementById('rec-cphone').value.trim();
   var addr=document.getElementById('rec-caddr').value.trim();
+  var existingRes=await api('GET','/clients?q='+encodeURIComponent(n));
+  var existing=(existingRes||[]).find(function(c){return c.name.trim().toLowerCase()===n.toLowerCase();});
+  if(existing){
+    var useExisting=window.confirm('A client named "'+existing.name+'" already exists'+(existing.phone?' ('+existing.phone+')':'')+'.\n\nPress OK to use that existing client.\nPress Cancel only if this is a different person who happens to share the same name.');
+    if(useExisting){REC.client=existing;REC.addType=null;recRender();return;}
+  }
   var res=await api('POST','/clients',{name:n,phone:phone,address:addr});
   if(res){REC.client=res;REC.addType=null;recRender();}
 }
@@ -2995,16 +3046,16 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
   var PAPER='76mm'; // 80mm paper, ~76mm printable
   var h='<!DOCTYPE html><html><head><title>'+oid+'</title><meta charset="UTF-8"><style>';
   h+='*{box-sizing:border-box;margin:0;padding:0}';
-  h+='body{font-family:"Courier New",monospace;font-size:12px;color:#000;width:'+PAPER+';margin:0 auto;padding:4px 6px}';
+  h+='body{font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#000;width:'+PAPER+';margin:0 auto;padding:4px 6px}';
   h+='.center{text-align:center}';
-  h+='.bold{font-weight:bold}';
-  h+='.line{border-top:1px dashed #000;margin:5px 0}';
-  h+='.row{display:flex;justify-content:space-between;font-size:11px;margin:1px 0}';
-  h+='.label{font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.5px;margin:4px 0 1px}';
-  h+='.item-name{font-weight:bold;font-size:12px;margin:3px 0 1px}';
-  h+='.detail{font-size:10px;color:#333;margin:1px 0}';
-  h+='.total-row{display:flex;justify-content:space-between;font-weight:bold;font-size:13px;margin:2px 0}';
-  h+='.footer{text-align:center;font-size:10px;margin-top:8px;padding-top:5px;border-top:1px dashed #000}';
+  h+='.bold{font-weight:900}';
+  h+='.line{border-top:2px dashed #000;margin:6px 0}';
+  h+='.row{display:flex;justify-content:space-between;font-size:15px;margin:2px 0;font-weight:700}';
+  h+='.label{font-size:13px;color:#000;text-transform:uppercase;letter-spacing:0.5px;margin:5px 0 2px;font-weight:900}';
+  h+='.item-name{font-weight:900;font-size:17px;margin:4px 0 2px}';
+  h+='.detail{font-size:14px;color:#000;margin:2px 0;font-weight:700}';
+  h+='.total-row{display:flex;justify-content:space-between;font-weight:900;font-size:18px;margin:3px 0}';
+  h+='.footer{text-align:center;font-size:13px;margin-top:8px;padding-top:5px;border-top:2px dashed #000;font-weight:700}';
   h+='@media print{body{width:'+PAPER+'}}';
   h+='</style></head><body>';
 
