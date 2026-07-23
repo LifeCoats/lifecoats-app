@@ -89,6 +89,12 @@ app.get('/api/clients/:id/orders', auth, async (req, res) => {
   res.json(data || []);
 });
 
+app.delete('/api/clients/:id', auth, adminOnly, async (req, res) => {
+  const { error } = await supabase.from('clients').delete().eq('id', req.params.id);
+  if (error) { console.error('client delete error:', error); return res.status(500).json({ error: error.message }); }
+  res.json({ success: true });
+});
+
 // RECEPTION SETTINGS
 app.get('/api/reception-settings', auth, async (req, res) => {
   const { data } = await supabase.from('reception_settings').select('*').eq('setting_key','dashboard').single();
