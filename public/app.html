@@ -2258,7 +2258,10 @@ async function recRefreshStockData(){
 }
 function recStartAutoRefresh(){
   if(window._recRefreshInterval)return;
-  window._recRefreshInterval=setInterval(recRefreshStockData,15000);
+  window._recRefreshInterval=setInterval(function(){
+    if(document.hidden)return; // skip refresh while tab/screen isn't active
+    recRefreshStockData();
+  },45000);
 }
 
 function recRender(){
