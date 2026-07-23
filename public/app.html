@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Life Coats — ProducTrack</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;font-size:14px;color:#363535;background:transparent}
@@ -3135,12 +3136,6 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
   if(cashAmt>total)h+='<div class="total-row" style="color:#3B6D11;font-weight:600"><span>Change</span><span>'+fmt(cashAmt-total)+'</span></div>';
   h+='</div></div>';
 
-  // Signature line
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:20px">';
-  h+='<div><div class="sig-line">Client signature</div></div>';
-  h+='<div><div class="sig-line">Authorised by</div></div>';
-  h+='</div>';
-
   h+='<div class="footer">'+COMPANY.name+' · '+COMPANY.address+' · '+COMPANY.phone+'<br>Thank you for your business!</div>';
   h+='</div></body></html>';
 
@@ -3169,7 +3164,7 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
   h+='</style></head><body>';
 
   // Header
-  h+='<div class="center bold" style="font-size:13px;letter-spacing:1px">LIFE COATS</div>';
+  h+='<div class="center bold" style="font-size:20px;letter-spacing:1px">LIFE COATS</div>';
   h+='<div class="center" style="font-size:10px">We\'ve Got You Covered</div>';
   h+='<div class="center" style="font-size:9px;color:#333">'+COMPANY.address+'</div>';
   h+='<div class="center" style="font-size:9px;color:#333">Tel: '+COMPANY.phone+'</div>';
@@ -3259,7 +3254,7 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
   h+='<div class="line"></div>';
 
   // Footer
-  h+='<div class="footer">Thank you for your business!<br>'+COMPANY.name+' (Pty) Ltd<br>'+COMPANY.email+'</div>';
+  h+='<div class="footer"></div>';
   h+='<br><br><br>'; // feed for tear-off
   h+='</body></html>';
 
