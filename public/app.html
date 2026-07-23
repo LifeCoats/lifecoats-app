@@ -630,10 +630,14 @@ var mats=[],mfgStock={},pkgData={},forms=[],orders=[],batchRecipes=[],collection
 function H(){return{'Authorization':'Bearer '+token,'Content-Type':'application/json'};}
 async function api(method,path,body){
   try{
-    var res=await fetch(API+path,{method:method,headers:H(),body:body?JSON.stringify(body):undefined});
+    var controller=new AbortController();
+    var timeoutId=setTimeout(function(){controller.abort();},15000);
+    var res=await fetch(API+path,{method:method,headers:H(),body:body?JSON.stringify(body):undefined,signal:controller.signal});
+    clearTimeout(timeoutId);
     if(res.status===401){logout();return null;}
+    if(!res.ok){console.error('API error',method,path,res.status);return null;}
     return res.json();
-  }catch(e){console.error(e);return null;}
+  }catch(e){console.error('API failed',method,path,e);return null;}
 }
 // ---- Auto Load Data ---- //
 function buildCollections(){collections={};['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'].forEach(function(t){collections[t]=[];});forms.forEach(function(f){if(!collections[f.type])collections[f.type]=[];var s=f.sub_category||'Standard';if(collections[f.type].indexOf(s)===-1)collections[f.type].push(s);});}
