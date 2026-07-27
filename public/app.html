@@ -550,11 +550,12 @@ tr:hover td{background:#f8f9fa}
   <div class="ing-section">
     <div class="ing-section-title">Ingredients per bucket</div>
     <div style="font-size:11px;color:#888;margin-bottom:8px">Add raw materials or manufactured stock. Tick Stone? for stone so reception chooses size at order time.</div>
-    <div style="display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;margin-bottom:4px">
+    <div style="display:grid;grid-template-columns:1fr 80px 60px 55px 60px 32px;gap:5px;margin-bottom:4px">
       <div style="font-size:10px;color:#888;font-weight:500">INGREDIENT</div>
       <div style="font-size:10px;color:#888;font-weight:500">QTY</div>
       <div style="font-size:10px;color:#888;font-weight:500">UNIT</div>
       <div style="font-size:10px;color:#888;font-weight:500">STONE?</div>
+      <div style="font-size:10px;color:#888;font-weight:500">BUCKET?</div>
       <div></div>
     </div>
     <div id="f-ing-list"></div>
@@ -746,8 +747,16 @@ function allIngOpts(){
   mats.forEach(function(m){o+='<option value="'+m.name+'">'+m.name+'</option>';});
   o+='</optgroup><optgroup label="Manufactured Stock">';
   Object.values(mfgStock).forEach(function(m){o+='<option value="'+m.name+'">'+m.name+'</option>';});
+  o+='</optgroup><optgroup label="Packaging">';
+  Object.values(pkgData).forEach(function(p){o+='<option value="PKG:'+p.id+'">'+p.name+'</option>';});
   return o+'</optgroup>';
 }
+
+function ingDisplayName(name){
+  if(name&&name.indexOf('PKG:')===0){var p=pkgData[name.slice(4)];return p?p.name:name;}
+  return name;
+}
+
 function tOpts(){return mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option>'+m.name+'</option>';}).join('');}
 function showSucc(k,msg){var e=document.getElementById('s'+k),m=document.getElementById('s'+k+'m');if(e&&m){m.textContent=msg;e.style.display='flex';setTimeout(function(){e.style.display='none';},3000);}}
 function showConf(title,msg,label,cls,cb){document.getElementById('conf-title').textContent=title;document.getElementById('conf-msg').textContent=msg;var b=document.getElementById('conf-yes');b.textContent=label||'Yes';b.className='btn '+(cls||'btnd');confCB=cb;oM('m-conf');}
@@ -2024,7 +2033,7 @@ function rForms(){
     h+='<div class="sub-group"><div class="sub-group-header"><span>'+sub+'</span><span class="sub-count">'+sf.length+'</span></div>';
     sf.forEach(function(f){
       var pr=f.price?'<span class="bdg bteal" style="margin-left:5px">'+fmt(f.price)+'/bucket</span>':'';
-      var ings=(f.ingredients||[]).map(function(ing){return'<div class="ir"><span>'+ing.name+(ing.is_stone?' <span class="bdg bblu" style="font-size:10px">stone</span>':'')+'</span><span class="il">'+ing.qty+' '+ing.unit+'</span></div>';}).join('');
+      var ings=(f.ingredients||[]).map(function(ing){var lbl=ing.is_stone?'Stone (chosen at order time)':ing.is_bucket?'Bucket (chosen at order time)':ingDisplayName(ing.name);return'<div class="ir"><span>'+lbl+(ing.is_stone?' <span class="bdg bblu" style="font-size:10px">stone</span>':'')+(ing.is_bucket?' <span class="bdg bblu" style="font-size:10px">bucket</span>':'')+'</span><span class="il">'+ing.qty+' '+ing.unit+'</span></div>';}).join('');
       var tints=(f.tints||[]).map(function(t){return'<div class="ir"><span>'+t.n+'</span><span class="il">'+t.y+'Y + '+t.s+' shots ('+ml(t.s,t.y).toFixed(2)+'ml)</span></div>';}).join('');
       var en=f.name.replace(/'/g,"\'");
       h+='<div class="fc"><div class="fb" style="margin-bottom:8px"><div><b>'+f.name+'</b><span class="bdg bgry" style="margin-left:5px">'+ptL(f.type)+'</span>'+pr+'</div>'+
@@ -2113,16 +2122,58 @@ async function dForm(id){await api('DELETE','/formulations/'+id);forms=forms.fil
 function copyForm(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;var copy=JSON.parse(JSON.stringify(f));copy.name=f.name+' (copy)';delete copy.id;api('POST','/formulations',copy).then(function(res){if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';forms.push(res);buildCollections();rForms();}});}
 function oAddForm(){document.getElementById('feid').value='';document.getElementById('fmtitle').textContent='Add formulation';document.getElementById('fn').value='';document.getElementById('fp').value='';document.getElementById('fsubcat').value='Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';document.getElementById('ftype').value=CRT;updateSCS();oM('m-af');}
 function updateSCS(){var type=document.getElementById('ftype').value;var subs=collections[type]||[];document.getElementById('scs').innerHTML=subs.map(function(s){return'<option value="'+s+'">'+s+'</option>';}).join('');var wrap=document.getElementById('fp5-wrap');if(wrap)wrap.style.display=type==='cps'?'block':'none';var wrap10=document.getElementById('fp10-wrap');if(wrap10)wrap10.style.display=type==='cps'?'block':'none';}
-function oEF(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;document.getElementById('feid').value=id;document.getElementById('fmtitle').textContent='Edit: '+f.name;document.getElementById('fn').value=f.name;document.getElementById('fp').value=f.price||'';document.getElementById('fp5').value=f.price_5l||'';document.getElementById('fp10').value=f.price_10l||'';document.getElementById('ftype').value=f.type;document.getElementById('fsubcat').value=f.sub_category||'Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';(f.ingredients||[]).forEach(function(ing){addIngRow(ing.name,ing.qty,ing.unit,ing.is_stone);});(f.tints||[]).forEach(function(t){addTintRow(t.n,t.y,t.s);});updateSCS();oM('m-af');}
-function addIngRow(name,qty,unit,isStone){
-  var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 90px 70px 70px 36px;gap:5px;align-items:end;margin-bottom:6px';
-  if(isStone){row.innerHTML='<div class="fg" style="margin:0"><input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px"></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div><div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" checked onchange="toggleStone(this)" style="width:auto;margin:0 auto;display:block"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';}
-  else{row.innerHTML='<div class="fg" style="margin:0"><select>'+allIngOpts()+'</select></div><div class="fg" style="margin:0"><input type="number" value="'+(qty||0)+'" step="0.01" min="0"></div><div class="fg" style="margin:0"><select><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select></div><div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" onchange="toggleStone(this)" style="width:auto;margin:0 auto;display:block"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
+function oEF(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;document.getElementById('feid').value=id;document.getElementById('fmtitle').textContent='Edit: '+f.name;document.getElementById('fn').value=f.name;document.getElementById('fp').value=f.price||'';document.getElementById('fp5').value=f.price_5l||'';document.getElementById('fp10').value=f.price_10l||'';document.getElementById('ftype').value=f.type;document.getElementById('fsubcat').value=f.sub_category||'Standard';document.getElementById('f-ing-list').innerHTML='';document.getElementById('f-tint-list').innerHTML='';(f.ingredients||[]).forEach(function(ing){addIngRow(ing.name,ing.qty,ing.unit,ing.is_stone,ing.is_bucket);});(f.tints||[]).forEach(function(t){addTintRow(t.n,t.y,t.s);});updateSCS();oM('m-af');}
+function addIngRow(name,qty,unit,isStone,isBucket){
+  var row=document.createElement('div');row.className='ing-row';row.style.cssText='display:grid;grid-template-columns:1fr 80px 60px 55px 60px 32px;gap:5px;align-items:end;margin-bottom:6px';
+  var unitSel='<select class="ing-unit"><option'+(unit==='L'?' selected':'')+'>L</option><option'+(unit==='kg'?' selected':'')+'>kg</option><option'+(unit==='g'?' selected':'')+'>g</option><option'+(unit==='units'?' selected':'')+'>units</option></select>';
+  var qtyInp='<input type="number" class="ing-qty" value="'+(qty||0)+'" step="0.01" min="0">';
+  var nameCell;
+  if(isStone){
+    nameCell='<input type="text" class="ing-name" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px">';
+  }else if(isBucket){
+    nameCell='<input type="text" class="ing-name" value="Bucket (type chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px">';
+  }else{
+    nameCell='<select class="ing-name">'+allIngOpts()+'</select>';
+  }
+  row.innerHTML='<div class="fg" style="margin:0">'+nameCell+'</div>'+
+    '<div class="fg" style="margin:0">'+qtyInp+'</div>'+
+    '<div class="fg" style="margin:0">'+unitSel+'</div>'+
+    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Stone?</label><input type="checkbox" class="ing-stone-chk" '+(isStone?'checked':'')+' onchange="toggleStone(this)" style="width:auto;margin:0 auto;display:block"></div>'+
+    '<div class="fg" style="margin:0;text-align:center"><label style="font-size:10px;display:block;margin-bottom:3px">Bucket?</label><input type="checkbox" class="ing-bucket-chk" '+(isBucket?'checked':'')+' onchange="toggleBucket(this)" style="width:auto;margin:0 auto;display:block"></div>'+
+    '<button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';
   document.getElementById('f-ing-list').appendChild(row);
+  if(!isStone&&!isBucket&&name){var sel=row.querySelector('.ing-name');if(sel&&sel.tagName==='SELECT')sel.value=name;}
 }
-function toggleStone(cb){var row=cb.parentElement.parentElement;var fc=row.children[0];if(cb.checked){fc.innerHTML='<input type="text" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px;width:100%">';}else{fc.innerHTML='<select>'+allIngOpts()+'</select>';}}
+function toggleStone(cb){
+  var row=cb.closest('.ing-row');var fc=row.children[0];var bucketChk=row.querySelector('.ing-bucket-chk');
+  if(cb.checked){if(bucketChk)bucketChk.checked=false;fc.innerHTML='<input type="text" class="ing-name" value="Stone (size chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px;width:100%">';}
+  else{fc.innerHTML='<select class="ing-name">'+allIngOpts()+'</select>';}
+}
+function toggleBucket(cb){
+  var row=cb.closest('.ing-row');var fc=row.children[0];var stoneChk=row.querySelector('.ing-stone-chk');
+  if(cb.checked){if(stoneChk)stoneChk.checked=false;fc.innerHTML='<input type="text" class="ing-name" value="Bucket (type chosen by reception)" disabled style="background:#E8F4F9;color:#3a6e87;border-color:#5B8FA8;font-size:12px;width:100%">';}
+  else{fc.innerHTML='<select class="ing-name">'+allIngOpts()+'</select>';}
+}
 function addTintRow(name,y,s){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 80px 80px 36px;gap:5px;align-items:end;margin-bottom:6px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(y||0)+'" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(s||0)+'" min="0"></div><button class="btn btns" onclick="this.parentElement.remove()"><i class="ti ti-x"></i></button>';document.getElementById('f-tint-list').appendChild(row);if(name){var sel=row.querySelector('select');if(sel)sel.value=name;}}
-function getIngs(){var ings=[];document.querySelectorAll('#f-ing-list > div').forEach(function(row){var cb=row.querySelector('input[type="checkbox"]');var isStone=cb?cb.checked:false;var name='';if(isStone){name='__stone__';}else{var sel=row.querySelector('select');name=sel?sel.value:'';}var ins=row.querySelectorAll('input[type="number"]');var us=row.querySelectorAll('select')[1];var qty=ins[0]?parseFloat(ins[0].value)||0:0;var unit=us?us.value:'kg';if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone});});return ings;}
+function getIngs(){
+  var ings=[];
+  document.querySelectorAll('#f-ing-list > div').forEach(function(row){
+    var stoneChk=row.querySelector('.ing-stone-chk');
+    var bucketChk=row.querySelector('.ing-bucket-chk');
+    var isStone=stoneChk?stoneChk.checked:false;
+    var isBucket=bucketChk?bucketChk.checked:false;
+    var name='';
+    if(isStone){name='__stone__';}
+    else if(isBucket){name='__bucket__';}
+    else{var sel=row.querySelector('.ing-name');name=sel?sel.value:'';}
+    var qtyInp=row.querySelector('.ing-qty');
+    var unitSel=row.querySelector('.ing-unit');
+    var qty=qtyInp?parseFloat(qtyInp.value)||0:0;
+    var unit=unitSel?unitSel.value:'kg';
+    if(name)ings.push({name:name,qty:qty,unit:unit,is_stone:isStone,is_bucket:isBucket});
+  });
+  return ings;
+}
 function getTints(){var tints=[];document.querySelectorAll('#f-tint-list > div').forEach(function(row){var sels=row.querySelectorAll('select');var ins=row.querySelectorAll('input');if(sels[0])tints.push({n:sels[0].value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});return tints;}
 async function saveForm(){var n=document.getElementById('fn').value.trim();if(!n){window.alert('Enter a name');return;}showLoad('Saving formulation...');var data={name:n,type:document.getElementById('ftype').value,sub_category:document.getElementById('fsubcat').value.trim()||'Standard',price:parseFloat(document.getElementById('fp').value)||0,price_5l:parseFloat((document.getElementById('fp5')||{}).value)||0,price_10l:parseFloat((document.getElementById('fp10')||{}).value)||0,ingredients:getIngs(),tints:getTints()};var eid=document.getElementById('feid').value;if(eid){var res=await api('PUT','/formulations/'+eid,data);if(res){res.ingredients=res.ingredients||[];res.tints=res.tints||[];res.sub_category=res.sub_category||'Standard';var idx=forms.findIndex(function(f){return f.id===parseInt(eid);});if(idx!==-1)forms[idx]=res;}}else{var res2=await api('POST','/formulations',data);if(res2){res2.ingredients=res2.ingredients||[];res2.tints=res2.tints||[];res2.sub_category=res2.sub_category||'Standard';forms.push(res2);}}hideLoad();cM('m-af');buildCollections();rForms();}
 
@@ -2132,7 +2183,7 @@ function oPTC(){var t=document.getElementById('opt').value;var isSec=['cps','cle
 function tLN(){document.getElementById('ln').style.display=document.getElementById('odl').value==='courier'?'block':'none';}
 function addCMT(){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 70px 70px;gap:6px;margin-bottom:5px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="0" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="0" min="0"></div>';document.getElementById('cmt').appendChild(row);}
 async function bOrder(){var t=document.getElementById('opt').value;var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isCM=t==='cm';var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;var oN,qty,bkt='',fid=null,cmTi=[],stK='';if(isCM){oN=document.getElementById('cmn').value.trim()||'Colour Match';qty=parseInt(document.getElementById('cmq').value)||1;stK=document.getElementById('cms').value;bkt=document.getElementById('cmb').value;document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});}else if(isSec){var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);qty=parseInt(document.getElementById('oqsec').value)||1;bkt=sz===5?'5L Secure Lock':'20L Secure Lock';fid=parseInt(document.getElementById('orec').value);var f=forms.find(function(x){return x.id===fid;});oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);}else{fid=parseInt(document.getElementById('orec').value);var fm=forms.find(function(f){return f.id===fid;});if(!fm){window.alert('Select a formulation');return;}oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;if(isGam)stK=document.getElementById('oss').value;if(isBkt)bkt=document.getElementById('obk').value;}var lid=dl==='courier'||isSec;var oid='ORD-'+NID++;var pm=document.getElementById('opm').value;var od={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi,payment_method:pm};var res=await api('POST','/orders',od);if(res){var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi,pm:pm};orders.push(o);var fm3=fid?forms.find(function(f){return f.id===fid;}):null;document.getElementById('sc').innerHTML=bSlip(o,fm3);document.getElementById('sarea').style.display='block';}}
-function bSlip(o,f){var qr=mkQR(o.id);var rows='<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div><div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div><div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div><div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div><div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+(o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+(o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+'<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div><div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+(o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');var slipSzRatio=(o.t==='cps'&&o.bkt&&o.bkt.indexOf('5L')!==-1)?0.25:(o.t==='cps'&&o.bkt&&o.bkt.indexOf('10L')!==-1)?0.5:1;if(f&&(f.ingredients||[]).length>0){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;var name=ing.is_stone?o.stK:ing.name;rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty*slipSzRatio).toFixed(2)+' '+ing.unit+'</span></div>';});}var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);if(tints.length){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';tints.forEach(function(t){var tY=t.y*o.qty*slipSzRatio;var tS=t.s*o.qty*slipSzRatio;var tM=ml(t.s,t.y)*o.qty*slipSzRatio;rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+tY+'Y + '+tS+' shots ('+tM.toFixed(1)+'ml)</span></div>';});}return'<div class="slip"><div class="shr"><img src="https://lifecoats-app-production.up.railway.app/life_coats_logo_reg.png" style="width:120px;display:block;margin:0 auto 4px"></div><div style="text-align:center;margin:6px 0 3px">'+qr+'</div><div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div><hr class="sdv">'+rows+'<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';}
+function bSlip(o,f){var qr=mkQR(o.id);var rows='<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div><div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div><div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div><div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div><div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+(o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+(o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+'<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div><div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+(o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');var slipSzRatio=(o.t==='cps'&&o.bkt&&o.bkt.indexOf('5L')!==-1)?0.25:(o.t==='cps'&&o.bkt&&o.bkt.indexOf('10L')!==-1)?0.5:1;if(f&&(f.ingredients||[]).length>0){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;if(ing.is_bucket&&!o.bkt)return;var name=ing.is_stone?o.stK:ing.is_bucket?o.bkt:ingDisplayName(ing.name);rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty*slipSzRatio).toFixed(2)+' '+ing.unit+'</span></div>';});}var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);if(tints.length){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';tints.forEach(function(t){var tY=t.y*o.qty*slipSzRatio;var tS=t.s*o.qty*slipSzRatio;var tM=ml(t.s,t.y)*o.qty*slipSzRatio;rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+tY+'Y + '+tS+' shots ('+tM.toFixed(1)+'ml)</span></div>';});}return'<div class="slip"><div class="shr"><img src="https://lifecoats-app-production.up.railway.app/life_coats_logo_reg.png" style="width:120px;display:block;margin:0 auto 4px"></div><div style="text-align:center;margin:6px 0 3px">'+qr+'</div><div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div><hr class="sdv">'+rows+'<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';}
 function mkQR(text){var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';for(var r=0;r<cells;r++)for(var cc=0;cc<cells;cc++){var fill=(r<7&&cc<7)||(r<7&&cc>cells-8)||(r>cells-8&&cc<7)?((r===0||r===6||cc===0||cc===6||(r>=2&&r<=4&&cc>=2&&cc<=4))?1:0):((r+cc+(text.charCodeAt(0)||65))%3===0?1:0);if(fill)rcts+='<rect x="'+(cc*c)+'" y="'+(r*c)+'" width="'+c+'" height="'+c+'" fill="#000"/>';}return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+rcts+'</svg>';}
 function cOC(){document.getElementById('sarea').style.display='none';document.getElementById('oc').value='';document.getElementById('onn').value='';sOT('active',null);}
 function sOT(tab,el){if(el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');}document.getElementById('ot-new').style.display=tab==='new'?'block':'none';document.getElementById('ot-active').style.display=tab==='active'?'block':'none';document.getElementById('ot-done').style.display=tab==='done'?'block':'none';rOLists();}
@@ -2148,12 +2199,16 @@ function oComplete(id){
     if(t==='undercoat'){dd+=dl('Undercoat',qty,'bkt');}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;dd+=dl(wpLabel,wpSz*qty,'L');}
     else if(f){
-      (f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!stK)return;var name=ing.is_stone?stK:ing.name;dd+=dl(name,ing.qty*qty*szRatio,ing.unit);});
+      (f.ingredients||[]).forEach(function(ing){
+        var amt=ing.qty*qty*szRatio;
+        if(ing.is_stone){if(!stK)return;dd+=dl(stK,amt,ing.unit);}
+        else if(ing.is_bucket){if(!bkt)return;var bl=bkt.includes('Printed')?'20L Printed Buckets':bkt.includes('Titan')?'20L Titan Black':bkt;dd+=dl(bl,amt,'units');}
+        else{dd+=dl(ingDisplayName(ing.name),amt,ing.unit);}
+      });
       (f.tints||[]).forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio,'L');});
     }
     if(cmTi&&cmTi.length)cmTi.forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty,'L');});
-    if(bkt){if(bkt.includes('Printed'))dd+=dl('20L Printed Buckets',qty,'units');else if(bkt.includes('Titan'))dd+=dl('20L Titan Black',qty,'units');else if(bkt.includes('10L Secure'))dd+=dl('5L Secure Lock Buckets',qty*2,'units');else if(bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',qty,'units');else if(bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',qty,'units');}
-    if(['gamazine','granite'].indexOf(t)!==-1)dd+=dl('Plastic Bags',qty,'units');
+    if(bkt){if(bkt.includes('10L Secure'))dd+=dl('5L Secure Lock Buckets',qty*2,'units');else if(bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',qty,'units');else if(bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',qty,'units');}
   }
   if(o.t==='multi'&&o.items&&o.items.length){
     o.items.forEach(function(item){
@@ -2185,12 +2240,18 @@ async function confComplete(){
     if(t==='undercoat'){await dm('Undercoat',qty);}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;await dm(wpLabel,wpSz*qty);}
     else if(f){
-      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!stK)continue;var name=ing.is_stone?stK:ing.name;await dm(name,ing.qty*qty*szRatio);}
+      for(var i=0;i<(f.ingredients||[]).length;i++){
+        var ing=f.ingredients[i];
+        var amt=ing.qty*qty*szRatio;
+        if(ing.is_stone){if(!stK)continue;await dm(stK,amt);}
+        else if(ing.is_bucket){if(!bkt)continue;if(bkt.includes('Printed'))await dp('pr20',amt);else if(bkt.includes('Titan'))await dp('ti20',amt);}
+        else if(ing.name&&ing.name.indexOf('PKG:')===0){await dp(ing.name.slice(4),amt);}
+        else{await dm(ing.name,amt);}
+      }
       for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
     }
     if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
-    if(bkt){if(bkt.includes('Printed'))await dp('pr20',qty);else if(bkt.includes('Titan'))await dp('ti20',qty);else if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
-    if(['gamazine','granite'].indexOf(t)!==-1)await dp('bags',qty);
+    if(bkt){if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
   }
   if(o.t==='multi'&&o.items&&o.items.length){
     for(var n=0;n<o.items.length;n++){
@@ -3001,12 +3062,18 @@ async function deductOrderStock(order){
     if(t==='undercoat'){await dm('Undercoat',qty);}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;await dm(wpLabel,wpSz*qty);}
     else if(f){
-      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!stK)continue;var name=ing.is_stone?stK:ing.name;await dm(name,ing.qty*qty*szRatio);}
+      for(var i=0;i<(f.ingredients||[]).length;i++){
+        var ing=f.ingredients[i];
+        var amt=ing.qty*qty*szRatio;
+        if(ing.is_stone){if(!stK)continue;await dm(stK,amt);}
+        else if(ing.is_bucket){if(!bkt)continue;if(bkt.includes('Printed'))await dp('pr20',amt);else if(bkt.includes('Titan'))await dp('ti20',amt);}
+        else if(ing.name&&ing.name.indexOf('PKG:')===0){await dp(ing.name.slice(4),amt);}
+        else{await dm(ing.name,amt);}
+      }
       for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
     }
     if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
-    if(bkt){if(bkt.includes('Printed'))await dp('pr20',qty);else if(bkt.includes('Titan'))await dp('ti20',qty);else if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
-    if(['gamazine','granite'].indexOf(t)!==-1)await dp('bags',qty);
+    if(bkt){if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
   }
   if(order.items&&order.items.length){
     for(var n=0;n<order.items.length;n++){
@@ -3116,7 +3183,7 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
     var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:(item.productType==='cps'&&item.secSize==='10')?0.5:1;
     if(itemForm&&(itemForm.ingredients||[]).length){
       h+='<div class="tint-detail"><b>Materials (×'+item.qty+' '+(szRatio<1?'× 5L':'buckets')+'):</b><br>';
-      itemForm.ingredients.forEach(function(ing){if(ing.is_stone&&!item.stone)return;var name=ing.is_stone?item.stone:ing.name;var amt=ing.qty*item.qty*szRatio;h+=''+name+': '+amt.toFixed(2)+' '+ing.unit+'<br>';});
+      itemForm.ingredients.forEach(function(ing){if(ing.is_stone&&!item.stone)return;if(ing.is_bucket&&!item.bucket)return;var name=ing.is_stone?item.stone:ing.is_bucket?item.bucket:ingDisplayName(ing.name);var amt=ing.qty*item.qty*szRatio;h+=''+name+': '+amt.toFixed(2)+' '+ing.unit+'<br>';});
       h+='</div>';
     }
     if(tintSource&&tintSource.length){
@@ -3210,7 +3277,8 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
       h+='<div class="detail" style="margin-top:2px"><u>Materials for '+item.qty+' bucket'+(item.qty!==1?'s':'')+':</u></div>';
       itemForm.ingredients.forEach(function(ing){
         if(ing.is_stone&&!item.stone)return;
-        var name=ing.is_stone?item.stone:ing.name;
+        if(ing.is_bucket&&!item.bucket)return;
+        var name=ing.is_stone?item.stone:ing.is_bucket?item.bucket:ingDisplayName(ing.name);
         var amt=ing.qty*item.qty*szRatio;
         h+='<div class="detail">'+name+': '+amt.toFixed(2)+' '+ing.unit+'</div>';
       });
@@ -3372,4 +3440,3 @@ setInterval(function(){if(!TV){var el=document.getElementById('dt');if(el){var n
 </script>
 </body>
 </html>
-
