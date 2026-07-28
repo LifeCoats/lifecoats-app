@@ -301,6 +301,8 @@ tr:hover td{background:#f8f9fa}
   <div class="al"><i class="ti ti-lock"></i> Company confidential — admin only</div>
   <div class="tabs" id="ftabs">
     <div class="tab active" onclick="sFT('gamazine',this)">Gamazine</div>
+    <div class="tab" onclick="sFT('remix',this)">Remix</div>
+    <div class="tab" onclick="sFT('cm',this)">Colour Match</div>
     <div class="tab" onclick="sFT('granite',this)">Granite</div>
     <div class="tab" onclick="sFT('undercoat',this)">Undercoat</div>
     <div class="tab" onclick="sFT('cps',this)">CPS</div>
@@ -325,7 +327,7 @@ tr:hover td{background:#f8f9fa}
       <div class="fr">
         <div class="fg"><label>Client name</label><input type="text" id="oc" placeholder="Client name"></div>
         <div class="fg"><label>Product type</label><select id="opt" onchange="oPTC()">
-          <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+          <option value="gamazine">Gamazine</option><option value="remix">Remix</option><option value="granite">Granite Coat</option>
           <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
           <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
           <option value="fiberseal">Fiber Seal</option><option value="cm">Colour Match</option>
@@ -535,7 +537,7 @@ tr:hover td{background:#f8f9fa}
   <div class="fr">
     <div class="fg"><label>Colour / product name</label><input type="text" id="fn"></div>
     <div class="fg"><label>Product type</label><select id="ftype">
-      <option value="gamazine">Gamazine</option><option value="granite">Granite Coat</option>
+      <option value="gamazine">Gamazine</option><option value="remix">Remix</option><option value="cm">Colour Match</option><option value="granite">Granite Coat</option>
       <option value="undercoat">Undercoat</option><option value="cps">CPS</option>
       <option value="clearcoat">Clearcoat</option><option value="waterproofing">Waterproofing</option>
       <option value="fiberseal">Fiber Seal</option>
@@ -703,7 +705,7 @@ function pct(s,a){return Math.min(100,Math.round((s/Math.max(a*3,1))*100));}
 function stt(s,a){if(s<=0)return'cr';if(s<=a)return'lw';return'ok';}
 function bdg(s,a){var x=stt(s,a);return x==='cr'?'<span class="bdg bcrit">Critical</span>':x==='lw'?'<span class="bdg blow">Low</span>':'<span class="bdg bok">OK</span>';}
 function bc(s,a){return stt(s,a)==='cr'?'pbcr':stt(s,a)==='lw'?'pbow':'pbok';}
-function ptL(t){return{gamazine:'Gamazine',granite:'Granite Coat',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match'}[t]||t;}
+function ptL(t){return{gamazine:'Gamazine',remix:'Remix',granite:'Granite Coat',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match'}[t]||t;}
 function fmt(n){return'R'+parseFloat(n||0).toFixed(2);}
 function orderRevenue(o){
   if(o.orderTotal&&o.orderTotal>0)return o.orderTotal;
@@ -789,7 +791,7 @@ async function saveRecSettings(){var all=allTVItems();var sel=all.filter(functio
 // ==== JOB BOOKINGS ====
 function showLoad(msg){var o=document.getElementById('loading-overlay');if(o){o.style.display='flex';var m=document.getElementById('loading-msg');if(m)m.textContent=msg||'Saving...';}}
 function hideLoad(){var o=document.getElementById('loading-overlay');if(o)o.style.display='none';}
-var JOB={basket:[],addType:null,addFid:null,addSearch:'',addSub:null,addQty:1,addStone:null,addBucket:null,addSecSize:null,cmTi:[]};
+var JOB={basket:[],addType:null,addFid:null,addSearch:'',addSub:null,addQty:1,addStone:null,addBucket:null,addSecSize:null,cmTi:[],cmBase:null};
 var jobBookings=[];
 var activeJobId=null; // currently open job being viewed
 
@@ -923,8 +925,8 @@ function rJobAddSection(id){
   }
   if(!JOB.addType){
     h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.5rem">';
-    [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
-      var labels={gamazine:'Gamazine',granite:'Granite',cps:'CPS',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',undercoat:'Undercoat',cm:'Colour Match',loose:'Loose Items'};
+    [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'remix',icon:'ti-recycle',col:'#8E7CC3'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
+      var labels={gamazine:'Gamazine',remix:'Remix',granite:'Granite',cps:'CPS',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',undercoat:'Undercoat',cm:'Colour Match',loose:'Loose Items'};
       h+='<button onclick="JOB.addType=\''+t.id+'\';JOB.addFid=null;JOB.addSearch=\'\';JOB.addSub=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;JOB.addSecSize=null;rJobDetail(\''+id+'\')" style="padding:12px 8px;border-radius:12px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;text-align:center">';
       h+='<i class="ti '+t.icon+'" style="font-size:20px;color:'+t.col+';display:block;margin-bottom:4px"></i>';
       h+='<div style="font-size:11px;font-weight:600;color:#333">'+labels[t.id]+'</div></button>';
@@ -969,18 +971,28 @@ async function jobBookOut(id){
     if(item.type==='loose'){if(pkgData[item.pkgKey]&&item.qty>0){pkgData[item.pkgKey].stock=Math.max(0,pkgData[item.pkgKey].stock-item.qty);await api('PUT','/packaging/'+item.pkgKey,{stock:pkgData[item.pkgKey].stock});}continue;}
     var f=item.fid?forms.find(function(x){return x.id===item.fid;}):null;
     var szRatio=(item.productType==='cps'&&item.secSize==='5')?0.25:(item.productType==='cps'&&item.secSize==='10')?0.5:1;
+    var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
     if(item.productType==='undercoat'){await dm('Undercoat',item.qty);}
     else if(['waterproofing','fiberseal'].indexOf(item.productType)!==-1){var wpLabel=item.productType==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=item.secSize==='5'?5:item.secSize==='10'?10:20;await dm(wpLabel,wpSz*item.qty);}
     else if(f){
-      for(var i=0;i<(f.ingredients||[]).length;i++){var ing=f.ingredients[i];if(ing.is_stone&&!item.stone)continue;var iname=ing.is_stone?item.stone:ing.name;await dm(iname,ing.qty*item.qty*szRatio);}
+      for(var i=0;i<(f.ingredients||[]).length;i++){
+        var ing=f.ingredients[i];
+        var amt=ing.qty*item.qty*szRatio;
+        if(ing.is_stone){if(!item.stone)continue;await dm(item.stone,amt);}
+        else if(ing.is_bucket){if(!bktLabel)continue;if(bktLabel.includes('Printed'))await dp('pr20',amt);else if(bktLabel.includes('Titan'))await dp('ti20',amt);}
+        else if(ing.name&&ing.name.indexOf('PKG:')===0){await dp(ing.name.slice(4),amt);}
+        else{await dm(ing.name,amt);}
+      }
       for(var j2=0;j2<(f.tints||[]).length;j2++){var t2=f.tints[j2];await dm(t2.n,(ml(t2.s,t2.y)/1000)*item.qty*szRatio);}
     }
     if(item.productType==='cm'&&item.cmTi)for(var k=0;k<item.cmTi.length;k++)await dm(item.cmTi[k].n,(ml(item.cmTi[k].s,item.cmTi[k].y)/1000)*item.qty);
-    var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
-    if(bktLabel){if(bktLabel.includes('Printed'))await dp('pr20',item.qty);else if(bktLabel.includes('Titan'))await dp('ti20',item.qty);else if(bktLabel.includes('10L Secure'))await dp('sl5',item.qty*2);else if(bktLabel.includes('5L Secure'))await dp('sl5',item.qty);else if(bktLabel.includes('20L Secure'))await dp('sl20',item.qty);}
-    if(['gamazine','granite'].indexOf(item.productType)!==-1)await dp('bags',item.qty);
+    if(item.productType==='cm'&&item.base){
+      if(item.base==='pastel')await dm('Pastel Base',2*item.qty);
+      else if(item.base==='clear')await dm('Clear Base',2*item.qty);
+      else if(item.base==='deep'){await dm('Pastel Base',1*item.qty);await dm('Clear Base',1*item.qty);}
+    }
+    if(bktLabel){if(bktLabel.includes('10L Secure'))await dp('sl5',item.qty*2);else if(bktLabel.includes('5L Secure'))await dp('sl5',item.qty);else if(bktLabel.includes('20L Secure'))await dp('sl20',item.qty);}
   }
-  // Save items entry to backend
   await api('POST','/job-bookings/'+id+'/items',{items:JOB.basket,booked_by:userName});
   hideLoad();
   JOB.basket=[];JOB.addType=null;
@@ -1083,25 +1095,27 @@ function jobRemove(i){JOB.basket.splice(i,1);if(activeJobId)rJobDetail(activeJob
 
 function jobAddToBasket(){
   var t=JOB.addType;var isCM=t==='cm';var isSec=['cps','waterproofing','fiberseal'].indexOf(t)!==-1;
-  var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+  var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;
   var f=JOB.addFid?forms.find(function(x){return x.id===JOB.addFid;}):null;
   if(isCM){
     var cmEl=document.getElementById('rec-cm-name');var cmName=cmEl?cmEl.value.trim():'';
     if(!cmName){window.alert('Enter a colour reference');return;}
+    if(!f){window.alert('Select a colour first');return;}
     if(!JOB.addBucket){window.alert('Select a bucket type');return;}
+    if(!JOB.cmBase){window.alert('Select a base type');return;}
     var qtyCM=JOB.addQty||1;
     var detailsCM=[];if(JOB.addBucket)detailsCM.push(JOB.addBucket);if(JOB.addStone)detailsCM.push(JOB.addStone);detailsCM.push(qtyCM+' bucket'+(qtyCM>1?'s':''));
-    JOB.basket.push({type:'product',fid:null,productType:'cm',label:'Colour Match: '+cmName,qty:qtyCM,stone:JOB.addStone,bucket:JOB.addBucket||'',secSize:'',cmTi:JOB.cmTi||[],details:detailsCM.join(' · ')});
-    JOB.addType=null;JOB.addFid=null;JOB.cmTi=[];JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;
+    JOB.basket.push({type:'product',fid:JOB.addFid,productType:'cm',label:'Colour Match: '+cmName,qty:qtyCM,stone:JOB.addStone,bucket:JOB.addBucket||'',secSize:'',cmTi:JOB.cmTi||[],base:JOB.cmBase,details:detailsCM.join(' · ')});
+    JOB.addType=null;JOB.addFid=null;JOB.cmTi=[];JOB.cmBase=null;JOB.addQty=1;JOB.addStone=null;JOB.addBucket=null;
     if(window._jobModeREC){window.REC=window._jobModeREC;window._jobModeREC=null;window._jobMode=false;}
     if(activeJobId)rJobDetail(activeJobId);return;
   }
-  if(!f){window.alert('Select a colour first');return;}
+  if(!isSec&&!f){window.alert('Select a colour first');return;}
   if(isGam&&!JOB.addStone){window.alert('Select a stone size');return;}
   if(isBkt&&!JOB.addBucket){window.alert('Select a bucket type');return;}
   if(isSec&&!JOB.addSecSize){window.alert('Select a size');return;}
   var qty=JOB.addQty||1;
-  var label=f.name;
+  var label=f?f.name:ptL(t);
   var details=[];
   if(JOB.addBucket)details.push(JOB.addBucket);
   if(JOB.addStone)details.push(JOB.addStone);
@@ -2019,8 +2033,8 @@ async function rBOLog(){var log=await api('GET','/packaging-bookouts')||[];docum
 // FORMULATIONS
 function sFT(tab,el){CRT=tab;document.querySelectorAll('#ftabs .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');var sb=document.getElementById('cps-sync-btn');if(sb)sb.style.display=tab==='cps'?'inline-flex':'none';rForms();}
 function rForms(){
-  var types=['gamazine','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
-  var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
+  var types=['gamazine','remix','cm','granite','undercoat','cps','clearcoat','waterproofing','fiberseal'];
+  var labels={gamazine:'Gamazine',remix:'Remix',cm:'Colour Match',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal'};
   document.querySelectorAll('#ftabs .tab').forEach(function(tab,i){var type=types[i];if(!type)return;var count=forms.filter(function(f){return f.type===type;}).length;tab.innerHTML=labels[type]+(count>0?' <span style="font-size:10px;background:#E8F4F9;color:#3a6e87;padding:1px 5px;border-radius:10px;font-weight:500">'+count+'</span>':'');});
   var fs=forms.filter(function(f){return f.type===CRT;});
   if(!fs.length){document.getElementById('fl').innerHTML='<div class="es card">No formulations yet. Click Add formulation above.</div>';return;}
@@ -2179,10 +2193,10 @@ async function saveForm(){var n=document.getElementById('fn').value.trim();if(!n
 
 // ORDERS
 function rRecStock(){var show=userRole==='reception';document.getElementById('rec-stock').style.display=show?'block':'none';if(!show)return;var h='<div class="fr"><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Manufactured stock</div>';Object.values(mfgStock).forEach(function(m){var col=m.stock<=m.alert_level?'#E24B4A':m.stock<=(m.alert_level*2)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+m.name+'</span><span style="font-weight:500;color:'+col+'">'+m.stock.toFixed(0)+'L</span></div>';});h+='</div><div><div style="font-size:11px;font-weight:500;margin-bottom:5px;color:#888">Packaging</div>';['pr20','ti20','sl20','sl5','bags'].forEach(function(k){var p=pkgData[k];if(!p)return;var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});h+='</div></div>';document.getElementById('rsc').innerHTML=h;}
-function oPTC(){var t=document.getElementById('opt').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;var isCM=t==='cm';document.getElementById('or-std').style.display=(!isCM)?'block':'none';document.getElementById('or-stone').style.display=isGam?'block':'none';document.getElementById('or-bkt').style.display=(isBkt&&!isCM)?'block':'none';document.getElementById('or-sec').style.display=(isSec&&!isCM)?'grid':'none';document.getElementById('or-cls').style.display=(t==='clearcoat'&&!isCM)?'block':'none';document.getElementById('or-cm').style.display=isCM?'block':'none';if(!isCM){var fs=forms.filter(function(f){return f.type===t;});var groups={};fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});var subs=Object.keys(groups).sort();var opts='';if(!subs.length){opts='<option value="">No formulations yet</option>';}else if(subs.length===1&&subs[0]==='Standard'){groups['Standard'].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});}else{subs.forEach(function(sub){opts+='<optgroup label="'+sub+'">';groups[sub].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});opts+='</optgroup>';});}document.getElementById('orec').innerHTML=opts;}}
+function oPTC(){var t=document.getElementById('opt').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;var isCM=t==='cm';document.getElementById('or-std').style.display=(!isCM)?'block':'none';document.getElementById('or-stone').style.display=isGam?'block':'none';document.getElementById('or-bkt').style.display=(isBkt&&!isCM)?'block':'none';document.getElementById('or-sec').style.display=(isSec&&!isCM)?'grid':'none';document.getElementById('or-cls').style.display=(t==='clearcoat'&&!isCM)?'block':'none';document.getElementById('or-cm').style.display=isCM?'block':'none';if(!isCM){var fs=forms.filter(function(f){return f.type===t;});var groups={};fs.forEach(function(f){var sub=f.sub_category||'Standard';if(!groups[sub])groups[sub]=[];groups[sub].push(f);});Object.keys(groups).forEach(function(sub){groups[sub].sort(function(a,b){return a.name.localeCompare(b.name);});});var subs=Object.keys(groups).sort();var opts='';if(!subs.length){opts='<option value="">No formulations yet</option>';}else if(subs.length===1&&subs[0]==='Standard'){groups['Standard'].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});}else{subs.forEach(function(sub){opts+='<optgroup label="'+sub+'">';groups[sub].forEach(function(f){opts+='<option value="'+f.id+'">'+f.name+'</option>';});opts+='</optgroup>';});}document.getElementById('orec').innerHTML=opts;}}
 function tLN(){document.getElementById('ln').style.display=document.getElementById('odl').value==='courier'?'block':'none';}
 function addCMT(){var row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 70px 70px;gap:6px;margin-bottom:5px';row.innerHTML='<div class="fg" style="margin:0"><select>'+tOpts()+'</select></div><div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="0" min="0"></div><div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="0" min="0"></div>';document.getElementById('cmt').appendChild(row);}
-async function bOrder(){var t=document.getElementById('opt').value;var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isCM=t==='cm';var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;var oN,qty,bkt='',fid=null,cmTi=[],stK='';if(isCM){oN=document.getElementById('cmn').value.trim()||'Colour Match';qty=parseInt(document.getElementById('cmq').value)||1;stK=document.getElementById('cms').value;bkt=document.getElementById('cmb').value;document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});}else if(isSec){var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);qty=parseInt(document.getElementById('oqsec').value)||1;bkt=sz===5?'5L Secure Lock':'20L Secure Lock';fid=parseInt(document.getElementById('orec').value);var f=forms.find(function(x){return x.id===fid;});oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);}else{fid=parseInt(document.getElementById('orec').value);var fm=forms.find(function(f){return f.id===fid;});if(!fm){window.alert('Select a formulation');return;}oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;if(isGam)stK=document.getElementById('oss').value;if(isBkt)bkt=document.getElementById('obk').value;}var lid=dl==='courier'||isSec;var oid='ORD-'+NID++;var pm=document.getElementById('opm').value;var od={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi,payment_method:pm};var res=await api('POST','/orders',od);if(res){var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi,pm:pm};orders.push(o);var fm3=fid?forms.find(function(f){return f.id===fid;}):null;document.getElementById('sc').innerHTML=bSlip(o,fm3);document.getElementById('sarea').style.display='block';}}
+async function bOrder(){var t=document.getElementById('opt').value;var cl=document.getElementById('oc').value.trim();if(!cl){window.alert('Enter client name');return;}var dl=document.getElementById('odl').value;var nt=document.getElementById('onn').value;var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;var isCM=t==='cm';var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;var oN,qty,bkt='',fid=null,cmTi=[],stK='';if(isCM){oN=document.getElementById('cmn').value.trim()||'Colour Match';qty=parseInt(document.getElementById('cmq').value)||1;stK=document.getElementById('cms').value;bkt=document.getElementById('cmb').value;document.querySelectorAll('#cmt > div').forEach(function(row){var sel=row.querySelector('select');var ins=row.querySelectorAll('input');if(sel)cmTi.push({n:sel.value,y:parseFloat(ins[0].value)||0,s:parseFloat(ins[1].value)||0});});}else if(isSec){var sz=t==='clearcoat'?parseInt(document.getElementById('ocls').value):parseInt(document.getElementById('osec').value);qty=parseInt(document.getElementById('oqsec').value)||1;bkt=sz===5?'5L Secure Lock':'20L Secure Lock';fid=parseInt(document.getElementById('orec').value);var f=forms.find(function(x){return x.id===fid;});oN=f?f.name+(t==='clearcoat'?' ('+sz+'L)':''):ptL(t);}else{fid=parseInt(document.getElementById('orec').value);var fm=forms.find(function(f){return f.id===fid;});if(!fm){window.alert('Select a formulation');return;}oN=fm.name;qty=parseInt(document.getElementById('oqty').value)||1;if(isGam)stK=document.getElementById('oss').value;if(isBkt)bkt=document.getElementById('obk').value;}var lid=dl==='courier'||isSec;var oid='ORD-'+NID++;var pm=document.getElementById('opm').value;var od={id:oid,client:cl,product_type:t,name:oN,quantity:qty,bucket_type:bkt,stone_size:stK,include_lid:lid,delivery:dl,notes:nt,status:'pending',formulation_id:fid,custom_tints:cmTi,payment_method:pm};var res=await api('POST','/orders',od);if(res){var o={id:oid,client:cl,t:t,n:oN,qty:qty,bkt:bkt,stK:stK,lid:lid,dl:dl,nt:nt,status:'pending',fid:fid,cmTi:cmTi,pm:pm};orders.push(o);var fm3=fid?forms.find(function(f){return f.id===fid;}):null;document.getElementById('sc').innerHTML=bSlip(o,fm3);document.getElementById('sarea').style.display='block';}}
 function bSlip(o,f){var qr=mkQR(o.id);var rows='<div class="sr"><span class="slb">Order:</span><span class="slv">'+o.id+'</span></div><div class="sr"><span class="slb">Client:</span><span class="slv">'+o.client+'</span></div><div class="sr"><span class="slb">Product:</span><span class="slv">'+ptL(o.t)+'</span></div><div class="sr"><span class="slb">Colour:</span><span class="slv">'+o.n+'</span></div><div class="sr"><span class="slb">Quantity:</span><span class="slv">'+o.qty+' bucket(s)</span></div>'+(o.bkt?'<div class="sr"><span class="slb">Bucket:</span><span class="slv">'+o.bkt+'</span></div>':'')+(o.stK?'<div class="sr"><span class="slb">Stone:</span><span class="slv">'+o.stK+'</span></div>':'')+'<div class="sr"><span class="slb">Lids:</span><span class="slv">'+(o.lid?'Yes':'No')+'</span></div><div class="sr"><span class="slb">Delivery:</span><span class="slv">'+o.dl+'</span></div>'+(o.nt?'<div class="sr"><span class="slb">Notes:</span><span class="slv">'+o.nt+'</span></div>':'');var slipSzRatio=(o.t==='cps'&&o.bkt&&o.bkt.indexOf('5L')!==-1)?0.25:(o.t==='cps'&&o.bkt&&o.bkt.indexOf('10L')!==-1)?0.5:1;if(f&&(f.ingredients||[]).length>0){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">MATERIALS FOR '+o.qty+' BUCKET(S)</div>';(f.ingredients||[]).forEach(function(ing){if(ing.is_stone&&!o.stK)return;if(ing.is_bucket&&!o.bkt)return;var name=ing.is_stone?o.stK:ing.is_bucket?o.bkt:ingDisplayName(ing.name);rows+='<div class="sr"><span class="slb">'+name+':</span><span class="slv">'+(ing.qty*o.qty*slipSzRatio).toFixed(2)+' '+ing.unit+'</span></div>';});}var tints=(f&&f.tints&&f.tints.length)?f.tints:(o.cmTi&&o.cmTi.length?o.cmTi:[]);if(tints.length){rows+='<hr class="sdv"><div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-bottom:3px;font-weight:bold">TINTS FOR '+o.qty+' BUCKET(S)</div>';tints.forEach(function(t){var tY=t.y*o.qty*slipSzRatio;var tS=t.s*o.qty*slipSzRatio;var tM=ml(t.s,t.y)*o.qty*slipSzRatio;rows+='<div class="sr"><span class="slb">'+t.n+':</span><span class="slv">'+tY+'Y + '+tS+' shots ('+tM.toFixed(1)+'ml)</span></div>';});}return'<div class="slip"><div class="shr"><img src="https://lifecoats-app-production.up.railway.app/life_coats_logo_reg.png" style="width:120px;display:block;margin:0 auto 4px"></div><div style="text-align:center;margin:6px 0 3px">'+qr+'</div><div style="text-align:center;font-size:9px;color:#555;letter-spacing:1px;margin-bottom:4px">'+o.id+'</div><hr class="sdv">'+rows+'<div class="sft">Thank you for your order<br>Life Coats (Pty) Ltd</div></div>';}
 function mkQR(text){var sz=100,cells=21,c=Math.floor(sz/cells),rcts='';for(var r=0;r<cells;r++)for(var cc=0;cc<cells;cc++){var fill=(r<7&&cc<7)||(r<7&&cc>cells-8)||(r>cells-8&&cc<7)?((r===0||r===6||cc===0||cc===6||(r>=2&&r<=4&&cc>=2&&cc<=4))?1:0):((r+cc+(text.charCodeAt(0)||65))%3===0?1:0);if(fill)rcts+='<rect x="'+(cc*c)+'" y="'+(r*c)+'" width="'+c+'" height="'+c+'" fill="#000"/>';}return'<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+rcts+'</svg>';}
 function cOC(){document.getElementById('sarea').style.display='none';document.getElementById('oc').value='';document.getElementById('onn').value='';sOT('active',null);}
@@ -2193,7 +2207,7 @@ function oComplete(id){
   document.getElementById('comp-det').innerHTML='<div class="oc" style="margin-bottom:0.75rem"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div></div>';
   function dl(n,q,u){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+n+'</span><span style="color:#E24B4A;font-weight:500">−'+(typeof q==='number'?q.toFixed(3):q)+' '+u+'</span></div>';}
   var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';
-  function buildOne(t,fid,qty,stK,bkt,secSize,cmTi){
+  function buildOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
     var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
     if(t==='undercoat'){dd+=dl('Undercoat',qty,'bkt');}
@@ -2208,16 +2222,19 @@ function oComplete(id){
       (f.tints||[]).forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio,'L');});
     }
     if(cmTi&&cmTi.length)cmTi.forEach(function(t2){dd+=dl(t2.n,(ml(t2.s,t2.y)/1000)*qty,'L');});
+    if(base==='pastel')dd+=dl('Pastel Base',2*qty,'L');
+    else if(base==='clear')dd+=dl('Clear Base',2*qty,'L');
+    else if(base==='deep'){dd+=dl('Pastel Base',1*qty,'L');dd+=dl('Clear Base',1*qty,'L');}
     if(bkt){if(bkt.includes('10L Secure'))dd+=dl('5L Secure Lock Buckets',qty*2,'units');else if(bkt.includes('5L Secure'))dd+=dl('5L Secure Lock Buckets',qty,'units');else if(bkt.includes('20L Secure'))dd+=dl('20L Secure Lock Buckets',qty,'units');}
   }
   if(o.t==='multi'&&o.items&&o.items.length){
     o.items.forEach(function(item){
       var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
-      buildOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+      buildOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi,item.base);
     });
   } else {
     var secSizeGuess=o.bkt&&o.bkt.includes('5L')?'5':o.bkt&&o.bkt.includes('10L')?'10':'20';
-    buildOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi);
+    buildOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi,o.base);
   }
   if(o.lid)dd+=dl('Lids',o.qty,'units');
   document.getElementById('comp-ded').innerHTML=dd;oM('m-comp');
@@ -2234,7 +2251,7 @@ async function confComplete(){
   var id=pendingOrderId;var o=orders.find(function(x){return x.id===id;});if(!o)return;
   async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
-  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi){
+  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
     var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
     if(t==='undercoat'){await dm('Undercoat',qty);}
@@ -2251,18 +2268,21 @@ async function confComplete(){
       for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
     }
     if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
+    if(base==='pastel')await dm('Pastel Base',2*qty);
+    else if(base==='clear')await dm('Clear Base',2*qty);
+    else if(base==='deep'){await dm('Pastel Base',1*qty);await dm('Clear Base',1*qty);}
     if(bkt){if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
   }
   if(o.t==='multi'&&o.items&&o.items.length){
     for(var n=0;n<o.items.length;n++){
       var item=o.items[n];
       var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
-      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi,item.base);
     }
   } else {
     var f=o.fid?forms.find(function(x){return x.id===o.fid;}):null;
     var secSizeGuess=o.bkt&&o.bkt.includes('5L')?'5':o.bkt&&o.bkt.includes('10L')?'10':'20';
-    await deductOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi);
+    await deductOne(o.t,o.fid,o.qty,o.stK,o.bkt,secSizeGuess,o.cmTi,o.base);
   }
   if(o.lid){if(o.bkt&&o.bkt.includes('5L'))await dp('sl5l',o.qty);else await dp('sl20l',o.qty);}
   await api('PUT','/orders/'+id,{status:'done'});o.status='done';cM('m-comp');rOLists();rDash();
@@ -2286,7 +2306,7 @@ function xPDF(){var done=orders.filter(function(o){return o.status==='done';});v
 // ============================================================
 // RECEPTION UI V3 — touch optimised, basket, A4 slip
 // ============================================================
-var REC={basket:[],client:null,activeTab:'dash',dashItems:[],addType:null,addFid:null,addSearch:'',addQty:1,addStone:null,addBucket:null,addSecSize:null,cmName:'',cmTi:[],looseQty:{},delivery:null,notes:'',cashAmt:0,cardAmt:0,payMode:null,doneDate:null};
+var REC={basket:[],client:null,activeTab:'dash',dashItems:[],addType:null,addFid:null,addSearch:'',addQty:1,addStone:null,addBucket:null,addSecSize:null,cmName:'',cmTi:[],cmBase:null,looseQty:{},delivery:null,notes:'',cashAmt:0,cardAmt:0,payMode:null,doneDate:null};
 var COMPANY={name:'Life Coats (Pty) Ltd',address:'9 Eddison BLVD Vanderbijlpark, Gauteng, 1911',phone:'016 100 2222',email:'info@lifecoat.com'};
 
 var LOOSE_ITEMS_BASE=[
@@ -2590,8 +2610,8 @@ function recOrderHTML(){
       // Product type tiles with icons
       h+='<div style="font-size:16px;font-weight:600;color:#333;margin-bottom:12px">What would you like to add?</div>';
       h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
-      [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'clearcoat',icon:'ti-eye',col:'#5AAB7B'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
-        var labels={gamazine:'Gamazine',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match',loose:'Loose Items'};
+      [{id:'gamazine',icon:'ti-droplet',col:'#5B8FA8'},{id:'remix',icon:'ti-recycle',col:'#8E7CC3'},{id:'granite',icon:'ti-diamond',col:'#C46B2D'},{id:'undercoat',icon:'ti-paint',col:'#7F77DD'},{id:'cps',icon:'ti-flask',col:'#378ADD'},{id:'clearcoat',icon:'ti-eye',col:'#5AAB7B'},{id:'waterproofing',icon:'ti-droplet-filled',col:'#185FA5'},{id:'fiberseal',icon:'ti-ripple',col:'#854F0B'},{id:'cm',icon:'ti-palette',col:'#D14F7C'},{id:'loose',icon:'ti-package',col:'#888'}].forEach(function(t){
+        var labels={gamazine:'Gamazine',remix:'Remix',granite:'Granite',undercoat:'Undercoat',cps:'CPS',clearcoat:'Clearcoat',waterproofing:'Waterproofing',fiberseal:'Fiber Seal',cm:'Colour Match',loose:'Loose Items'};
         h+='<button onclick="recSelType(\''+t.id+'\')" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px 10px;border-radius:14px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;font-family:system-ui,sans-serif;transition:all 0.15s" onmousedown="this.style.background=\''+t.col+'22\'">';
         h+='<i class="ti '+t.icon+'" style="font-size:30px;color:'+t.col+'"></i>';
         h+='<span style="font-size:13px;font-weight:500;color:#333;text-align:center">'+labels[t.id]+'</span></button>';
@@ -2723,10 +2743,10 @@ async function recSaveClient(){
 // Product panel with sub-category tabs + live search — NO auto-scroll on option select
 function recProductPanel(){
   var t=REC.addType;var isCM=t==='cm';var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
-  var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+  var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;
   var h='';
 
-  if(!isCM&&(t==='cps'||!isSec)){
+  if(t==='cps'||!isSec){
     var fs=forms.filter(function(f){return f.type===t;});
     var search=(REC.addSearch||'').toLowerCase();
     // Sub-category tabs
@@ -2769,6 +2789,14 @@ function recProductPanel(){
         h+='</div>';
       });
       h+='<button onclick="recAddCMT()" style="'+rBS('#f0f0f0','#333','#ddd','13px')+'padding:9px 16px;border-radius:10px;margin-bottom:10px"><i class="ti ti-plus"></i> Add tint</button><br>';
+
+      h+='<div style="font-size:14px;font-weight:500;margin-bottom:8px">Base type:</div>';
+      h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">';
+      [{v:'pastel',l:'Pastel'},{v:'clear',l:'Clear'},{v:'deep',l:'Deep'}].forEach(function(b){
+        var selB=REC.cmBase===b.v;
+        h+='<button onclick="recSetOpt(\'cmBase\',\''+b.v+'\')" style="'+rBS(selB?'#E8F4F9':'#fff',selB?'#3a6e87':'#333',selB?'#5B8FA8':'#ddd','13px')+'padding:12px 4px;border-radius:10px;font-weight:'+(selB?'600':'400')+'">'+b.l+'</button>';
+      });
+      h+='</div>';
     }
 
     // Stone size — NO recRender, updates inline only
@@ -2835,7 +2863,7 @@ function recSetOpt(key,val){
   if(configEl){
     // Re-render only the config section
     var t=REC.addType;var isCM=t==='cm';var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
-    var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+    var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;
     var f=REC.addFid?forms.find(function(x){return x.id===REC.addFid;}):null;
     // Update button styles without full re-render
     var allBtns=configEl.querySelectorAll('button[onclick^="recSetOpt"]');
@@ -2924,14 +2952,16 @@ function recUpdCMT(i,f,v){if(!REC.cmTi||!REC.cmTi[i])return;REC.cmTi[i][f]=f==='
 
 function recAddToBasket(){
   var t=REC.addType;var isCM=t==='cm';var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
-  var isGam=t==='gamazine';var isBkt=['gamazine','granite','undercoat'].indexOf(t)!==-1;
+  var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;
   var f=REC.addFid?forms.find(function(x){return x.id===REC.addFid;}):null;
   if(!isCM&&!isSec&&!f){window.alert('Select a colour first');return;}
+  if(isCM&&!f){window.alert('Select a colour first');return;}
   if((isGam||isCM)&&!REC.addStone){window.alert('Select a stone size');return;}
   if((isBkt||isCM)&&!REC.addBucket){window.alert('Select a bucket type');return;}
   if(isSec&&!REC.addSecSize){window.alert('Select a size');return;}
+  if(isCM&&!REC.cmBase){window.alert('Select a base type');return;}
   if(isCM){var cmEl=document.getElementById('rec-cm-name');if(cmEl)REC.cmName=cmEl.value.trim();if(!REC.cmName){window.alert('Enter colour reference');return;}}
-  var qty=REC.addQty||1;
+var qty=REC.addQty||1;
   var label=isCM?('Colour Match: '+REC.cmName):f?f.name:ptL(t);
   var details=[];
   if(REC.addBucket)details.push(REC.addBucket);
@@ -2955,8 +2985,8 @@ function recAddToBasket(){
   }
   if(t==='undercoat'){var uc=mfgStock['Undercoat'];if(uc&&uc.stock<qty){alert('\u26a0 Not enough Undercoat stock.\nAvailable: '+Math.round(uc.stock)+' buckets, needed: '+qty+'\n\nOrder blocked.');return;}}
   if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpL=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz2=REC.addSecSize==='5'?5:REC.addSecSize==='10'?10:20;var wpSt=mfgStock[wpL];if(wpSt&&wpSt.stock<wpSz2*qty){alert('\u26a0 Not enough '+wpL+' stock.\nAvailable: '+wpSt.stock.toFixed(0)+'L, needed: '+(wpSz2*qty)+'L\n\nOrder blocked.');return;}}
-  REC.basket.push({type:'product',fid:REC.addFid,productType:t,label:label,qty:qty,price:itemPrice,stone:REC.addStone,bucket:REC.addBucket||'',secSize:REC.addSecSize||'',cmTi:isCM?(REC.cmTi||[]):null,details:details.join(' · ')});
-  REC.addFid=null;REC.addSearch='';REC.addQty=1;REC.addStone=null;REC.addBucket=null;REC.addSecSize=null;REC.cmName='';REC.cmTi=[];REC.addType=null;
+  REC.basket.push({type:'product',fid:REC.addFid,productType:t,label:label,qty:qty,price:itemPrice,stone:REC.addStone,bucket:REC.addBucket||'',secSize:REC.addSecSize||'',cmTi:isCM?(REC.cmTi||[]):null,base:isCM?REC.cmBase:null,details:details.join(' · ')});
+  REC.addFid=null;REC.addSearch='';REC.addQty=1;REC.addStone=null;REC.addBucket=null;REC.addSecSize=null;REC.cmName='';REC.cmTi=[];REC.cmBase=null;REC.addType=null;
   recRender();
   // Scroll to top of content after adding
   setTimeout(function(){var c=document.getElementById('rec-content');if(c)c.scrollTop=0;},100);
@@ -3057,7 +3087,7 @@ async function deductOrderStock(order){
   var deductFailures=[];
   async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});return;}if(qty>0)deductFailures.push(name);}
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
-  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi){
+  async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
     var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
     if(t==='undercoat'){await dm('Undercoat',qty);}
@@ -3074,17 +3104,20 @@ async function deductOrderStock(order){
       for(var j=0;j<(f.tints||[]).length;j++){var t2=f.tints[j];await dm(t2.n,(ml(t2.s,t2.y)/1000)*qty*szRatio);}
     }
     if(cmTi)for(var k=0;k<cmTi.length;k++)await dm(cmTi[k].n,(ml(cmTi[k].s,cmTi[k].y)/1000)*qty);
+    if(base==='pastel')await dm('Pastel Base',2*qty);
+    else if(base==='clear')await dm('Clear Base',2*qty);
+    else if(base==='deep'){await dm('Pastel Base',1*qty);await dm('Clear Base',1*qty);}
     if(bkt){if(bkt.includes('10L Secure'))await dp('sl5',qty*2);else if(bkt.includes('5L Secure'))await dp('sl5',qty);else if(bkt.includes('20L Secure'))await dp('sl20',qty);}
   }
   if(order.items&&order.items.length){
     for(var n=0;n<order.items.length;n++){
       var item=order.items[n];
       var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
-      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi);
+      await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi,item.base);
     }
   }else{
     var secSizeGuess=order.bkt&&order.bkt.includes('5L')?'5':order.bkt&&order.bkt.includes('10L')?'10':'20';
-    await deductOne(order.t,order.fid,order.qty,order.stK,order.bkt,secSizeGuess,order.cmTi);
+    await deductOne(order.t,order.fid,order.qty,order.stK,order.bkt,secSizeGuess,order.cmTi,order.base);
   }
   if(order.lid){if(order.bkt&&order.bkt.includes('5L'))await dp('sl5l',order.qty);else await dp('sl20l',order.qty);}
   return deductFailures;
@@ -3199,6 +3232,10 @@ function recPrintA4(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,pm){
       tintSource.forEach(function(t){var totalMl=ml(t.s,t.y)*item.qty*szRatio;h+=''+t.n+': '+(t.y*item.qty*szRatio).toFixed(1)+'Y + '+(t.s*item.qty*szRatio).toFixed(1)+' shots = '+totalMl.toFixed(1)+'ml<br>';});
       h+='</div>';
     }
+    if(item.base){
+      var baseLbl=item.base==='pastel'?'Pastel Base — 2L per bucket':item.base==='clear'?'Clear Base — 2L per bucket':'Deep — 1L Pastel + 1L Clear per bucket';
+      h+='<div class="tint-detail"><b>Base:</b> '+baseLbl+' (×'+item.qty+')</div>';
+    }
     h+='</td>';
     h+='<td style="font-size:11px;color:#666">'+details.join('<br>')+'</td>';
     h+='<td style="text-align:right">'+item.qty+'</td>';
@@ -3312,6 +3349,10 @@ function recPrintThermal(oid,client,basket,delivery,notes,cashAmt,cardAmt,total,
       }
     }
 
+    if(item.base){
+      var baseLbl2=item.base==='pastel'?'Pastel Base (2L/bucket)':item.base==='clear'?'Clear Base (2L/bucket)':'Deep = 1L Pastel + 1L Clear /bucket';
+      h+='<div class="detail bold" style="margin-top:2px">Base: '+baseLbl2+'</div>';
+    }
     if(lt>0)h+='<div class="row" style="margin-top:2px"><span></span><span class="bold">R'+lt.toFixed(2)+'</span></div>';
     h+='<div style="border-top:1px dotted #ccc;margin:4px 0"></div>';
   });
