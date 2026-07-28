@@ -3054,7 +3054,8 @@ function recSetPayMode(mode){REC.payMode=mode;if(mode!=='split')REC.cashAmt=0;re
 function recUpdSplit(val){REC.cashAmt=parseFloat(val)||0;var basketTotal=REC.basket.reduce(function(a,i){return a+(i.price||0)*i.qty;},0);var cardCalc=Math.max(0,basketTotal-REC.cashAmt);var change=REC.cashAmt-basketTotal;var cardEl=document.getElementById('rec-card-calc');if(cardEl)cardEl.textContent=fmt(cardCalc);recRenderCheckout();}
 
 async function deductOrderStock(order){
-  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});}}
+  var deductFailures=[];
+  async function dm(name,qty){if(mfgStock[name]){mfgStock[name].stock=Math.max(0,mfgStock[name].stock-qty);await api('PUT','/manufactured-stock/'+mfgStock[name].id,{stock:mfgStock[name].stock});return;}var m=mats.find(function(x){return x.name===name;});if(m&&qty>0){m.stock=Math.max(0,m.stock-qty);await api('PUT','/materials/'+m.id,{stock:m.stock});return;}if(qty>0)deductFailures.push(name);}
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
   async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
@@ -3086,6 +3087,7 @@ async function deductOrderStock(order){
     await deductOne(order.t,order.fid,order.qty,order.stK,order.bkt,secSizeGuess,order.cmTi);
   }
   if(order.lid){if(order.bkt&&order.bkt.includes('5L'))await dp('sl5l',order.qty);else await dp('sl20l',order.qty);}
+  return deductFailures;
 }
 
 async function recConfirm(){
@@ -3105,8 +3107,12 @@ async function recConfirm(){
   if(res){
     var newOrder={id:oid,client:REC.client.name,t:'multi',n:od.name,qty:od.quantity,bkt:'',stK:'',lid:od.include_lid,dl:REC.delivery,nt:REC.notes||'',status:'done',fid:null,cmTi:[],pm:pm,items:allItems,cashAmt:cashAmt,cardAmt:cardAmt,total:basketTotal,orderTotal:basketTotal,clientObj:REC.client,createdAt:res.created_at||nowIso};
     orders.push(newOrder);
-    await deductOrderStock(newOrder);
+    var deductFailures=await deductOrderStock(newOrder);
     hideLoad();
+    if(deductFailures&&deductFailures.length){
+      var uniqueFails=deductFailures.filter(function(v,i,a){return a.indexOf(v)===i;});
+      alert('⚠ Stock warning: could not find a matching stock item for the following ingredient(s), so their stock was NOT deducted:\n\n'+uniqueFails.join('\n')+'\n\nPlease check these names in the formulation match exactly with an item in Raw Materials or Manufactured Stock.');
+    }
     recPrintThermal(oid,REC.client,REC.basket,REC.delivery,REC.notes||'',cashAmt,cardAmt,basketTotal,pm);
     window.currentOrderId=oid;window.currentClient=REC.client;window.currentBasket=REC.basket.slice();
     window.currentDelivery=REC.delivery;window.currentNotes=REC.notes||'';window.currentCashAmt=cashAmt;
