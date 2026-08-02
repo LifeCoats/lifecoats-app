@@ -176,7 +176,7 @@ tr:hover td{background:#f8f9fa}
   <div class="user-info">
     <p>Logged in as</p><span id="un-display"></span>
     <br><span class="logout" onclick="logout()"><i class="ti ti-logout" style="font-size:11px"></i> Log out</span>
-    <div style="font-size:10px;color:#bbb;margin-top:8px">v1.9.0</div> 
+    <div style="font-size:10px;color:#bbb;margin-top:8px">v1.0.0</div> 
   </div>
 </div>
 <div class="main" id="main">
@@ -1906,7 +1906,7 @@ function rBatchMfgBkt(type){
   var stock=mfg?mfg.stock:0;
   var alert2=mfg?mfg.alert_level:10;
   var col=stock<=alert2?'#E24B4A':stock<=(alert2*2)?'#EF9F27':'#5B8FA8';
-  var recipe=batchRecipes.find(function(r){return r.name===label||r.name.toLowerCase().indexOf('undercoat')!==-1;});
+  var recipe=batchRecipes.find(function(r){return r.name===label;})||batchRecipes.find(function(r){return r.name.toLowerCase().indexOf('undercoat')!==-1;});
   var h='<div class="card" style="margin-bottom:0.75rem">';
   h+='<div class="fb" style="margin-bottom:1rem"><div><h3>Undercoat Stock</h3>';
   h+='<div style="font-size:22px;font-weight:700;color:'+col+';margin-top:4px">'+Math.round(stock)+' buckets</div>';
@@ -1926,7 +1926,7 @@ async function produceBatchBkt(){
   var mfg=mfgStock[label];
   if(!mfg){alert('No manufactured stock entry found for "Undercoat". Please add a row in Supabase: manufactured_stock table, name="Undercoat", stock=0, alert_level=10, then refresh.');return;}
   showLoad('Producing Undercoat batch...');
-  var recipe=batchRecipes.find(function(r){return r.name===label||r.name.toLowerCase().indexOf('undercoat')!==-1;});
+  var recipe=batchRecipes.find(function(r){return r.name===label;})||batchRecipes.find(function(r){return r.name.toLowerCase().indexOf('undercoat')!==-1;});
   if(recipe){
     var ratio=45/recipe.batch_size;
     for(var i=0;i<recipe.ingredients.length;i++){
@@ -1949,7 +1949,7 @@ function rBatchMfg(type){
   var stock=mfg?mfg.stock:0;
   var alert2=mfg?mfg.alert_level:50;
   var col=stock<=alert2?'#E24B4A':stock<=(alert2*2)?'#EF9F27':'#5B8FA8';
-  var recipe=batchRecipes.find(function(r){return r.name===label||r.manufactured_stock_id===(mfg&&mfg.id);});
+  var recipe=batchRecipes.find(function(r){return r.name===label;})||batchRecipes.find(function(r){return r.manufactured_stock_id===(mfg&&mfg.id);});
   var h='<div class="card" style="margin-bottom:0.75rem">';
   h+='<div class="fb" style="margin-bottom:1rem"><div><h3>'+label+' Stock</h3>';
   h+='<div style="font-size:22px;font-weight:700;color:'+col+';margin-top:4px">'+stock.toFixed(0)+'L</div>';
