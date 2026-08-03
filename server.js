@@ -34,6 +34,14 @@ function adminOnly(req, res, next) {
   next();
 }
 
+function stockUpdateAllowed(req, res, next) {
+  if (req.user.role !== 'admin' && req.user.role !== 'office' && req.user.role !== 'reception') {
+    return res.status(403).json({ error: 'Not allowed to update stock' });
+  }
+  next();
+}
+
+
 // LOGIN
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
@@ -62,7 +70,7 @@ app.post('/api/materials', auth, adminOnly, async (req, res) => {
   const { data } = await supabase.from('materials').insert(req.body).select().single();
   res.json(data);
 });
-app.put('/api/materials/:id', auth, adminOnly, async (req, res) => {
+app.put('/api/materials/:id', auth, stockUpdateAllowed, async (req, res) => {
   const { data } = await supabase.from('materials').update(req.body).eq('id', req.params.id).select().single();
   res.json(data);
 });
