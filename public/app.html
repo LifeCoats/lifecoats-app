@@ -3113,6 +3113,7 @@ async function deductOrderStock(order){
   if(order.items&&order.items.length){
     for(var n=0;n<order.items.length;n++){
       var item=order.items[n];
+      if(item.type==='loose'){await dp(item.pkgKey,item.qty);continue;}
       var bktLabel=item.secSize?(item.secSize==='5'?'5L Secure Lock':item.secSize==='10'?'10L Secure Lock':'20L Secure Lock'):(item.bucket||'');
       await deductOne(item.productType,item.fid,item.qty,item.stone,bktLabel,item.secSize,item.cmTi,item.base);
     }
