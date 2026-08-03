@@ -2954,7 +2954,8 @@ function recAddToBasket(){
   var t=REC.addType;var isCM=t==='cm';var isSec=['cps','clearcoat','waterproofing','fiberseal'].indexOf(t)!==-1;
   var isGam=t==='gamazine';var isBkt=['gamazine','remix','granite','undercoat'].indexOf(t)!==-1;
   var f=REC.addFid?forms.find(function(x){return x.id===REC.addFid;}):null;
-  if(!isCM&&!isSec&&!f){window.alert('Select a colour first');return;}
+  var needsForm=(t!=='waterproofing'&&t!=='fiberseal');
+  if(!isCM&&needsForm&&!f){window.alert('Select a colour first');return;}
   if(isCM&&!f){window.alert('Select a colour first');return;}
   if((isGam||isCM)&&!REC.addStone){window.alert('Select a stone size');return;}
   if((isBkt||isCM)&&!REC.addBucket){window.alert('Select a bucket type');return;}
