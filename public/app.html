@@ -2209,7 +2209,7 @@ function oComplete(id){
   var dd='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>';
   function buildOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
-    var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
+    var szRatio=((t==='cps'||t==='clearcoat')&&secSize==='5')?0.25:((t==='cps'||t==='clearcoat')&&secSize==='10')?0.5:1;
     if(t==='undercoat'){dd+=dl('Undercoat',qty,'bkt');}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;dd+=dl(wpLabel,wpSz*qty,'L');}
     else if(f){
@@ -2253,7 +2253,7 @@ async function confComplete(){
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
   async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
-    var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
+    var szRatio=((t==='cps'||t==='clearcoat')&&secSize==='5')?0.25:((t==='cps'||t==='clearcoat')&&secSize==='10')?0.5:1;
     if(t==='undercoat'){await dm('Undercoat',qty);}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;await dm(wpLabel,wpSz*qty);}
     else if(f){
@@ -3089,7 +3089,7 @@ async function deductOrderStock(order){
   async function dp(key,qty){if(pkgData[key]&&qty>0){pkgData[key].stock=Math.max(0,pkgData[key].stock-qty);await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});}}
   async function deductOne(t,fid,qty,stK,bkt,secSize,cmTi,base){
     var f=fid?forms.find(function(x){return x.id===fid;}):null;
-    var szRatio=(t==='cps'&&secSize==='5')?0.25:(t==='cps'&&secSize==='10')?0.5:1;
+    var szRatio=((t==='cps'||t==='clearcoat')&&secSize==='5')?0.25:((t==='cps'||t==='clearcoat')&&secSize==='10')?0.5:1;
     if(t==='undercoat'){await dm('Undercoat',qty);}
     else if(['waterproofing','fiberseal'].indexOf(t)!==-1){var wpLabel=t==='waterproofing'?'Waterproofing':'Fiber Seal';var wpSz=secSize==='5'?5:secSize==='10'?10:20;await dm(wpLabel,wpSz*qty);}
     else if(f){
