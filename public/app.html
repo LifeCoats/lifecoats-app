@@ -2664,7 +2664,7 @@ function recOrderHTML(){
 }
 
 function recUpdPrice(i,val){REC.basket[i].price=parseFloat(val)||0;var basketTotal=REC.basket.reduce(function(a,item){return a+(item.price||0)*item.qty;},0);var el=document.getElementById('rec-basket-total');if(el)el.textContent=fmt(basketTotal);}
-function recSelType(t){REC.addType=t;REC.addFid=null;REC.addSearch='';REC.addQty=1;REC.addStone=null;REC.addBucket=null;REC.addSecSize=null;recOrJobRender();}
+function recSelType(t){REC.addType=t;REC.addFid=null;REC.addSearch='';REC.addQty=1;REC.addStone=null;REC.addBucket=null;REC.addSecSize=null;if(t==='clearcoat'){var cf=forms.find(function(x){return x.type==='clearcoat';});if(cf)REC.addFid=cf.id;}recOrJobRender();}
 function recOrJobRender(){if(window._jobMode&&activeJobId){rJobDetail(activeJobId);}else{recRender();}}
 
 // Client search panel
