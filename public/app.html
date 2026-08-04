@@ -612,8 +612,8 @@ tr:hover td{background:#f8f9fa}
         <div style="flex-shrink:0">
           <div style="font-size:11px;color:#888;margin-bottom:4px;text-align:center">Preview</div>
           <div id="tvic-preview-box" style="width:110px;height:110px;background:#0a0f1e;border-radius:8px;position:relative;overflow:hidden">
-            <img id="tvic-preview-img" style="width:100%;height:100%;object-fit:contain;display:none;position:absolute;top:0;left:0;z-index:0">
-            <div id="tvic-preview-fill" style="position:absolute;z-index:1;background:#5B8FA8;opacity:0.8;mix-blend-mode:multiply;pointer-events:none"></div>
+            <div id="tvic-preview-fill" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#5B8FA8;opacity:0.85;background-size:contain;background-repeat:no-repeat;background-position:center;z-index:0;pointer-events:none"></div>
+            <img id="tvic-preview-img" style="width:100%;height:100%;object-fit:contain;display:none;position:absolute;top:0;left:0;z-index:1;mix-blend-mode:multiply">
           </div>
           <div style="margin-top:6px"><label style="font-size:11px">Test fill level: <span id="tvic-preview-pct">60</span>%</label><br><input id="tvic-preview-slider" type="range" min="0" max="100" value="60" style="width:110px" oninput="updateTVIconPreview()"></div>
         </div>
@@ -1276,15 +1276,24 @@ function updateTVIconPreview(){
   var img=document.getElementById('tvic-preview-img');
   var fill=document.getElementById('tvic-preview-fill');
   var winPct=Math.max(0,100-top-bottom);
-  var fillBarPct=winPct*(pct/100);
-  fill.style.left=left+'%';fill.style.right=right+'%';fill.style.bottom=bottom+'%';fill.style.height=fillBarPct+'%';
+  var emptyWithinWindowPct=winPct*(1-pct/100);
+  var fillTopEdgePct=top+emptyWithinWindowPct;
+  fill.style.clipPath='inset('+fillTopEdgePct+'% '+right+'% '+bottom+'% '+left+'%)';
+  function applySrc(src){
+    img.src=src;img.style.display='block';
+    var maskUrl="url('"+src+"')";
+    fill.style.webkitMaskImage=maskUrl;fill.style.maskImage=maskUrl;
+    fill.style.webkitMaskSize='contain';fill.style.maskSize='contain';
+    fill.style.webkitMaskRepeat='no-repeat';fill.style.maskRepeat='no-repeat';
+    fill.style.webkitMaskPosition='center';fill.style.maskPosition='center';
+  }
   var fileInput=document.getElementById('tvic-file');
   if(fileInput.files&&fileInput.files[0]){
     var reader=new FileReader();
-    reader.onload=function(){img.src=reader.result;img.style.display='block';};
+    reader.onload=function(){applySrc(reader.result);};
     reader.readAsDataURL(fileInput.files[0]);
   }else if(tvIconEditImageData){
-    img.src=tvIconEditImageData;img.style.display='block';
+    applySrc(tvIconEditImageData);
   }else{
     img.style.display='none';
   }
@@ -1573,10 +1582,12 @@ function tvStylePiece(val,max,alert2,unit,style,px,itemLabel,itemKey){
   var customIcon=findCustomIcon(lbl);
   if(customIcon){
     var winPct=Math.max(0,100-customIcon.fill_top_pct-customIcon.fill_bottom_pct);
-    var fillBarPct=winPct*(pct/100);
+    var emptyWithinWindowPct=winPct*(1-pct/100);
+    var fillTopEdgePct=customIcon.fill_top_pct+emptyWithinWindowPct;
+    var maskUrl="url('"+customIcon.image_data+"')";
     return '<div style="position:relative;width:'+px+'px;height:'+px+'px;margin:0 auto;filter:drop-shadow(0 0 7px '+glowCol+')">'
-      +'<img src="'+customIcon.image_data+'" style="width:100%;height:100%;object-fit:contain;display:block;position:absolute;top:0;left:0;z-index:0">'
-      +'<div style="position:absolute;left:'+customIcon.fill_left_pct+'%;right:'+customIcon.fill_right_pct+'%;bottom:'+customIcon.fill_bottom_pct+'%;height:'+fillBarPct+'%;background:'+fillCol+';opacity:0.8;mix-blend-mode:multiply;border-radius:0 0 4px 4px;transition:height 0.8s ease;z-index:1;pointer-events:none"></div>'
+      +'<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:'+fillCol+';opacity:0.85;-webkit-mask-image:'+maskUrl+';mask-image:'+maskUrl+';-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;clip-path:inset('+fillTopEdgePct+'% '+customIcon.fill_right_pct+'% '+customIcon.fill_bottom_pct+'% '+customIcon.fill_left_pct+'%);transition:clip-path 0.8s ease;z-index:0;pointer-events:none"></div>'
+      +'<img src="'+customIcon.image_data+'" style="width:100%;height:100%;object-fit:contain;display:block;position:absolute;top:0;left:0;z-index:1;mix-blend-mode:multiply">'
       +'</div>';
   }
 
