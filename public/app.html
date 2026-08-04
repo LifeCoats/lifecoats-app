@@ -742,7 +742,7 @@ function downloadDailyReport(){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-function dspStock(m){if(m.pack_unit&&m.pack_qty>0){var p=m.stock/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.stock.toFixed(1)+' '+m.unit;}
+function dspStock(m){if(m.pack_unit&&m.pack_qty>0){var p=m.stock/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'')+' ('+m.stock.toFixed(0)+' '+m.unit+')';}return m.stock.toFixed(1)+' '+m.unit;}
 function dspAlert(m){if(m.pack_unit&&m.pack_qty>0){var p=m.alert_level/m.pack_qty;return p.toFixed(1)+' '+m.pack_unit+(p!==1?'s':'');}return m.alert_level+' '+m.unit;}
 function allIngOpts(){
   var o='<optgroup label="Raw Materials">';
