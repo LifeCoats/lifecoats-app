@@ -608,20 +608,35 @@ tr:hover td{background:#f8f9fa}
   <div id="tvset-icons-pane" style="display:none">
     <div class="ib">Upload your own PNG and assign it to any material with a matching keyword (e.g. "resin" matches "Resin M366"). Uploaded icons replace the built-in shapes and animate a rising fill level as stock changes.</div>
     <div style="background:#f8f9fa;border-radius:8px;padding:10px;margin-bottom:10px">
-      <div style="font-size:12px;font-weight:500;margin-bottom:6px">Upload new icon</div>
-      <div class="fr" style="gap:8px;flex-wrap:wrap">
-        <div class="fg" style="flex:1;min-width:140px"><label>Icon name</label><input id="tvic-name" placeholder="e.g. Flow Bin"></div>
-        <div class="fg" style="flex:1;min-width:140px"><label>Match keyword</label><input id="tvic-keyword" placeholder="e.g. resin"></div>
-        <div class="fg" style="flex:1;min-width:160px"><label>PNG file</label><input id="tvic-file" type="file" accept="image/png"></div>
+      <div style="display:flex;gap:14px">
+        <div style="flex-shrink:0">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;text-align:center">Preview</div>
+          <div id="tvic-preview-box" style="width:110px;height:110px;background:#0a0f1e;border-radius:8px;position:relative;overflow:hidden">
+            <img id="tvic-preview-img" style="width:100%;height:100%;object-fit:contain;display:none;position:absolute;top:0;left:0;z-index:0">
+            <div id="tvic-preview-fill" style="position:absolute;z-index:1;background:#5B8FA8;opacity:0.8;mix-blend-mode:multiply;pointer-events:none"></div>
+          </div>
+          <div style="margin-top:6px"><label style="font-size:11px">Test fill level: <span id="tvic-preview-pct">60</span>%</label><br><input id="tvic-preview-slider" type="range" min="0" max="100" value="60" style="width:110px" oninput="updateTVIconPreview()"></div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div id="tvic-form-title" style="font-size:12px;font-weight:500;margin-bottom:6px">Upload new icon</div>
+          <div class="fr" style="gap:8px;flex-wrap:wrap">
+            <div class="fg" style="flex:1;min-width:120px"><label>Icon name</label><input id="tvic-name" placeholder="e.g. Flow Bin"></div>
+            <div class="fg" style="flex:1;min-width:120px"><label>Match keyword</label><input id="tvic-keyword" placeholder="e.g. resin"></div>
+          </div>
+          <div class="fg" style="margin-top:6px"><label id="tvic-file-label">PNG file</label><input id="tvic-file" type="file" accept="image/png" onchange="updateTVIconPreview()"></div>
+          <div class="fr" style="gap:8px;margin-top:6px">
+            <div class="fg"><label>Fill top %</label><input id="tvic-top" type="number" value="10" style="width:64px" oninput="updateTVIconPreview()"></div>
+            <div class="fg"><label>Fill bottom %</label><input id="tvic-bottom" type="number" value="12" style="width:64px" oninput="updateTVIconPreview()"></div>
+            <div class="fg"><label>Fill left %</label><input id="tvic-left" type="number" value="10" style="width:64px" oninput="updateTVIconPreview()"></div>
+            <div class="fg"><label>Fill right %</label><input id="tvic-right" type="number" value="10" style="width:64px" oninput="updateTVIconPreview()"></div>
+          </div>
+          <div style="font-size:11px;color:#888;margin:6px 0">These mark the empty margin around the container in your image (cap, base, frame), so the colour only rises inside the container itself. Watch the preview on the left and nudge the numbers until the fill sits right — no need to save first.</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btnp" id="tvic-save-btn" onclick="saveTVIcon()"><i class="ti ti-upload"></i> Upload icon</button>
+            <button class="btn" id="tvic-cancel-btn" onclick="resetTVIconForm()" style="display:none">Cancel edit</button>
+          </div>
+        </div>
       </div>
-      <div class="fr" style="gap:8px;margin-top:6px">
-        <div class="fg"><label>Fill top %</label><input id="tvic-top" type="number" value="10" style="width:70px"></div>
-        <div class="fg"><label>Fill bottom %</label><input id="tvic-bottom" type="number" value="12" style="width:70px"></div>
-        <div class="fg"><label>Fill left %</label><input id="tvic-left" type="number" value="10" style="width:70px"></div>
-        <div class="fg"><label>Fill right %</label><input id="tvic-right" type="number" value="10" style="width:70px"></div>
-      </div>
-      <div style="font-size:11px;color:#888;margin:6px 0">These percentages mark the empty margin around the container in your image (cap, base, frame) so the liquid only rises inside the container itself. Upload, check TV mode, then delete and re-upload with adjusted numbers if the fill looks off.</div>
-      <button class="btn btnp" onclick="uploadTVIcon()" style="margin-top:4px"><i class="ti ti-upload"></i> Upload icon</button>
     </div>
     <div id="tvic-list"></div>
   </div>
@@ -1200,8 +1215,9 @@ function tvSetTab(tab){
   document.getElementById('tvset-icons-pane').style.display=tab==='icons'?'block':'none';
   document.getElementById('tvset-tab-layout').className='btn btns'+(tab==='layout'?' btnp':'');
   document.getElementById('tvset-tab-icons').className='btn btns'+(tab==='icons'?' btnp':'');
-  if(tab==='icons')renderTVIconsList();
+  if(tab==='icons'){resetTVIconForm();renderTVIconsList();}
 }
+var tvIconEditId=null,tvIconEditImageData=null;
 function renderTVIconsList(){
   var el=document.getElementById('tvic-list');
   if(!tvIcons||!tvIcons.length){el.innerHTML='<div style="font-size:12px;color:#888;padding:8px 0">No custom icons uploaded yet.</div>';return;}
@@ -1210,12 +1226,70 @@ function renderTVIconsList(){
     h+='<div style="display:flex;align-items:center;gap:10px;padding:8px;border-bottom:0.5px solid #e0e0e0">';
     h+='<img src="'+ic.image_data+'" style="width:40px;height:40px;object-fit:contain;background:#0a0f1e;border-radius:6px;padding:3px">';
     h+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+ic.name+'</div><div style="font-size:11px;color:#888">matches: "'+ic.keyword+'" · fill top '+ic.fill_top_pct+'% bottom '+ic.fill_bottom_pct+'% left '+ic.fill_left_pct+'% right '+ic.fill_right_pct+'%</div></div>';
+    h+='<button class="btn btns" onclick="editTVIcon('+ic.id+')"><i class="ti ti-pencil"></i> Edit</button>';
     h+='<button class="btn btns btnd" onclick="deleteTVIcon('+ic.id+')"><i class="ti ti-trash"></i></button>';
     h+='</div>';
   });
   el.innerHTML=h;
 }
-async function uploadTVIcon(){
+function editTVIcon(id){
+  var ic=tvIcons.find(function(x){return x.id===id;});
+  if(!ic)return;
+  tvIconEditId=id;
+  tvIconEditImageData=ic.image_data;
+  document.getElementById('tvic-name').value=ic.name;
+  document.getElementById('tvic-keyword').value=ic.keyword;
+  document.getElementById('tvic-top').value=ic.fill_top_pct;
+  document.getElementById('tvic-bottom').value=ic.fill_bottom_pct;
+  document.getElementById('tvic-left').value=ic.fill_left_pct;
+  document.getElementById('tvic-right').value=ic.fill_right_pct;
+  document.getElementById('tvic-file').value='';
+  document.getElementById('tvic-file-label').textContent='Replace PNG (optional)';
+  document.getElementById('tvic-form-title').textContent='Editing "'+ic.name+'"';
+  document.getElementById('tvic-save-btn').innerHTML='<i class="ti ti-check"></i> Save changes';
+  document.getElementById('tvic-cancel-btn').style.display='inline-block';
+  updateTVIconPreview();
+  window.scrollTo({top:0});
+}
+function resetTVIconForm(){
+  tvIconEditId=null;tvIconEditImageData=null;
+  document.getElementById('tvic-name').value='';
+  document.getElementById('tvic-keyword').value='';
+  document.getElementById('tvic-top').value=10;
+  document.getElementById('tvic-bottom').value=12;
+  document.getElementById('tvic-left').value=10;
+  document.getElementById('tvic-right').value=10;
+  document.getElementById('tvic-file').value='';
+  document.getElementById('tvic-file-label').textContent='PNG file';
+  document.getElementById('tvic-form-title').textContent='Upload new icon';
+  document.getElementById('tvic-save-btn').innerHTML='<i class="ti ti-upload"></i> Upload icon';
+  document.getElementById('tvic-cancel-btn').style.display='none';
+  updateTVIconPreview();
+}
+function updateTVIconPreview(){
+  var pct=parseFloat(document.getElementById('tvic-preview-slider').value)||0;
+  document.getElementById('tvic-preview-pct').textContent=pct;
+  var top=parseFloat(document.getElementById('tvic-top').value)||0;
+  var bottom=parseFloat(document.getElementById('tvic-bottom').value)||0;
+  var left=parseFloat(document.getElementById('tvic-left').value)||0;
+  var right=parseFloat(document.getElementById('tvic-right').value)||0;
+  var img=document.getElementById('tvic-preview-img');
+  var fill=document.getElementById('tvic-preview-fill');
+  var winPct=Math.max(0,100-top-bottom);
+  var fillBarPct=winPct*(pct/100);
+  fill.style.left=left+'%';fill.style.right=right+'%';fill.style.bottom=bottom+'%';fill.style.height=fillBarPct+'%';
+  var fileInput=document.getElementById('tvic-file');
+  if(fileInput.files&&fileInput.files[0]){
+    var reader=new FileReader();
+    reader.onload=function(){img.src=reader.result;img.style.display='block';};
+    reader.readAsDataURL(fileInput.files[0]);
+  }else if(tvIconEditImageData){
+    img.src=tvIconEditImageData;img.style.display='block';
+  }else{
+    img.style.display='none';
+  }
+}
+async function saveTVIcon(){
   var name=document.getElementById('tvic-name').value.trim();
   var keyword=document.getElementById('tvic-keyword').value.trim().toLowerCase();
   var fileInput=document.getElementById('tvic-file');
@@ -1224,29 +1298,42 @@ async function uploadTVIcon(){
   var left=parseFloat(document.getElementById('tvic-left').value)||0;
   var right=parseFloat(document.getElementById('tvic-right').value)||0;
   if(!name||!keyword){window.alert('Enter a name and a match keyword');return;}
-  if(!fileInput.files||!fileInput.files[0]){window.alert('Choose a PNG file');return;}
-  var file=fileInput.files[0];
-  var reader=new FileReader();
-  reader.onload=async function(){
-    var dataUrl=reader.result;
-    var saved=await api('POST','/tv-icons',{name:name,keyword:keyword,image_data:dataUrl,fill_top_pct:top,fill_bottom_pct:bottom,fill_left_pct:left,fill_right_pct:right});
-    if(saved){
-      tvIcons.push(saved);
-      document.getElementById('tvic-name').value='';
-      document.getElementById('tvic-keyword').value='';
-      fileInput.value='';
-      renderTVIconsList();
-      if(TV)renderTV();
-    }else{
-      window.alert('Upload failed — check the file size and try again.');
-    }
-  };
-  reader.readAsDataURL(file);
+  var hasNewFile=fileInput.files&&fileInput.files[0];
+  if(!tvIconEditId&&!hasNewFile){window.alert('Choose a PNG file');return;}
+  function finish(imageData){
+    (async function(){
+      var body={name:name,keyword:keyword,fill_top_pct:top,fill_bottom_pct:bottom,fill_left_pct:left,fill_right_pct:right};
+      if(imageData)body.image_data=imageData;
+      var saved;
+      if(tvIconEditId){
+        saved=await api('PUT','/tv-icons/'+tvIconEditId,body);
+        if(saved){var idx=tvIcons.findIndex(function(x){return x.id===tvIconEditId;});if(idx!==-1)tvIcons[idx]=saved;}
+      }else{
+        saved=await api('POST','/tv-icons',body);
+        if(saved)tvIcons.push(saved);
+      }
+      if(saved){
+        resetTVIconForm();
+        renderTVIconsList();
+        if(TV)renderTV();
+      }else{
+        window.alert('Save failed — check the file size and try again.');
+      }
+    })();
+  }
+  if(hasNewFile){
+    var reader=new FileReader();
+    reader.onload=function(){finish(reader.result);};
+    reader.readAsDataURL(fileInput.files[0]);
+  }else{
+    finish(null);
+  }
 }
 async function deleteTVIcon(id){
   if(!confirm('Delete this icon? Materials matching its keyword will go back to the default shape.'))return;
   await api('DELETE','/tv-icons/'+id);
   tvIcons=tvIcons.filter(function(ic){return ic.id!==id;});
+  if(tvIconEditId===id)resetTVIconForm();
   renderTVIconsList();
   if(TV)renderTV();
 }
@@ -1488,8 +1575,8 @@ function tvStylePiece(val,max,alert2,unit,style,px,itemLabel,itemKey){
     var winPct=Math.max(0,100-customIcon.fill_top_pct-customIcon.fill_bottom_pct);
     var fillBarPct=winPct*(pct/100);
     return '<div style="position:relative;width:'+px+'px;height:'+px+'px;margin:0 auto;filter:drop-shadow(0 0 7px '+glowCol+')">'
-      +'<div style="position:absolute;left:'+customIcon.fill_left_pct+'%;right:'+customIcon.fill_right_pct+'%;bottom:'+customIcon.fill_bottom_pct+'%;height:'+fillBarPct+'%;background:linear-gradient(180deg,'+fillCol+'dd,'+fillCol+'77);mix-blend-mode:multiply;border-radius:0 0 4px 4px;transition:height 0.8s ease;z-index:0"></div>'
-      +'<img src="'+customIcon.image_data+'" style="width:100%;height:100%;object-fit:contain;display:block;position:relative;z-index:1">'
+      +'<img src="'+customIcon.image_data+'" style="width:100%;height:100%;object-fit:contain;display:block;position:absolute;top:0;left:0;z-index:0">'
+      +'<div style="position:absolute;left:'+customIcon.fill_left_pct+'%;right:'+customIcon.fill_right_pct+'%;bottom:'+customIcon.fill_bottom_pct+'%;height:'+fillBarPct+'%;background:'+fillCol+';opacity:0.8;mix-blend-mode:multiply;border-radius:0 0 4px 4px;transition:height 0.8s ease;z-index:1;pointer-events:none"></div>'
       +'</div>';
   }
 
