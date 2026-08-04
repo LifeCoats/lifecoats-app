@@ -34,13 +34,15 @@ function adminOnly(req, res, next) {
   next();
 }
 
+// Stock quantity updates happen automatically whenever an order is completed
+// (Reception) or a batch is produced (admin/office), so reception needs write
+// access here too. Creating/deleting a material entirely is still admin-only.
 function stockUpdateAllowed(req, res, next) {
   if (req.user.role !== 'admin' && req.user.role !== 'office' && req.user.role !== 'reception') {
     return res.status(403).json({ error: 'Not allowed to update stock' });
   }
   next();
 }
-
 
 // LOGIN
 app.post('/api/login', async (req, res) => {
@@ -202,6 +204,26 @@ app.get('/api/packaging', auth, async (req, res) => {
 app.put('/api/packaging/:id', auth, async (req, res) => {
   const { data } = await supabase.from('packaging').update(req.body).eq('id', req.params.id).select().single();
   res.json(data);
+});
+
+// TV MODE CUSTOM ICONS
+app.get('/api/tv-icons', auth, async (req, res) => {
+  const { data } = await supabase.from('tv_icons').select('*').order('id');
+  res.json(data || []);
+});
+app.post('/api/tv-icons', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('tv_icons').insert(req.body).select().single();
+  if(error){ console.error('tv_icons insert error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.put('/api/tv-icons/:id', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('tv_icons').update(req.body).eq('id', req.params.id).select().single();
+  if(error){ console.error('tv_icons update error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.delete('/api/tv-icons/:id', auth, adminOnly, async (req, res) => {
+  await supabase.from('tv_icons').delete().eq('id', req.params.id);
+  res.json({ success: true });
 });
 
 // FORMULATIONS
