@@ -3084,13 +3084,16 @@ function recProductPanel(){
     if(isBkt||isCM){
       h+='<div style="font-size:14px;font-weight:500;margin-bottom:8px">Bucket type:</div>';
       h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">';
-      [{b:'20L Printed',pk:'pr20'},{b:'20L Titan Black',pk:'ti20'}].forEach(function(o){
-        var b=o.b,p=pkgData[o.pk],stock=p?p.stock:null,out=stock!==null&&stock<=0;
+      var isUC=t==='undercoat';
+      [{b:'20L Printed',pk:'pr20',mfg:'Undercoat (Printed)'},{b:'20L Titan Black',pk:'ti20',mfg:'Undercoat (Plain)'}].forEach(function(o){
+        var b=o.b;
+        var stock=isUC?(mfgStock[o.mfg]?mfgStock[o.mfg].stock:0):(pkgData[o.pk]?pkgData[o.pk].stock:null);
+        var out=stock!==null&&stock<=0;
         var sel=REC.addBucket===b;
         if(out){
           h+='<button disabled style="padding:14px;border-radius:10px;font-weight:400;background:#f3f3f3;color:#bbb;border:1.5px solid #eaeaea;cursor:not-allowed">'+b+'<div style="font-size:11px;color:#E24B4A;margin-top:3px">Out of stock</div></button>';
         }else{
-          var stockLine=stock!==null?('<div style="font-size:11px;color:'+(stock<=10?'#EF9F27':'#888')+';margin-top:3px">'+stock+' in stock</div>'):'';
+          var stockLine=stock!==null?('<div style="font-size:11px;color:'+(stock<=10?'#EF9F27':'#888')+';margin-top:3px">'+Math.round(stock)+' in stock</div>'):'';
           h+='<button onclick="recSetOpt(\'addBucket\',\''+b+'\')" style="'+rBS(sel?'#E8F4F9':'#fff',sel?'#3a6e87':'#333',sel?'#5B8FA8':'#ddd','14px')+'padding:14px;border-radius:10px;font-weight:'+(sel?'600':'400')+'">'+b+stockLine+'</button>';
         }
       });
