@@ -206,6 +206,22 @@ app.put('/api/packaging/:id', auth, async (req, res) => {
   res.json(data);
 });
 
+// SAVED COLOUR MATCH RECIPES
+app.get('/api/custom-colours', auth, async (req, res) => {
+  const { data } = await supabase.from('custom_colours').select('*').order('created_at', { ascending: false });
+  res.json(data || []);
+});
+app.post('/api/custom-colours', auth, async (req, res) => {
+  const body = { ...req.body, saved_by: req.user.username || req.user.role };
+  const { data, error } = await supabase.from('custom_colours').insert(body).select().single();
+  if (error) { console.error('custom_colours insert error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.delete('/api/custom-colours/:id', auth, adminOnly, async (req, res) => {
+  await supabase.from('custom_colours').delete().eq('id', req.params.id);
+  res.json({ success: true });
+});
+
 // TV MODE CUSTOM ICONS
 app.get('/api/tv-icons', auth, async (req, res) => {
   const { data } = await supabase.from('tv_icons').select('*').order('id');
