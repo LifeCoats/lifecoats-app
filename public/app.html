@@ -436,11 +436,13 @@ tr:hover td{background:#f8f9fa}
     <div class="tab active" onclick="sRT('da',this)">Daily</div>
     <div class="tab" onclick="sRT('wk',this)">Weekly</div>
     <div class="tab" onclick="sRT('mo',this)">Monthly</div>
+    <div class="tab" onclick="sRT('st',this)">Stock</div>
     <div class="tab" onclick="sRT('pr',this)">Selling prices</div>
   </div>
   <div id="rt-da"></div>
   <div id="rt-wk" style="display:none"></div>
   <div id="rt-mo" style="display:none"></div>
+  <div id="rt-st" style="display:none"></div>
   <div id="rt-pr" style="display:none"></div>
 </div>
 
@@ -469,6 +471,7 @@ tr:hover td{background:#f8f9fa}
   <div class="fg"><label>Category</label><select id="ecat"><option value="resin">Resin</option><option value="sand">Sand</option><option value="tint">Tint</option><option value="chemical">Chemical</option><option value="other">Other</option></select></div></div>
   <div class="fr"><div class="fg"><label>Current stock (L or kg)</label><input type="number" id="est" step="0.01"></div>
   <div class="fg"><label>Alert below (L or kg)</label><input type="number" id="eal"></div></div>
+  <div class="fg"><label>Max stock level <span style="color:#888;font-weight:400">(e.g. a full delivery/tank capacity) — used for the report bar chart</span></label><input type="number" id="emx" step="0.01" placeholder="e.g. 2000"></div>
   <div class="fg"><label>Description</label><textarea id="ede" rows="2"></textarea></div>
   <div class="fg"><label>Supplier</label><input type="text" id="esu"></div>
   <div class="fr"><div class="fg"><label>Pack unit (drum/bag/bucket)</label><input type="text" id="epu"></div>
@@ -490,6 +493,7 @@ tr:hover td{background:#f8f9fa}
   <input type="hidden" id="epk">
   <div class="fr"><div class="fg"><label>Stock</label><input type="number" id="eps"></div>
   <div class="fg"><label>Alert below</label><input type="number" id="epa"></div></div>
+  <div class="fg"><label>Max stock level <span style="color:#888;font-weight:400">(e.g. a full delivery/pack) — used for the report bar chart</span></label><input type="number" id="epmx" placeholder="e.g. 500"></div>
   <div class="fg"><label>Selling price per unit (R) — optional</label><input type="number" id="eppr" step="0.01" min="0" placeholder="e.g. 15.00"></div>
   <div class="fe"><button class="btn" onclick="cM('m-ep')">Cancel</button><button class="btn btnp" onclick="savePkg()">Save</button></div>
 </div></div>
@@ -769,7 +773,7 @@ function applyRole(){
 }
 function ml(s,y){return(s*0.625)+(y*30);}
 function isToday(dateStr){if(!dateStr)return false;var d=new Date(dateStr);var now=new Date();return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();}
-function pct(s,a){return Math.min(100,Math.round((s/Math.max(a*3,1))*100));}
+function pct(s,a,mx){var m=(mx&&mx>0)?mx:a*3;return Math.min(100,Math.round((s/Math.max(m,1))*100));}
 function stt(s,a){if(s<=0)return'cr';if(s<=a)return'lw';return'ok';}
 function bdg(s,a){var x=stt(s,a);return x==='cr'?'<span class="bdg bcrit">Critical</span>':x==='lw'?'<span class="bdg blow">Low</span>':'<span class="bdg bok">OK</span>';}
 function bc(s,a){return stt(s,a)==='cr'?'pbcr':stt(s,a)==='lw'?'pbow':'pbok';}
@@ -2053,7 +2057,7 @@ function rDash(){
   if(WS.or){h+='<div class="g2"><div class="card"><h3>Active orders</h3>'+(active.length?active.map(oCard).join(''):'<div class="es">No active orders</div>')+'</div>';if(WS.pk){h+='<div class="card"><h3>Packaging</h3>';Object.values(pkgData).forEach(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';h+='<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+p.name+'</span><span style="font-weight:500;color:'+col+'">'+p.stock+'</span></div>';});h+='</div>';}h+='</div>';}
   document.getElementById('dc').innerHTML=h;
 }
-function editMfgStock(name){var m=mfgStock[name];if(!m)return;var unit=name.indexOf('Undercoat')===0?'buckets':'litres';var v=prompt('Update stock for '+name+'\\nCurrent: '+m.stock+' '+unit+'\\nNew level ('+unit+'):');if(v!==null&&v!==''&&!isNaN(v)){m.stock=parseFloat(v);api('PUT','/manufactured-stock/'+m.id,{stock:m.stock}).then(function(){rDash();});}}
+function editMfgStock(name){var m=mfgStock[name];if(!m)return;var unit=name.indexOf('Undercoat')===0?'buckets':'litres';var v=prompt('Update stock for '+name+'\\nCurrent: '+m.stock+' '+unit+'\\nNew level ('+unit+'):');if(v!==null&&v!==''&&!isNaN(v)){m.stock=parseFloat(v);api('PUT','/manufactured-stock/'+m.id,{stock:m.stock}).then(function(){rDash();});}var mx=prompt('Max stock level for '+name+' (used for report bar charts, e.g. a full batch/tank capacity)\\nCurrent max: '+(m.max_level||'not set')+'\\nNew max ('+unit+', leave blank to skip):');if(mx!==null&&mx!==''&&!isNaN(mx)){m.max_level=parseFloat(mx);api('PUT','/manufactured-stock/'+m.id,{max_level:m.max_level}).then(function(){rDash();});}}
 function oCard(o){return'<div class="oc"><div class="oi"><div class="oid">'+o.id+'</div><div class="on">'+o.n+' ×'+o.qty+'</div><div class="od">'+o.client+' · '+ptL(o.t)+'</div></div><span class="bdg '+(o.status==='pending'?'bblu':'bok')+'">'+o.status+'</span></div>';}
 
 // MATERIALS
@@ -2073,7 +2077,7 @@ function rMats(){
 }
 function oQA(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('qa-id').value=id;document.getElementById('qa-title').textContent='Add stock: '+m.name;if(m.pack_unit&&m.pack_qty>0){document.getElementById('qa-lbl').textContent='How many '+m.pack_unit+'s received?';document.getElementById('qa-info').textContent='Current: '+dspStock(m)+' · 1 '+m.pack_unit+' = '+m.pack_qty+m.unit;}else{document.getElementById('qa-lbl').textContent='Quantity to add ('+m.unit+')';document.getElementById('qa-info').textContent='Current: '+m.stock.toFixed(1)+' '+m.unit;}document.getElementById('qa-qty').value='';oM('m-qa');}
 async function doQA(){var id=parseInt(document.getElementById('qa-id').value);var qty=parseFloat(document.getElementById('qa-qty').value)||0;if(qty<=0){window.alert('Enter quantity');return;}var m=mats.find(function(x){return x.id===id;});if(!m)return;var add=qty;if(m.pack_unit&&m.pack_qty>0)add=qty*m.pack_qty;m.stock+=add;await api('PUT','/materials/'+id,{stock:m.stock});if(m.pack_unit&&m.pack_qty>0)await api('POST','/stock-receipts',{material_id:id,material_name:m.name,packs_received:qty,pack_unit:m.pack_unit,pack_qty:m.pack_qty,total_added:add,unit:m.unit,received_at:new Date().toISOString()});cM('m-qa');rMats();rDash();}
-function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('enm').value=m.name||'';document.getElementById('ecat').value=m.category||'other';document.getElementById('enm').value=m.name;document.getElementById('ecat').value=m.category||'other';document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';document.getElementById('epu').value=m.pack_unit||'';document.getElementById('epq').value=m.pack_qty||0;var h=document.getElementById('eph');if(m.pack_unit&&m.pack_qty>0){h.textContent='Currently '+dspStock(m)+' · Alert at '+dspAlert(m);h.style.display='block';}else h.style.display='none';oM('m-em');}
+function oEM(id){var m=mats.find(function(x){return x.id===id;});if(!m)return;document.getElementById('eid').value=id;document.getElementById('emt').textContent='Edit: '+m.name;document.getElementById('enm').value=m.name||'';document.getElementById('ecat').value=m.category||'other';document.getElementById('enm').value=m.name;document.getElementById('ecat').value=m.category||'other';document.getElementById('est').value=m.stock;document.getElementById('eal').value=m.alert_level;document.getElementById('emx').value=m.max_level||'';document.getElementById('ede').value=m.description||'';document.getElementById('esu').value=m.supplier||'';document.getElementById('epu').value=m.pack_unit||'';document.getElementById('epq').value=m.pack_qty||0;var h=document.getElementById('eph');if(m.pack_unit&&m.pack_qty>0){h.textContent='Currently '+dspStock(m)+' · Alert at '+dspAlert(m);h.style.display='block';}else h.style.display='none';oM('m-em');}
 function oStockTake(){
   if(userRole!=='admin'){alert('Stock take is admin only.');return;}
   var list=document.getElementById('stocktake-list');
@@ -2114,7 +2118,7 @@ async function saveStockTake(){
   rDash();
 }
 async function deleteMat(id){id=parseInt(id);var m=mats.find(function(x){return x.id===id;});if(!m)return;if(!confirm('Delete '+m.name+'?\nThis cannot be undone.'))return;showLoad('Deleting...');await api('DELETE','/materials/'+id);mats=mats.filter(function(x){return x.id!==id;});hideLoad();rMats();}
-async function saveMat(){var id=parseInt(document.getElementById('eid').value);var data={name:document.getElementById('enm').value.trim()||'',category:document.getElementById('ecat').value,stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value,pack_unit:document.getElementById('epu').value||'',pack_qty:parseFloat(document.getElementById('epq').value)||0};await api('PUT','/materials/'+id,data);var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);cM('m-em');rMats();}
+async function saveMat(){var id=parseInt(document.getElementById('eid').value);var data={name:document.getElementById('enm').value.trim()||'',category:document.getElementById('ecat').value,stock:parseFloat(document.getElementById('est').value)||0,alert_level:parseFloat(document.getElementById('eal').value)||0,max_level:parseFloat(document.getElementById('emx').value)||null,description:document.getElementById('ede').value,supplier:document.getElementById('esu').value,pack_unit:document.getElementById('epu').value||'',pack_qty:parseFloat(document.getElementById('epq').value)||0};await api('PUT','/materials/'+id,data);var m=mats.find(function(x){return x.id===id;});if(m)Object.assign(m,data);cM('m-em');rMats();}
 async function addMat(){var n=document.getElementById('mn').value.trim();if(!n){window.alert('Enter name');return;}var data={name:n,category:document.getElementById('mc2').value,supplier:document.getElementById('msu').value||'',pack_size:document.getElementById('mp').value||'',description:document.getElementById('md').value||'',pack_unit:document.getElementById('mpu').value||'',pack_qty:parseFloat(document.getElementById('mpq').value)||0,stock:parseFloat(document.getElementById('mst').value)||0,unit:document.getElementById('mu').value,alert_level:parseFloat(document.getElementById('ma').value)||0};var res=await api('POST','/materials',data);if(res){mats.push(res);cM('m-am');['mn','msu','mp','md','mpu','mpq','mst','ma'].forEach(function(i){document.getElementById(i).value='';});rMats();}}
 
 // RECEIVE STOCK
@@ -2294,8 +2298,8 @@ async function confBatch(){var id=pendingBatchId;var r=batchRecipes.find(functio
 
 // PACKAGING
 function rPkg(){document.getElementById('pkgc').innerHTML=Object.values(pkgData).map(function(p){var col=p.stock<=p.alert_level?'#E24B4A':p.stock<=(p.alert_level*1.5)?'#EF9F27':'#5B8FA8';return'<div class="met"><div onclick="oPE(\''+p.id+'\')" style="cursor:pointer"><div class="ml" style="font-size:11px">'+p.name+'</div><div class="mv" style="color:'+col+'">'+p.stock+(p.pack_unit?' rolls':'')+'</div><div class="ms">'+(p.stock<=p.alert_level?'⚠ Low':'OK')+' · alert: '+p.alert_level+(p.price?' · '+fmt(p.price)+'/unit':'')+'</div></div><button class="btn btns btno" onclick="oBO(\''+p.id+'\')" style="margin-top:6px;width:100%;font-size:11px"><i class="ti ti-minus"></i> Book out</button></div>';}).join('');rBOLog();}
-function oPE(key){var p=pkgData[key];if(!p)return;document.getElementById('epk').value=key;document.getElementById('ept').textContent='Edit: '+p.name;document.getElementById('eps').value=p.stock;document.getElementById('epa').value=p.alert_level;document.getElementById('eppr').value=p.price||'';oM('m-ep');}
-async function savePkg(){var key=document.getElementById('epk').value;var data={stock:parseInt(document.getElementById('eps').value)||0,alert_level:parseInt(document.getElementById('epa').value)||0,price:parseFloat(document.getElementById('eppr').value)||0};await api('PUT','/packaging/'+key,data);Object.assign(pkgData[key],data);cM('m-ep');rPkg();}
+function oPE(key){var p=pkgData[key];if(!p)return;document.getElementById('epk').value=key;document.getElementById('ept').textContent='Edit: '+p.name;document.getElementById('eps').value=p.stock;document.getElementById('epa').value=p.alert_level;document.getElementById('epmx').value=p.max_level||'';document.getElementById('eppr').value=p.price||'';oM('m-ep');}
+async function savePkg(){var key=document.getElementById('epk').value;var data={stock:parseInt(document.getElementById('eps').value)||0,alert_level:parseInt(document.getElementById('epa').value)||0,max_level:parseFloat(document.getElementById('epmx').value)||null,price:parseFloat(document.getElementById('eppr').value)||0};await api('PUT','/packaging/'+key,data);Object.assign(pkgData[key],data);cM('m-ep');rPkg();}
 function onPiChange(){var key=document.getElementById('pi').value;var lbl=document.getElementById('pq-label');var p=pkgData[key];if(p&&p.pack_unit&&p.pack_qty>0){lbl.textContent='Boxes to add (1 box = '+p.pack_qty+' rolls)';}else{lbl.textContent='Quantity to add';}}
 async function addPkg(){var key=document.getElementById('pi').value;var qty=parseInt(document.getElementById('pq').value)||0;if(qty<=0){window.alert('Enter quantity');return;}if(!pkgData[key]){window.alert('Item not found');return;}var add=qty;if(pkgData[key].pack_unit&&pkgData[key].pack_qty>0)add=qty*pkgData[key].pack_qty;pkgData[key].stock+=add;await api('PUT','/packaging/'+key,{stock:pkgData[key].stock});document.getElementById('pq').value='';rPkg();}
 function oBO(key){var p=pkgData[key];if(!p)return;document.getElementById('bo-key').value=key;document.getElementById('bo-title').textContent='Book out: '+p.name;document.getElementById('bo-info').textContent='Current stock: '+p.stock+' units';document.getElementById('bo-qty').value='';document.getElementById('bo-reason').value='';oM('m-bo');}
@@ -2563,7 +2567,7 @@ async function confComplete(){
 // REPORTS
 function rRep(){rWk();}
 var REPORT_REF=new Date();
-function sRT(tab,el){PRT=tab;document.querySelectorAll('#pg-rep .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['da','wk','mo','pr'].forEach(function(t){document.getElementById('rt-'+t).style.display=t===tab?'block':'none';});if(tab==='da')rDay();else if(tab==='wk')rWk();else if(tab==='mo')rMo();else rPr();}
+function sRT(tab,el){PRT=tab;document.querySelectorAll('#pg-rep .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['da','wk','mo','st','pr'].forEach(function(t){document.getElementById('rt-'+t).style.display=t===tab?'block':'none';});if(tab==='da')rDay();else if(tab==='wk')rWk();else if(tab==='mo')rMo();else if(tab==='st')rStock();else rPr();}
 function reportNav(period,delta){
   if(period==='da')REPORT_REF.setDate(REPORT_REF.getDate()+delta);
   else if(period==='wk')REPORT_REF.setDate(REPORT_REF.getDate()+delta*7);
@@ -2613,10 +2617,10 @@ function computeUsage(orderList){
   });
   return{usage:usage,tintUsage:tintUsage,byType:byType};
 }
-function barListHTML(rows){if(!rows.length)return'<div class="es">Nothing to show</div>';return rows.map(function(r){return'<div class="bci"><span class="bcn">'+r.name+'</span><div class="bct"><div class="bcf '+bc(r.stock,r.alert)+'" style="width:'+pct(r.stock,r.alert)+'%"></div></div><span class="bcv">'+r.disp+'</span>'+bdg(r.stock,r.alert)+'</div>';}).join('');}
-function matBarsHTML(){var h='';['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){var ms2=mats.filter(function(m){return m.category===cat;});if(!ms2.length)return;var col=CC[cat]||'#888';h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:10px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';h+=barListHTML(ms2.map(function(m){return{name:m.name,stock:m.stock,alert:m.alert_level,disp:dspStock(m)};}));});return h||'<div class="es">No raw materials</div>';}
-function pkgBarsHTML(){return barListHTML(Object.values(pkgData).map(function(p){return{name:p.name,stock:p.stock,alert:p.alert_level,disp:p.stock+(p.pack_unit?' '+p.pack_unit+(p.stock!==1?'s':''):'')};}));}
-function mfgBarsHTML(){return barListHTML(Object.values(mfgStock).map(function(m){return{name:m.name,stock:m.stock,alert:m.alert_level,disp:(m.name.indexOf('Undercoat')===0?m.stock.toFixed(0)+' bkt':m.stock.toFixed(0)+'L')};}));}
+function barListHTML(rows){if(!rows.length)return'<div class="es">Nothing to show</div>';return rows.map(function(r){return'<div class="bci"><span class="bcn">'+r.name+'</span><div class="bct"><div class="bcf '+bc(r.stock,r.alert)+'" style="width:'+pct(r.stock,r.alert,r.max)+'%"></div></div><span class="bcv">'+r.disp+'</span>'+bdg(r.stock,r.alert)+'</div>';}).join('');}
+function matBarsHTML(){var h='';['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){var ms2=mats.filter(function(m){return m.category===cat;});if(!ms2.length)return;var col=CC[cat]||'#888';h+='<div style="font-size:10px;font-weight:500;color:'+col+';text-transform:uppercase;letter-spacing:0.05em;margin:10px 0 4px;display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+col+';display:inline-block"></span>'+cat+'</div>';h+=barListHTML(ms2.map(function(m){return{name:m.name,stock:m.stock,alert:m.alert_level,max:m.max_level,disp:dspStock(m)};}));});return h||'<div class="es">No raw materials</div>';}
+function pkgBarsHTML(){return barListHTML(Object.values(pkgData).map(function(p){return{name:p.name,stock:p.stock,alert:p.alert_level,max:p.max_level,disp:p.stock+(p.pack_unit?' '+p.pack_unit+(p.stock!==1?'s':''):'')};}));}
+function mfgBarsHTML(){return barListHTML(Object.values(mfgStock).map(function(m){return{name:m.name,stock:m.stock,alert:m.alert_level,max:m.max_level,disp:(m.name.indexOf('Undercoat')===0?m.stock.toFixed(0)+' bkt':m.stock.toFixed(0)+'L')};}));}
 function usageTableHTML(usageObj,tintObj){
   var rows=[];
   Object.keys(usageObj).sort().forEach(function(k){if(usageObj[k]>0.001)rows.push({name:k,val:usageObj[k]});});
@@ -2639,15 +2643,19 @@ function renderReportPeriod(period){
   h+='<div class="g3" style="margin-bottom:0.75rem"><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+done.length+'</div><div style="font-size:11px;color:#888">Orders completed</div></div><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:#5B8FA8">'+bk+'</div><div style="font-size:11px;color:#888">Buckets sold</div></div><div style="text-align:center;padding:0.75rem;background:#f8f9fa;border-radius:8px"><div style="font-size:22px;font-weight:500;color:'+(lw>0?'#E24B4A':'#5B8FA8')+'">'+lw+'</div><div style="font-size:11px;color:#888">Live low-stock alerts</div></div></div>';
   h+='<div class="card"><h3>Sales by product type</h3>'+salesByTypeHTML(u.byType)+'</div>';
   h+='<div class="card"><h3>Raw materials used this period</h3>'+usageTableHTML(u.usage,u.tintUsage)+'</div>';
-  h+='<div class="card"><h3>Raw material stock <span style="font-weight:400;color:#888;font-size:12px">(current)</span></h3>'+matBarsHTML()+'</div>';
-  h+='<div class="card"><h3>Packaging stock <span style="font-weight:400;color:#888;font-size:12px">(current)</span></h3>'+pkgBarsHTML()+'</div>';
-  h+='<div class="card"><h3>Produced stock <span style="font-weight:400;color:#888;font-size:12px">(current)</span></h3>'+mfgBarsHTML()+'</div>';
   h+='<div class="card"><h3>Orders completed</h3>'+(done.length?'<div style="overflow-x:auto"><table><thead><tr><th>Order</th><th>Client</th><th>Product</th><th>Qty</th><th>Revenue</th></tr></thead><tbody>'+done.map(function(o){var rv=orderRevenue(o);return'<tr><td>'+o.id+'</td><td>'+o.client+'</td><td>'+o.n+'</td><td>'+o.qty+'</td><td>'+fmt(rv)+'</td></tr>';}).join('')+'</tbody></table></div>':'<div class="es">No orders in this period</div>')+'</div>';
   document.getElementById('rt-'+period).innerHTML=h;
 }
 function rDay(){renderReportPeriod('da');}
 function rWk(){renderReportPeriod('wk');}
 function rMo(){renderReportPeriod('mo');}
+function rStock(){
+  var h='<div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem"><button class="btn btns" onclick="xPDFStock()"><i class="ti ti-file-text"></i> Export PDF</button></div>';
+  h+='<div class="card"><h3>Raw materials</h3>'+matBarsHTML()+'</div>';
+  h+='<div class="card"><h3>Packaging</h3>'+pkgBarsHTML()+'</div>';
+  h+='<div class="card"><h3>Produced stock <span style="font-weight:400;color:#888;font-size:12px">(Undercoat, Pastel Base, Waterproofing, Fiber Seal, etc.)</span></h3>'+mfgBarsHTML()+'</div>';
+  document.getElementById('rt-st').innerHTML=h;
+}
 function rPr(){document.getElementById('rt-pr').innerHTML='<div class="card"><div class="fb" style="margin-bottom:0.75rem"><h3>Selling prices</h3><span style="font-size:11px;color:#888">Admin only</span></div><div style="overflow-x:auto"><table><thead><tr><th>Colour</th><th>Type</th><th>Sub-category</th><th>Price (20L)</th><th>Price (10L)</th><th>Price (5L)</th><th></th></tr></thead><tbody>'+forms.sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(f){return'<tr><td><b>'+f.name+'</b></td><td><span class="bdg bgry">'+ptL(f.type)+'</span></td><td>'+f.sub_category+'</td><td><b>'+fmt(f.price||0)+'</b></td><td>'+(f.type==='cps'?'<b>'+fmt(f.price_10l||0)+'</b>':'—')+'</td>'+'<td>'+(f.type==='cps'?'<b>'+fmt(f.price_5l||0)+'</b>':'—')+'</td><td><button class="btn btns" onclick="eP('+f.id+')"><i class="ti ti-edit"></i></button></td></tr>';}).join('')+'</tbody></table></div></div>';}
 async function eP(id){var f=forms.find(function(x){return x.id===id;});if(!f)return;var v=prompt('Price for '+f.name+'\nCurrent: '+fmt(f.price||0)+'\nRands per bucket:');if(v!==null&&v!==''&&!isNaN(v)){f.price=parseFloat(v);await api('PUT','/formulations/'+id,{price:f.price});rPr();}}
 function pdfRevenueOnly(){
@@ -2656,6 +2664,7 @@ function pdfRevenueOnly(){
 }
 function oPDF(type){pdfType=type;var opts=[{id:'pdr',l:'Revenue totals',c:true},{id:'pdo',l:'Orders completed',c:true},{id:'pds',l:'Raw material stock',c:true},{id:'pdm',l:'Manufactured stock',c:true},{id:'pdp',l:'Packaging stock',c:false}];document.getElementById('pdfo').innerHTML=opts.map(function(o){return'<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><input type="checkbox" id="'+o.id+'"'+(o.c?' checked':'')+' style="width:auto"><label for="'+o.id+'" style="cursor:pointer;margin-left:4px">'+o.l+'</label></div>';}).join('');oM('m-pdf');}
 function xPDF(){
+  if(pdfType==='st'){xPDFStock();return;}
   var titleMap={da:'Daily',wk:'Weekly',mo:'Monthly'};
   var range=periodRange(pdfType);
   var done=ordersInRange(range.start,range.end);
@@ -2677,6 +2686,30 @@ function xPDF(){
   if(iP)h+='<h2>Packaging stock (current)</h2><table><tr><th>Item</th><th>Stock</th></tr>'+Object.values(pkgData).map(function(p){return'<tr><td>'+p.name+'</td><td>'+p.stock+'</td></tr>';}).join('')+'</table>';
   h+='</body></html>';
   var w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(function(){w.print();},500);}cM('m-pdf');
+}
+function pdfBarRow(name,stock,alert2,max2,disp){
+  var p=pct(stock,alert2,max2);
+  var col=stt(stock,alert2)==='cr'?'#E24B4A':stt(stock,alert2)==='lw'?'#EF9F27':'#5B8FA8';
+  var lbl=stt(stock,alert2)==='cr'?'Critical':stt(stock,alert2)==='lw'?'Low':'OK';
+  return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span>'+name+'</span><span style="color:'+col+';font-weight:bold">'+disp+' — '+lbl+'</span></div><div style="height:9px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+p+'%;background:'+col+'"></div></div></div>';
+}
+function xPDFStock(){
+  var now=new Date();
+  var h='<html><head><title>Life Coats Stock Report</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#333;padding:2rem}h1{color:#5B8FA8;font-size:19px}h2{font-size:13px;margin:1.25rem 0 0.5rem;border-bottom:1px solid #eee;padding-bottom:3px}h3{font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#888;margin:0.9rem 0 0.4rem}</style></head><body>';
+  h+='<img src="https://lifecoats-app-production.up.railway.app/life_coats_logo_reg.png" style="height:50px;margin-bottom:8px"><h1>Life Coats — Stock Report</h1><p style="font-size:11px;color:#666">Generated: '+now.toDateString()+' '+now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</p>';
+  h+='<h2>Raw materials</h2>';
+  ['resin','chemical','tint','sand','stone','granite','other'].forEach(function(cat){
+    var ms2=mats.filter(function(m){return m.category===cat;});
+    if(!ms2.length)return;
+    h+='<h3>'+cat+'</h3>';
+    ms2.forEach(function(m){h+=pdfBarRow(m.name,m.stock,m.alert_level,m.max_level,dspStock(m));});
+  });
+  h+='<h2>Packaging</h2>';
+  Object.values(pkgData).forEach(function(p){h+=pdfBarRow(p.name,p.stock,p.alert_level,p.max_level,p.stock+(p.pack_unit?' '+p.pack_unit+(p.stock!==1?'s':''):''));});
+  h+='<h2>Produced stock</h2>';
+  Object.values(mfgStock).forEach(function(m){h+=pdfBarRow(m.name,m.stock,m.alert_level,m.max_level,m.name.indexOf('Undercoat')===0?m.stock.toFixed(0)+' bkt':m.stock.toFixed(0)+'L');});
+  h+='</body></html>';
+  var w=window.open('','_blank');if(w){w.document.write(h);w.document.close();setTimeout(function(){w.print();},500);}
 }
 
 
