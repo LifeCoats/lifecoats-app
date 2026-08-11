@@ -664,6 +664,21 @@ tr:hover td{background:#f8f9fa}
   <div class="fe"><button class="btn" onclick="cM('m-ucsplit')">Cancel</button><button class="btn btnp" id="ucsplit-confirm" onclick="confirmProduceBatchBkt()">Produce batch</button></div>
 </div></div>
 
+<div class="mbg" id="m-jobcm" onclick="cBG(event,'m-jobcm')"><div class="mod" style="width:480px">
+  <button class="mc" onclick="cM('m-jobcm')"><i class="ti ti-x"></i></button>
+  <h3 id="jobcm-title">Edit Colour Match</h3>
+  <input type="hidden" id="jobcm-entry-id">
+  <input type="hidden" id="jobcm-item-index">
+  <div class="fg"><label>Colour reference</label><input type="text" id="jobcm-name"></div>
+  <div class="fg" style="margin-top:6px"><label>Base</label>
+    <select id="jobcm-base"><option value="pastel">Pastel Base</option><option value="clear">Clear Base</option></select>
+  </div>
+  <div style="font-size:13px;font-weight:500;margin:12px 0 6px">Tints</div>
+  <div id="jobcm-tints"></div>
+  <button class="btn btns" onclick="jobCMAddTintRow()" style="margin-top:4px"><i class="ti ti-plus"></i> Add tint</button>
+  <div class="fe"><button class="btn" onclick="cM('m-jobcm')">Cancel</button><button class="btn btnp" onclick="saveJobCMEdit()">Save changes</button></div>
+</div></div>
+
 <div class="mbg" id="m-pdf" onclick="cBG(event,'m-pdf')"><div class="mod">
   <button class="mc" onclick="cM('m-pdf')"><i class="ti ti-x"></i></button><h3>Export PDF</h3>
   <div class="ib">Select what to include:</div>
@@ -964,6 +979,84 @@ function openJobDetail(id){
   rJobDetail(id);
 }
 
+var JOB_CURRENT_ITEMS=[],JOBCM_EDIT=[];
+function editJobCMItem(entryId,itemIndex){
+  var entry=JOB_CURRENT_ITEMS.find(function(e){return e.id===entryId;});
+  if(!entry)return;
+  var item=entry.items[itemIndex];
+  if(!item)return;
+  document.getElementById('jobcm-entry-id').value=entryId;
+  document.getElementById('jobcm-item-index').value=itemIndex;
+  document.getElementById('jobcm-name').value=(item.label||'').replace(/^Colour Match:\s*/,'');
+  document.getElementById('jobcm-base').value=item.base||'pastel';
+  JOBCM_EDIT=(item.cmTi||[]).map(function(t){return{n:t.n,y:t.y,s:t.s};});
+  renderJobCMTints();
+  oM('m-jobcm');
+}
+function jobCMTintOpts(current){return mats.filter(function(m){return m.category==='tint';}).map(function(m){return'<option'+(m.name===current?' selected':'')+'>'+m.name+'</option>';}).join('');}
+function renderJobCMTints(){
+  var el=document.getElementById('jobcm-tints');
+  el.innerHTML=JOBCM_EDIT.map(function(t,i){
+    return '<div style="display:grid;grid-template-columns:1fr 70px 70px 34px;gap:5px;align-items:end;margin-bottom:6px">'
+      +'<div class="fg" style="margin:0"><select onchange="JOBCM_EDIT['+i+'].n=this.value">'+jobCMTintOpts(t.n)+'</select></div>'
+      +'<div class="fg" style="margin:0"><label style="font-size:10px">Y</label><input type="number" value="'+(t.y||0)+'" min="0" oninput="JOBCM_EDIT['+i+'].y=parseFloat(this.value)||0"></div>'
+      +'<div class="fg" style="margin:0"><label style="font-size:10px">Shots</label><input type="number" value="'+(t.s||0)+'" min="0" oninput="JOBCM_EDIT['+i+'].s=parseFloat(this.value)||0"></div>'
+      +'<button class="btn btns" onclick="JOBCM_EDIT.splice('+i+',1);renderJobCMTints()"><i class="ti ti-x"></i></button>'
+      +'</div>';
+  }).join('')||'<div class="es">No tints yet — add one below.</div>';
+}
+function jobCMAddTintRow(){var first=mats.find(function(m){return m.category==='tint';});JOBCM_EDIT.push({n:first?first.name:'',y:0,s:0});renderJobCMTints();}
+async function saveJobCMEdit(){
+  var entryId=document.getElementById('jobcm-entry-id').value;
+  var itemIndex=parseInt(document.getElementById('jobcm-item-index').value);
+  var entry=JOB_CURRENT_ITEMS.find(function(e){return e.id===entryId;});
+  if(!entry)return;
+  var name=document.getElementById('jobcm-name').value.trim()||'Colour Match';
+  var base=document.getElementById('jobcm-base').value;
+  var newItems=entry.items.slice();
+  newItems[itemIndex]=Object.assign({},newItems[itemIndex],{label:'Colour Match: '+name,base:base,cmTi:JOBCM_EDIT});
+  var saved=await api('PATCH','/job-booking-items/'+entryId,{items:newItems});
+  if(saved){entry.items=saved.items;cM('m-jobcm');rJobDetail(entry.job_id);}
+  else alert('Save failed — please try again.');
+}
+async function loadJobEquipment(id){
+  var eq=await api('GET','/job-bookings/'+id+'/equipment');
+  return eq||[];
+}
+function equipmentListHTML(id,eq){
+  var h='<div class="card" style="margin-bottom:0.75rem"><h3>On-site equipment</h3>';
+  h+='<div class="ib">Anything sent to site that isn\'t stock — scaffolding, ladders, tools. Just a checklist so you know what needs to come back.</div>';
+  if(!eq.length)h+='<div class="es">Nothing logged yet.</div>';
+  else{
+    eq.forEach(function(e){
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #f0f0f0">';
+      h+='<input type="checkbox" '+(e.returned?'checked':'')+' onchange="toggleEquipmentReturned('+e.id+',this.checked,\''+id+'\')" style="width:auto">';
+      h+='<div style="flex:1"><div style="font-size:13px;'+(e.returned?'text-decoration:line-through;color:#aaa':'')+'">'+e.item_name+'</div>';
+      if(e.notes)h+='<div style="font-size:11px;color:#888">'+e.notes+'</div>';
+      h+='</div><button class="btn btns btnd" onclick="removeEquipment('+e.id+',\''+id+'\')" style="padding:3px 8px"><i class="ti ti-trash"></i></button>';
+      h+='</div>';
+    });
+  }
+  h+='<div style="display:flex;gap:6px;margin-top:10px"><input type="text" id="eq-new-name" placeholder="e.g. Scaffolding tower, Extension ladder..." style="flex:1"><button class="btn btnp" onclick="addEquipment(\''+id+'\')"><i class="ti ti-plus"></i> Add</button></div>';
+  h+='</div>';
+  return h;
+}
+async function addEquipment(id){
+  var nameEl=document.getElementById('eq-new-name');
+  var name=nameEl.value.trim();
+  if(!name)return;
+  var saved=await api('POST','/job-bookings/'+id+'/equipment',{item_name:name});
+  if(saved){nameEl.value='';rJobDetail(id);}
+}
+async function toggleEquipmentReturned(eqId,returned,id){
+  await api('PATCH','/job-equipment/'+eqId,{returned:returned,returned_at:returned?new Date().toISOString():null});
+  rJobDetail(id);
+}
+async function removeEquipment(eqId,id){
+  if(!confirm('Remove this from the list?'))return;
+  await api('DELETE','/job-equipment/'+eqId);
+  rJobDetail(id);
+}
 async function rJobDetail(id){
   var el=document.getElementById('jt-detail');if(!el)return;
   var j=jobBookings.find(function(x){return x.id===id;});if(!j)return;
@@ -972,6 +1065,8 @@ async function rJobDetail(id){
   // Fetch items from backend
   var items=await api('GET','/job-bookings/'+id+'/items');
   if(!items)items=[];
+  JOB_CURRENT_ITEMS=items;
+  var equipment=await loadJobEquipment(id);
   var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">';
   h+='<div>';
   h+='<button onclick="goBackFromJob(\''+id+'\')" style="background:#f0f0f0;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;margin-bottom:8px"><i class="ti ti-arrow-left"></i> Back</button>';
@@ -990,15 +1085,23 @@ async function rJobDetail(id){
     items.forEach(function(entry){
       h+='<div style="border-bottom:0.5px solid #f0f0f0;padding:10px 0">';
       h+='<div style="font-size:11px;color:#888;margin-bottom:5px"><i class="ti ti-calendar"></i> '+new Date(entry.booked_at).toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' at '+new Date(entry.booked_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · by '+entry.booked_by+'</div>';
-      (entry.items||[]).forEach(function(item){
-        h+='<div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0">';
+      (entry.items||[]).forEach(function(item,idx){
+        h+='<div style="padding:2px 0">';
+        h+='<div style="display:flex;justify-content:space-between;font-size:13px">';
         h+='<span><b>'+item.label+'</b>'+(item.details?' · <span style="color:#888;font-size:11px">'+item.details+'</span>':'')+'</span>';
-        h+='<span style="font-weight:600">×'+item.qty+'</span></div>';
+        h+='<span style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">×'+item.qty+'</span>';
+        if(item.cmTi)h+='<button class="btn btns" onclick="editJobCMItem(\''+entry.id+'\','+idx+')" style="padding:2px 8px;font-size:11px"><i class="ti ti-pencil"></i> Edit</button>';
+        h+='</span></div>';
+        if(item.cmTi&&item.cmTi.length){
+          h+='<div style="font-size:11px;color:#5B8FA8;margin-top:2px;padding-left:8px">'+(item.base?(item.base==='pastel'?'Pastel Base':'Clear Base')+' · ':'')+item.cmTi.map(function(t){return t.n+' (Y:'+t.y+', Shots:'+t.s+')';}).join(', ')+'</div>';
+        }
+        h+='</div>';
       });
       h+='</div>';
     });
   }
   h+='</div>';
+  h+=equipmentListHTML(id,equipment);
   // Add items button (only if open)
   if(!isClosed){
     h+='<div id="job-add-section">';
