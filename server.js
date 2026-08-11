@@ -302,6 +302,36 @@ app.post('/api/job-bookings/:id/items', auth, adminOnly, async (req, res) => {
   if(error){ console.error('job items error:', error); return res.status(500).json({ error: error.message }); }
   res.json(data);
 });
+app.patch('/api/job-booking-items/:entryId', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('job_booking_items').update(req.body).eq('id', req.params.entryId).select().single();
+  if(error){ console.error('job item entry update error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.delete('/api/job-booking-items/:entryId', auth, adminOnly, async (req, res) => {
+  await supabase.from('job_booking_items').delete().eq('id', req.params.entryId);
+  res.json({ success: true });
+});
+
+// On-site equipment tracking (not stock-linked, just a per-job checklist)
+app.get('/api/job-bookings/:id/equipment', auth, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('job_equipment').select('*').eq('job_id', req.params.id).order('added_at', { ascending: true });
+  res.json(data || []);
+});
+app.post('/api/job-bookings/:id/equipment', auth, adminOnly, async (req, res) => {
+  const body = { job_id: req.params.id, item_name: req.body.item_name, notes: req.body.notes || null, added_by: req.user.username || req.user.role };
+  const { data, error } = await supabase.from('job_equipment').insert(body).select().single();
+  if(error){ console.error('job equipment insert error:', error); return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.patch('/api/job-equipment/:eqId', auth, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('job_equipment').update(req.body).eq('id', req.params.eqId).select().single();
+  if(error){ return res.status(500).json({ error: error.message }); }
+  res.json(data);
+});
+app.delete('/api/job-equipment/:eqId', auth, adminOnly, async (req, res) => {
+  await supabase.from('job_equipment').delete().eq('id', req.params.eqId);
+  res.json({ success: true });
+});
 app.patch('/api/job-bookings/:id', auth, adminOnly, async (req, res) => {
   const { data, error } = await supabase.from('job_bookings').update(req.body).eq('id', req.params.id).select().single();
   if(error){ return res.status(500).json({ error: error.message }); }
