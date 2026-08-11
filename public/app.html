@@ -1227,8 +1227,10 @@ async function jobPrint(id){
   var j=jobBookings.find(function(x){return x.id===id;});if(!j)return;
   showLoad('Loading job for print...');
   var items=await api('GET','/job-bookings/'+id+'/items');
+  var equipment=await api('GET','/job-bookings/'+id+'/equipment');
   hideLoad();
   if(!items)items=[];
+  if(!equipment)equipment=[];
   var win=window.open('','_blank','width=850,height=1100');if(!win)return;
   var now=new Date();
   var h='<!DOCTYPE html><html><head><title>Job — '+j.job_ref+'</title><style>';
@@ -1275,13 +1277,21 @@ async function jobPrint(id){
       h+='<div class="date-row">'+new Date(entry.booked_at).toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+new Date(entry.booked_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+' · '+entry.booked_by+'</div>';
       h+='<table><thead><tr><th>Product / Colour</th><th>Details</th><th style="text-align:right">Qty</th></tr></thead><tbody>';
       (entry.items||[]).forEach(function(item){
-        h+='<tr><td><b>'+item.label+'</b></td><td style="color:#666">'+(item.details||'')+'</td><td style="text-align:right">'+item.qty+'</td></tr>';
+        h+='<tr><td><b>'+item.label+'</b>'+(item.cmTi&&item.cmTi.length?'<div style="font-size:10px;color:#5B8FA8;font-weight:400;margin-top:2px">'+(item.base?(item.base==='pastel'?'Pastel Base':'Clear Base')+' · ':'')+item.cmTi.map(function(t){return t.n+' (Y:'+t.y+', Shots:'+t.s+')';}).join(', ')+'</div>':'')+'</td><td style="color:#666">'+(item.details||'')+'</td><td style="text-align:right">'+item.qty+'</td></tr>';
       });
       h+='</tbody></table>';
     });
     h+='<div class="section-title">Grand totals</div>';
     h+='<table><thead><tr><th>Product</th><th style="text-align:right">Total qty</th></tr></thead><tbody>';
     Object.keys(totals).forEach(function(k){h+='<tr><td><b>'+k+'</b></td><td style="text-align:right;font-weight:700">'+totals[k]+'</td></tr>';});
+    h+='</tbody></table>';
+  }
+  if(equipment.length){
+    h+='<div class="section-title">On-site equipment</div>';
+    h+='<table><thead><tr><th>Item</th><th>Added</th><th style="text-align:right">Status</th></tr></thead><tbody>';
+    equipment.forEach(function(e){
+      h+='<tr><td><b>'+e.item_name+'</b>'+(e.notes?'<div style="font-size:10px;color:#888">'+e.notes+'</div>':'')+'</td><td style="color:#666">'+new Date(e.added_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})+'</td><td style="text-align:right">'+(e.returned?'<span style="color:#3B6D11;font-weight:600">Returned</span>':'<span style="color:#A32D2D;font-weight:600">Still on site</span>')+'</td></tr>';
+    });
     h+='</tbody></table>';
   }
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px">';
