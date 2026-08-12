@@ -165,7 +165,7 @@ tr:hover td{background:#f8f9fa}
   <div class="ni" onclick="nav('batches',this)" data-r="admin,reception,office"><i class="ti ti-flask"></i>Batch Production</div>
   <div class="ni" onclick="nav('pkg',this)" data-r="admin,office"><i class="ti ti-bucket"></i>Packaging</div>
   <div class="ns">Production</div>
-  <div class="ni" onclick="nav('forms',this)" data-r="admin,office"><i class="ti ti-book"></i>Formulations</div>
+  <div class="ni" onclick="nav('forms',this)" data-r="admin"><i class="ti ti-book"></i>Formulations</div>
   <div class="ni" onclick="nav('orders',this)" data-r="reception"><i class="ti ti-clipboard-list"></i>Orders</div>
   <div class="ns">Reports</div>
   <div class="ni" onclick="nav('rep',this)" data-r="admin,office"><i class="ti ti-chart-bar"></i>Reports</div>
@@ -431,7 +431,6 @@ tr:hover td{background:#f8f9fa}
 <!-- REPORTS -->
 <div class="pg" id="pg-rep">
   <div class="ph"><div><h1>Reports</h1><p>Daily, weekly and monthly production and stock reports</p></div></div>
-  <div class="al"><i class="ti ti-lock"></i> Revenue and prices are admin-only</div>
   <div class="tabs">
     <div class="tab active" onclick="sRT('da',this)">Daily</div>
     <div class="tab" onclick="sRT('wk',this)">Weekly</div>
@@ -806,11 +805,6 @@ function applyRole(){
   document.querySelectorAll('.ni').forEach(function(n){var r=n.getAttribute('data-r');n.style.display=(!r||r.indexOf(userRole)!==-1)?'flex':'none';});
   if(userRole==='admin'){var ab=document.getElementById('add-recipe-btn');if(ab)ab.style.display='';var rt=document.getElementById('recipes-tab');if(rt)rt.style.display='';}
   var stBtn=document.getElementById('stocktake-btn');if(stBtn)stBtn.style.display=userRole==='admin'?'':'none';
-  if(userRole==='office'){
-    var ab=document.getElementById('add-recipe-btn');if(ab)ab.style.display='none';
-    var rt=document.getElementById('recipes-tab');if(rt)rt.style.display='none';
-    if(!document.getElementById('office-style')){var style=document.createElement('style');style.id='office-style';style.textContent='#pg-forms .btnd,#pg-forms button[onclick^="oEF"],#pg-forms button[onclick^="dForm"],#pg-forms .ph button,#pg-forms #cps-sync-btn{display:none!important}';document.head.appendChild(style);}
-  }
   var roleLabels={admin:'Admin',reception:'Reception',office:'Office',tv:'TV'};
   var rl=document.getElementById('rl');if(rl)rl.textContent=userName+' · '+(roleLabels[userRole]||userRole);
 }
