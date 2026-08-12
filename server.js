@@ -33,6 +33,10 @@ function adminOnly(req, res, next) {
   if (req.user.role !== 'admin' && req.user.role !== 'office') return res.status(403).json({ error: 'Admin only' });
   next();
 }
+function strictAdminOnly(req, res, next) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
 
 // Stock quantity updates happen automatically whenever an order is completed
 // (Reception) or a batch is produced (admin/office), so reception needs write
@@ -247,17 +251,17 @@ app.get('/api/formulations', auth, async (req, res) => {
   const { data } = await supabase.from('formulations').select('*').order('id');
   res.json(data || []);
 });
-app.post('/api/formulations', auth, adminOnly, async (req, res) => {
+app.post('/api/formulations', auth, strictAdminOnly, async (req, res) => {
   const { data, error } = await supabase.from('formulations').insert(req.body).select().single();
   if(error){ console.error('formulations insert error:', error); return res.status(500).json({ error: error.message }); }
   res.json(data);
 });
-app.put('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+app.put('/api/formulations/:id', auth, strictAdminOnly, async (req, res) => {
   const { data, error } = await supabase.from('formulations').update(req.body).eq('id', req.params.id).select().single();
   if(error){ console.error('formulations update error:', error); return res.status(500).json({ error: error.message }); }
   res.json(data);
 });
-app.delete('/api/formulations/:id', auth, adminOnly, async (req, res) => {
+app.delete('/api/formulations/:id', auth, strictAdminOnly, async (req, res) => {
   await supabase.from('formulations').delete().eq('id', req.params.id);
   res.json({ success: true });
 });
