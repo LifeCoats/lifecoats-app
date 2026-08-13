@@ -257,18 +257,12 @@ tr:hover td{background:#f8f9fa}
     <button class="btn btnp btns" id="add-recipe-btn" onclick="openAddBatch()" style="display:none"><i class="ti ti-plus"></i> Add recipe</button>
   </div>
   <div class="tabs">
-    <div class="tab active" onclick="sBT('produce',this)">Produce a batch</div>
+    <div class="tab active" onclick="sBT('produce',this)">Production</div>
     <div class="tab" id="recipes-tab" onclick="sBT('recipes',this)" style="display:none">Recipes</div>
-    <div class="tab" onclick="sBT('waterproofing',this)">Waterproofing</div>
-    <div class="tab" onclick="sBT('fiberseal',this)">Fiber Seal</div>
-    <div class="tab" onclick="sBT('undercoat',this)">Undercoat</div>
     <div class="tab" onclick="sBT('log',this)">Log</div>
   </div>
   <div id="bt-produce"></div>
   <div id="bt-recipes" style="display:none"></div>
-  <div id="bt-waterproofing" style="display:none"></div>
-  <div id="bt-fiberseal" style="display:none"></div>
-  <div id="bt-undercoat" style="display:none"></div>
   <div id="bt-log" style="display:none"></div>
 </div>
 
@@ -660,6 +654,7 @@ tr:hover td{background:#f8f9fa}
     <input id="ucsplit-plain" type="number" min="0" value="0" oninput="ucSplitUpdate('plain')">
   </div>
   <div id="ucsplit-warning" style="font-size:12px;color:#E24B4A;margin-top:8px;display:none"></div>
+  <div id="ucsplit-ded" style="margin-top:10px"></div>
   <div class="fe"><button class="btn" onclick="cM('m-ucsplit')">Cancel</button><button class="btn btnp" id="ucsplit-confirm" onclick="confirmProduceBatchBkt()">Produce batch</button></div>
 </div></div>
 
@@ -2264,8 +2259,8 @@ async function receiveStock(){var id=parseInt(document.getElementById('rcv-mat')
 async function rRcvLog(){var log=await api('GET','/stock-receipts')||[];document.getElementById('rcv-log').innerHTML=log.length?log.slice(0,20).map(function(l){var dt=new Date(l.received_at);return'<div class="stock-row"><div style="flex:1"><div style="font-weight:500">'+l.material_name+'</div><div style="font-size:11px;color:#888">'+dt.toLocaleDateString('en-ZA')+' '+dt.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})+'</div></div><span class="bdg bok">+'+l.packs_received+' '+(l.pack_unit||l.unit)+'(s) = '+l.total_added.toFixed(1)+' '+l.unit+'</span></div>';}).join(''):'<div class="es">No deliveries logged yet</div>';}
 
 // BATCH PRODUCTION
-function rBatches(){rBatchProduce();}
-function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','waterproofing','fiberseal','undercoat','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchProduce();if(tab==='recipes')rBatchRecipes();if(tab==='waterproofing')rBatchMfg('waterproofing');if(tab==='fiberseal')rBatchMfg('fiberseal');if(tab==='undercoat')hideLoad();rBatchMfgBkt('undercoat');if(tab==='log')rBatchLog();}
+function rBatches(){rBatchBlocks();}
+function sBT(tab,el){document.querySelectorAll('#pg-batches .tab').forEach(function(t){t.classList.remove('active');});if(el)el.classList.add('active');['produce','recipes','log'].forEach(function(t){var e=document.getElementById('bt-'+t);if(e)e.style.display=t===tab?'block':'none';});if(tab==='produce')rBatchBlocks();if(tab==='recipes')rBatchRecipes();if(tab==='log')rBatchLog();}
 function rBatchMfgBkt(type){
   var mfgP=mfgStock['Undercoat (Printed)'],mfgL=mfgStock['Undercoat (Plain)'];
   var stockP=mfgP?mfgP.stock:0,stockL=mfgL?mfgL.stock:0;
@@ -2320,6 +2315,13 @@ function ucSplitUpdate(changed){
   if(p+l!==batchSize)msgs.push('Printed + Plain must add up to '+batchSize+'.');
   if(msgs.length){warn.style.display='block';warn.innerHTML=msgs.join('<br>');document.getElementById('ucsplit-confirm').disabled=true;}
   else{warn.style.display='none';document.getElementById('ucsplit-confirm').disabled=false;}
+  var ded=document.getElementById('ucsplit-ded');
+  if(recipe&&recipe.ingredients&&recipe.ingredients.length){
+    var ratio=(p+l)/recipe.batch_size;
+    ded.innerHTML='<div style="font-size:12px;font-weight:500;margin-bottom:5px">Stock to be deducted:</div>'+recipe.ingredients.map(function(i){return'<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid #e0e0e0;font-size:12px"><span>'+i.name+'</span><span style="color:#E24B4A;font-weight:500">−'+(i.qty*ratio).toFixed(2)+' '+i.unit+'</span></div>';}).join('')+'<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span>20L Printed Buckets</span><span style="color:#E24B4A;font-weight:500">−'+p+'</span></div><div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span>20L Titan Black Buckets</span><span style="color:#E24B4A;font-weight:500">−'+l+'</span></div><div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px"><span>Plastic Bags</span><span style="color:#E24B4A;font-weight:500">−'+(p+l)+'</span></div>';
+  }else{
+    ded.innerHTML='';
+  }
 }
 async function confirmProduceBatchBkt(){
   var printed=parseInt(document.getElementById('ucsplit-printed').value)||0;
@@ -2355,65 +2357,40 @@ async function produceBatchBkt(printed,plain){
   hideLoad();hideLoad();rBatchMfgBkt('undercoat');rDash();
   alert(printed+' Printed and '+plain+' Plain buckets of Undercoat produced! Stock is now '+Math.round(mfgP.stock)+' Printed / '+Math.round(mfgL.stock)+' Plain.');
 }
-function rBatchMfg(type){
-  var label=type==='waterproofing'?'Waterproofing':'Fiber Seal';
-  var mfg=mfgStock[label];
-  var stock=mfg?mfg.stock:0;
-  var alert2=mfg?mfg.alert_level:50;
-  var col=stock<=alert2?'#E24B4A':stock<=(alert2*2)?'#EF9F27':'#5B8FA8';
-  var recipe=batchRecipes.find(function(r){return r.name===label;})||batchRecipes.find(function(r){return r.manufactured_stock_id===(mfg&&mfg.id);});
-  var h='<div class="card" style="margin-bottom:0.75rem">';
-  h+='<div class="fb" style="margin-bottom:1rem"><div><h3>'+label+' Stock</h3>';
-  h+='<div style="font-size:22px;font-weight:700;color:'+col+';margin-top:4px">'+stock.toFixed(0)+'L</div>';
-  h+='<div style="font-size:12px;color:#888">Alert level: '+alert2+'L</div></div>';
-  h+='<button class="btn btnp" onclick="produceBatchMfg(\''+type+'\')"><i class="ti ti-plus"></i> Produce 200L batch</button></div>';
-  if(recipe){
-    h+='<div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">Batch ingredients (200L):</div>';
-    (recipe.ingredients||[]).forEach(function(i){h+='<div class="ir"><span>'+i.name+'</span><span class="il">'+i.qty+' '+i.unit+'</span></div>';});
-  }else{
-    h+='<div class="ib"><i class="ti ti-info-circle"></i> Add a batch recipe under the Recipes tab linked to '+label+' to see ingredients here.</div>';
-  }
-  h+='</div>';
-  document.getElementById('bt-'+type).innerHTML=h;
-}
 
-async function produceBatchMfg(type){
-  var label=type==='waterproofing'?'Waterproofing':'Fiber Seal';
-  var mfg=mfgStock[label];
-  if(!mfg){
-    alert('No manufactured stock entry found for "'+label+'". Please go to Supabase and add a row to the manufactured_stock table with name="'+label+'", stock=0, alert_level=50, then refresh the app.');
-    return;
-  }
-  var recipe=batchRecipes.find(function(r){return r.name===label||r.manufactured_stock_id===mfg.id;});
-  if(recipe){
-    // Deduct ingredients
-    var ratio=200/recipe.batch_size;
-    for(var i=0;i<recipe.ingredients.length;i++){
-      var ing=recipe.ingredients[i];
-      var amt=ing.qty*ratio;
-      var mat=mats.find(function(x){return x.name===ing.name;});
-      if(mat){mat.stock=Math.max(0,mat.stock-amt);await api('PUT','/materials/'+mat.id,{stock:mat.stock});}
-      else if(mfgStock[ing.name]){mfgStock[ing.name].stock=Math.max(0,mfgStock[ing.name].stock-amt);await api('PUT','/manufactured-stock/'+mfgStock[ing.name].id,{stock:mfgStock[ing.name].stock});}
-    }
-  }
-  mfg.stock+=200;
-  await api('PUT','/manufactured-stock/'+mfg.id,{stock:mfg.stock});
-  await api('POST','/batch-logs',{recipe_name:label+' Batch',litres_produced:200,triggered_by:userName});
-  hideLoad();hideLoad();rBatchMfg(type);rDash();
-  alert('200L batch of '+label+' produced! Stock is now '+mfg.stock.toFixed(0)+'L.');
-}
-function rBatchProduce(){
-  var h='<div class="card"><h3>Select a batch to produce</h3>';
-  if(!batchRecipes.length){h+='<div class="es">No batch recipes yet. Admin can add them under Recipes tab.</div></div>';document.getElementById('bt-produce').innerHTML=h;return;}
-  h+='<div class="ib">Click a recipe to produce. Both admin and reception can trigger batches.</div>';
+function rBatchBlocks(){
+  if(!batchRecipes.length){document.getElementById('bt-produce').innerHTML='<div class="card"><div class="es">No batch recipes yet. Admin can add them under the Recipes tab.</div></div>';return;}
+  var h='<div class="ib">Click "Produce batch" on any block to see exactly what will be deducted before it happens.</div>';
+  h+='<div class="g3">';
   batchRecipes.forEach(function(r){
-    var mfg=mfgStock[r.name];var stock=mfg?mfg.stock:0;var al=mfg?mfg.alert_level:0;
-    var col=stock<=al?'#E24B4A':stock<=(al*2)?'#EF9F27':'#5B8FA8';
-    h+='<div class="batch-card"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:14px;font-weight:500">'+r.name+'</div><div style="font-size:12px;color:#888">'+r.batch_size+'L per batch</div>';
-    var ings=r.ingredients||[];if(ings.length)h+='<div style="font-size:11px;color:#aaa;margin-top:3px">'+ings.map(function(i){return i.name+' ('+i.qty+i.unit+')';}).join(' · ')+'</div>';
-    h+='</div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:'+col+'">'+stock.toFixed(0)+'L</span><button class="btn btns btnw" onclick="openTrigger('+r.id+')"><i class="ti ti-flask"></i> Produce</button></div></div></div>';
+    var isUC=r.name==='Undercoat';
+    var ings=r.ingredients||[];
+    h+='<div class="card" style="margin-bottom:0;display:flex;flex-direction:column">';
+    h+='<div style="font-size:14px;font-weight:600;margin-bottom:6px">'+r.name+'</div>';
+    if(isUC){
+      var mfgP=mfgStock['Undercoat (Printed)'],mfgL=mfgStock['Undercoat (Plain)'];
+      var sP=mfgP?mfgP.stock:0,sL=mfgL?mfgL.stock:0;
+      var al2=mfgP?mfgP.alert_level:5;
+      var colP=sP<=al2?'#E24B4A':sP<=(al2*2)?'#EF9F27':'#5B8FA8';
+      var colL=sL<=al2?'#E24B4A':sL<=(al2*2)?'#EF9F27':'#5B8FA8';
+      h+='<div style="display:flex;gap:16px;margin-bottom:6px">';
+      h+='<div><div style="font-size:22px;font-weight:700;color:'+colP+'">'+Math.round(sP)+'</div><div style="font-size:11px;color:#888">Printed</div></div>';
+      h+='<div><div style="font-size:22px;font-weight:700;color:'+colL+'">'+Math.round(sL)+'</div><div style="font-size:11px;color:#888">Plain</div></div>';
+      h+='</div>';
+    }else{
+      var mfg=Object.values(mfgStock).find(function(m){return m.id===r.manufactured_stock_id;})||mfgStock[r.name];
+      var stock=mfg?mfg.stock:0,al=mfg?mfg.alert_level:0;
+      var col=stock<=al?'#E24B4A':stock<=(al*2)?'#EF9F27':'#5B8FA8';
+      h+='<div style="font-size:24px;font-weight:700;color:'+col+'">'+stock.toFixed(0)+'L</div>';
+    }
+    h+='<div style="font-size:11px;color:#888;margin-bottom:8px">Batch size: '+r.batch_size+(isUC?' buckets':'L')+'</div>';
+    if(ings.length)h+='<div style="font-size:10px;color:#aaa;margin-bottom:10px;line-height:1.5;flex:1">'+ings.map(function(i){return i.name;}).join(', ')+'</div>';
+    else h+='<div style="flex:1"></div>';
+    h+='<button class="btn btnp" style="width:100%" onclick="'+(isUC?'openProduceBatchBkt()':'openTrigger('+r.id+')')+'"><i class="ti ti-flask"></i> Produce batch</button>';
+    h+='</div>';
   });
-  h+='</div>';document.getElementById('bt-produce').innerHTML=h;
+  h+='</div>';
+  document.getElementById('bt-produce').innerHTML=h;
 }
 function rBatchRecipes(){
   var h='<div class="card"><h3>Batch recipes</h3>';
